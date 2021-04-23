@@ -19,3 +19,6 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep interface com.onyx.darie.calin.** { *; }
+-keep class com.onyx.darie.calin.** { *; }
