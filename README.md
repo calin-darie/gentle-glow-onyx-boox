@@ -8,6 +8,8 @@ This is like the evolution of faucets: first you have separate faucets for hot a
 This is the thermostatic faucet for your frontlight!
 
 If you like this app, you can help with any combination of the following:
-* rate 5 stars on Google Play - Play store release coming soon
 * pick an open issue and contribute with a pull request
+* let me know how you use the app - which warmth / brightness settings you use, at what times of the day.
+* send me any negative feedback and give me a couple weeks to fix the issues before you rate on Google Play
+* rate 5 stars on Google Play - Play store release coming soon
 * [buy me a beer](https://paypal.me/CalinDarie?locale.x=en_US)
