@@ -46,6 +46,7 @@ public class QuickSettingsTile extends TileService {
             FrontLightController.closeColdLight();
 
             updateTile(false);
+            return;
         }
         Intent intent = new Intent(this, FrontLightWarmthBrightnessDialog.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
