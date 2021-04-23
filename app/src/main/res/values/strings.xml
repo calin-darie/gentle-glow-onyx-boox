@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Gentle Glow: Onyx BOOX</string>
+    <string name="tile_name">Gentle Glow</string>
+    <string name="warmth">Warmth</string>
+    <string name="brightness">Brightness</string>
+    <string name="quick_settings__light_on">The frontlight is on.</string>
+    <string name="quick_settings__light_off">The frontlight is off.</string>
+    <string name="device_not_supported">This app is specifically built for Onyx BOOX e-readers with dual front light. Your device does not support dual front light control.</string>
+</resources>
