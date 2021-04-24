@@ -56,6 +56,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
             final double brightnessLux = warmBrightnessLux + coldBrightnessLux;
 
+            if (brightnessLux == 0)
+                return new WarmthBrightnessSetting(50, 0);
+
             final int warmthPercent = (int)Math.round(Math.min(100, warmBrightnessLux * 100 / brightnessLux));
             final int brightness = convertLuxToBrigthnessSetting(brightnessLux);
             
@@ -64,11 +67,13 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
 
         private int convertLuxToWarmOrColdSetting(double brightnessLux, int maxResult) {
+            if (brightnessLux == 0) return 0;
             final int assumedMinResult = 0;
             return Math.max(assumedMinResult, Math.min(maxResult, (int) Math.round(34 * Math.log(17 * brightnessLux))));
         }
 
         private double convertWarmOrColdSettingToLux(int setting) {
+            if (setting == 0) return 0;
             return Math.pow(Math.E, (double)setting/34)/17;
         }
 
@@ -81,7 +86,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         private int convertLuxToBrigthnessSetting (double lux) {
             if (lux == 0) return 0;
             final double MAX_BRIGHTNESS_SETTING = 100;
-            return (int)Math.min(MAX_BRIGHTNESS_SETTING, Math.round(18.3358 * Math.log(1.993155503999267 * lux)));
+            return (int)Math.round(Math.min(MAX_BRIGHTNESS_SETTING, Math.round(18.3358 * Math.log(1.993155503999267 * lux))));
         }
     }
 
