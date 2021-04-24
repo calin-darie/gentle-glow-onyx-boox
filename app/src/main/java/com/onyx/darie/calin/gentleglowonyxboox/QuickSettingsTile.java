@@ -38,8 +38,16 @@ public class QuickSettingsTile extends TileService {
     @Override
     public void onClick() {
         if (!isLightOn()) {
-            FrontLightController.openWarmLight();
-            FrontLightController.openColdLight();
+            if (FrontLightController.getWarmLightConfigValue(this) != 0) {
+                FrontLightController.openWarmLight();
+            }
+            if (FrontLightController.getColdLightConfigValue(this) != 0) {
+                FrontLightController.openColdLight();
+            }
+            if (FrontLightController.getWarmLightConfigValue(this)  +
+                FrontLightController.getColdLightConfigValue(this)== 0) {
+                loadPreset();
+            }
         }
         else {
             FrontLightController.closeWarmLight();
@@ -52,4 +60,9 @@ public class QuickSettingsTile extends TileService {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivityAndCollapse(intent);
      }
+
+    private void loadPreset() {
+        FrontLightController.openWarmLight();
+        FrontLightController.openColdLight();
+    }
 }
