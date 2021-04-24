@@ -44,8 +44,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     implementation('com.onyx.android.sdk:onyxsdk-base:1.5.8')
-
-    api "com.android.support.constraint:constraint-layout:1.1.3"
+    implementation('com.onyx.android.sdk:onyxsdk-device:1.1.8')
 
     implementation 'com.jakewharton:butterknife:7.0.1'
 }
