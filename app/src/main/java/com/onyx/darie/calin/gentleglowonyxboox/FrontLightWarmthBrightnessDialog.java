@@ -106,7 +106,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_front_light_demo);
+        setContentView(R.layout.activity_front_light_warmth_brightness_dialog);
 
         ButterKnife.bind(this);
 
