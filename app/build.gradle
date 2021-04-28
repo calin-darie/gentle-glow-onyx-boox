@@ -5,7 +5,7 @@ android {
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "com.onyx.darie.calin.gentleglowonyxboox"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 30
         versionCode 100
         versionName "1.0"
@@ -18,12 +18,13 @@ android {
         }
 
         ndk {
-            abiFilters "armeabi-v7a"
+            abiFilters 'armeabi-v7a','arm64-v8a'
         }
     }
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
