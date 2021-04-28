@@ -35,3 +35,10 @@ Tap the Gentle Glow tile to turn the light back off.
 <img alt="The Gentle Glow quick settings tile will show you when the frontlight is off." src="screenshots/quick-settings-light-on.png" width = "320px"/>
 
 You can also long press the tile to open the warmth & brightness dialog without toggling the light.
+
+## License
+
+The MIT license applies to all the files in this repository, except the light bulb icons, both store listing and quick settings tile, which are derivatives of the openmoji bulb svg by Sina Schulz https://openmoji.org/library/#search=bulb&emoji=1F4A1 and thus licensed under CC BY-SA 4.0 .
+
+> All emojis are free to use under the CC BY-SA 4.0 license
+https://openmoji.org/ as of 2021-04-08
