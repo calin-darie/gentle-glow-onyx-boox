@@ -1,7 +1,38 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.onyx.darie.calin.gentleglowonyxboox">
 
-    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission
+        android:name="android.permission.READ_PHONE_STATE"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.SYSTEM_ALERT_WINDOW"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.ACCESS_WIFI_STATE"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.CHANGE_WIFI_STATE"
+        tools:node="remove"/>
+    <uses-permission
+        android:name="android.permission.DUMP"
+        tools:node="remove"
+        tools:ignore="ProtectedPermissions" />
     <application
         android:name="com.onyx.darie.calin.gentleglowonyxboox.SampleApplication"
         android:allowBackup="true"
