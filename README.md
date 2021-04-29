@@ -26,13 +26,15 @@ Tap the Gentle Glow tile to turn the light on.
 
 <img alt="The Gentle Glow quick settings tile will show you when the frontlight is off." src="screenshots/quick-settings-light-off.png" width = "320px"/>
 
+⚠️ With this app, you have more fine control over the frontlight than the native controls offer. Most of the time, the system controls will show the light toggles as on, but the cold / warm sliders will stay at zero, because the setting is not one of their fixed increments.
+
 When you turn on the light using the tile, you get a dialog to choose the desired warmth and brightness.
 
-<img alt="The Gentle Glow quick settings tile will show you when the frontlight is on." src="screenshots/warmth-brightness-dialog.png" width = "320px"/>
+<img alt="Brightness / Warmth silders in a dialog that shows over the current open app, so you can tune for desired readability" src="screenshots/warmth-brightness-dialog.png" width = "320px"/>
 
 Tap the Gentle Glow tile to turn the light back off.
 
-<img alt="The Gentle Glow quick settings tile will show you when the frontlight is off." src="screenshots/quick-settings-light-on.png" width = "320px"/>
+<img alt="The Gentle Glow quick settings tile will show you when the frontlight is on." src="screenshots/quick-settings-light-on.png" width = "320px"/>
 
 You can also long press the tile to open the warmth & brightness dialog without toggling the light.
 
@@ -41,4 +43,8 @@ You can also long press the tile to open the warmth & brightness dialog without 
 The MIT license applies to all the files in this repository, except the light bulb icons, both store listing and quick settings tile, which are derivatives of the openmoji bulb svg by Sina Schulz https://openmoji.org/library/#search=bulb&emoji=1F4A1 and thus licensed under CC BY-SA 4.0 .
 
 > All emojis are free to use under the CC BY-SA 4.0 license
+
 https://openmoji.org/ as of 2021-04-08
+
+## Disclamer
+⚠️ I am in no way affiliated with Onyx.
