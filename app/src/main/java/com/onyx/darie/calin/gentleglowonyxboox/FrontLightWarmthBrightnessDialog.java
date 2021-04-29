@@ -99,6 +99,12 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     @Bind(R.id.warmth_slider)
     SeekBar warmth;
 
+    @Bind(R.id.warmth_value_label)
+    TextView warmthValue;
+
+    @Bind(R.id.brightness_value_label)
+    TextView brightnessValue;
+
     private WarmthBrightnessSetting warmthBrightnessSetting;
 
     WarmColdToWarmthBrightnessAdapter adapter;
@@ -160,7 +166,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             }
         });
 
-        initView();
+        updateValues();
     }
 
     private void updateFrontLight() {
@@ -170,7 +176,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         setColdBrightness(setting.cold);
     }
 
-    private void initView() {
+    private void updateValues() {
+        brightnessValue.setText(warmthBrightnessSetting.brightness + " / 100");
+        warmthValue.setText(warmthBrightnessSetting.warmth + " / 100");
     }
 
     private static Integer max(Integer[] values) {
@@ -186,10 +194,10 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     private void setColdBrightness(int brightness) {
         FrontLightController.setColdLightDeviceValue(this, brightness);
-        initView();
+        updateValues();
     }
     private void setWarmBrightness(int brightness) {
         FrontLightController.setWarmLightDeviceValue(this, brightness);
-        initView();
+        updateValues();
     }
 }
