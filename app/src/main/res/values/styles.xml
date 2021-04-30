@@ -10,6 +10,7 @@
         <item name="android:windowTitleStyle">@null</item>
         <item name="android:progressTint">@android:color/black</item>
         <item name="android:thumbTint">@android:color/black</item>
+        <item name="android:buttonStyle">@android:attr/borderlessButtonStyle</item>
     </style>
 
 </resources>

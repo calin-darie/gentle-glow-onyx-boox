@@ -44,13 +44,43 @@
             android:layout_width="match_parent"
             android:layout_height="94dp">
 
-            <SeekBar
-                android:id="@+id/brightness_slider"
-                android:layout_width="match_parent"
+            <RelativeLayout
+                android:orientation="horizontal"
+                android:layout_width="180dp"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
                 android:layout_height="wrap_content"
                 android:layout_span="2"
-                android:layout_weight="1"
-                android:max="100" />
+                android:layout_weight="1">
+                <Button
+                    android:id="@+id/decrease_brightness_by_1"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:text="🔅"
+                    android:contentDescription="@string/decrease_brightness_by_1"
+                    />
+                <Button
+                    android:id="@+id/increase_brightness_by_1"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:text="🔆"
+                    android:contentDescription="@string/increase_brightness_by_1"
+                    />
+                <SeekBar
+                    android:id="@+id/brightness_slider"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/decrease_brightness_by_1"
+                    android:layout_toLeftOf="@id/increase_brightness_by_1"
+                    android:layout_centerVertical="true"
+                    android:max="100" />
+            </RelativeLayout>
         </TableRow>
 
         <TableRow
@@ -62,7 +92,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20sp"
-                android:layout_marginBottom="20sp"
                 android:labelFor="@+id/warmth_slider"
                 android:text="@string/warmth"
                 android:textSize="20sp" />
@@ -83,12 +112,43 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <SeekBar
-                android:id="@+id/warmth_slider"
-                android:layout_width="match_parent"
+            <RelativeLayout
+                android:orientation="horizontal"
+                android:layout_width="180dp"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
                 android:layout_height="wrap_content"
                 android:layout_span="2"
-                android:layout_weight="1" />
+                android:layout_weight="1">
+                <Button
+                    android:id="@+id/decrease_warmth_by_1"
+                    android:layout_alignParentLeft="true"
+                    android:layout_centerVertical="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:text="🌙"
+                    android:contentDescription="@string/decrease_warmth_by_1"
+                    />
+                <Button
+                    android:id="@+id/increase_warmth_by_1"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:text="☀"
+                    android:contentDescription="@string/increase_warmth_by_1"
+                    />
+                <SeekBar
+                    android:id="@+id/warmth_slider"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/decrease_warmth_by_1"
+                    android:layout_toLeftOf="@id/increase_warmth_by_1"
+                    android:layout_centerVertical="true"
+                    android:max="100" />
+            </RelativeLayout>
         </TableRow>
 
         <TableRow

@@ -2,6 +2,8 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -9,6 +11,7 @@ import com.onyx.android.sdk.api.device.FrontLightController;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class FrontLightWarmthBrightnessDialog extends Activity {
     private class WarmColdSetting {
@@ -105,6 +108,18 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     @Bind(R.id.brightness_value_label)
     TextView brightnessValue;
 
+    @Bind(R.id.decrease_brightness_by_1)
+    Button decreaseBrightnessButton;
+
+    @Bind(R.id.increase_brightness_by_1)
+    Button increaseBrightnessButton;
+
+    @Bind(R.id.decrease_warmth_by_1)
+    Button decreaseWarmthButton;
+
+    @Bind(R.id.increase_warmth_by_1)
+    Button increaseWarmthButton;
+
     private WarmthBrightnessSetting warmthBrightnessSetting;
 
     WarmColdToWarmthBrightnessAdapter adapter;
@@ -166,6 +181,32 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             }
         });
 
+        decreaseBrightnessButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                decreaseBrightness();
+            }
+        });
+        increaseBrightnessButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                increaseBrightness();
+            }
+        });
+
+        decreaseWarmthButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                decreaseWarmth();
+            }
+        });
+        increaseWarmthButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                increaseWarmth();
+            }
+        });
+
         updateValues();
     }
 
@@ -199,5 +240,27 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     private void setWarmBrightness(int brightness) {
         FrontLightController.setWarmLightDeviceValue(this, brightness);
         updateValues();
+    }
+
+    public void decreaseBrightness() {
+        if (warmthBrightnessSetting.brightness > 0) {
+            brightness.setProgress(warmthBrightnessSetting.brightness - 1);
+        }
+    }
+    public void increaseBrightness() {
+        if (warmthBrightnessSetting.brightness < 100) {
+            brightness.setProgress(warmthBrightnessSetting.brightness + 1);
+        }
+    }
+
+    public void decreaseWarmth() {
+        if (warmthBrightnessSetting.warmth > 0) {
+            warmth.setProgress(warmthBrightnessSetting.warmth - 1);
+        }
+    }
+    public void increaseWarmth() {
+        if (warmthBrightnessSetting.warmth < 100) {
+            warmth.setProgress(warmthBrightnessSetting.warmth + 1);
+        }
     }
 }
