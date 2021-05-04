@@ -38,8 +38,8 @@ public class NamedWarmthBrightnessSetting {
     }
 
     private static final NamedWarmthBrightnessSetting[] presets = new NamedWarmthBrightnessSetting[] {
-            new NamedWarmthBrightnessSetting("Night", new WarmthBrightnessSetting(85, 23), false),
-            new NamedWarmthBrightnessSetting("Dawn", new WarmthBrightnessSetting(0, 23), false),
+            new NamedWarmthBrightnessSetting("Night", new WarmthBrightnessSetting(85, 6), false),
+            new NamedWarmthBrightnessSetting("Dawn", new WarmthBrightnessSetting(0, 5), false),
             new NamedWarmthBrightnessSetting("Day", new WarmthBrightnessSetting(33, 80), false),
             // new NamedWarmthBrightnessSetting("Lamp", new WarmthBrightnessSetting(87, 37)),
             new NamedWarmthBrightnessSetting("Onyx slider", new WarmthBrightnessSetting(50, 50), true),
