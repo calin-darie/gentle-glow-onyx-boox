@@ -34,7 +34,7 @@
         tools:node="remove"
         tools:ignore="ProtectedPermissions" />
     <application
-        android:name="com.onyx.darie.calin.gentleglowonyxboox.SampleApplication"
+        android:name="com.onyx.darie.calin.gentleglowonyxboox.GentleGlowApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
