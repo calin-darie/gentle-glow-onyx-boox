@@ -226,8 +226,13 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void updateSliders() {
-        warmth.setEnabled(namedWarmthBrightnessOptions.getSelected().canEdit());
-        brightness.setEnabled(namedWarmthBrightnessOptions.getSelected().canEdit());
+        boolean canEdit = namedWarmthBrightnessOptions.getSelected().canEdit();
+        warmth.setEnabled(canEdit);
+        brightness.setEnabled(canEdit);
+        decreaseBrightnessButton.setEnabled(canEdit);
+        increaseBrightnessButton.setEnabled(canEdit);
+        decreaseWarmthButton.setEnabled(canEdit);
+        increaseWarmthButton.setEnabled(canEdit);
         warmth.setProgress(namedWarmthBrightnessOptions.getSelected().setting.warmth);
         brightness.setProgress(namedWarmthBrightnessOptions.getSelected().setting.brightness);
     }
