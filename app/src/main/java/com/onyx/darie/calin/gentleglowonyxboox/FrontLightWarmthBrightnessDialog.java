@@ -325,29 +325,40 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         warmthValue.setText(namedWarmthBrightnessOptions.getSelected().setting.warmth + " / 100");
     }
 
-    //todo act by changing the model, not the sliders
     public void decreaseBrightness() {
         if (namedWarmthBrightnessOptions.getSelected().setting.brightness > 0) {
-            brightness.setProgress(namedWarmthBrightnessOptions.getSelected().setting.brightness - 1);
+            setNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                    namedWarmthBrightnessOptions.getSelected().name,
+                    new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth, namedWarmthBrightnessOptions.getSelected().setting.brightness - 1),
+                    namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
             saveNamedSettings();
         }
     }
     public void increaseBrightness() {
         if (namedWarmthBrightnessOptions.getSelected().setting.brightness < 100) {
-            brightness.setProgress(namedWarmthBrightnessOptions.getSelected().setting.brightness + 1);
+            setNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                    namedWarmthBrightnessOptions.getSelected().name,
+                    new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth, namedWarmthBrightnessOptions.getSelected().setting.brightness + 1),
+                    namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
             saveNamedSettings();
         }
     }
 
     public void decreaseWarmth() {
         if (namedWarmthBrightnessOptions.getSelected().setting.warmth > 0) {
-            warmth.setProgress(namedWarmthBrightnessOptions.getSelected().setting.warmth - 1);
+            setNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                    namedWarmthBrightnessOptions.getSelected().name,
+                    new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth -1, namedWarmthBrightnessOptions.getSelected().setting.brightness) ,
+                    namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
             saveNamedSettings();
         }
     }
     public void increaseWarmth() {
         if (namedWarmthBrightnessOptions.getSelected().setting.warmth < 100) {
-            warmth.setProgress(namedWarmthBrightnessOptions.getSelected().setting.warmth + 1);
+            setNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                    namedWarmthBrightnessOptions.getSelected().name,
+                    new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth + 1, namedWarmthBrightnessOptions.getSelected().setting.brightness) ,
+                    namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
             saveNamedSettings();
         }
     }
