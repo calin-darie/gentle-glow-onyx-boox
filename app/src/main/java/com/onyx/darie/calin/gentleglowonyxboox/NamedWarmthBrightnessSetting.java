@@ -17,24 +17,34 @@ public class NamedWarmthBrightnessSetting {
         this.isForOnyxCompatibility = isForOnyxCompatibility;
     }
 
-    public static NamedWarmthBrightnessSetting[] getNamedSettings(NamedWarmthBrightnessSetting[] savedNamedWarmthBrightnessSettings, WarmthBrightnessSetting currentSetting) {
+    public static NamedWarmthBrightnessOptions getNamedSettings(
+            NamedWarmthBrightnessSetting[] savedNamedWarmthBrightnessSettings,
+            WarmthBrightnessSetting currentSetting,
+            boolean isComputedWarmColdSettingMatchForInitialWarmColdSetting) {
         final NamedWarmthBrightnessSetting[] availableNamedSettings = savedNamedWarmthBrightnessSettings.length != 0?
                 savedNamedWarmthBrightnessSettings :
                 Arrays.copyOf(presets, presets.length);
 
-        boolean currentMatchesAnyAvailable = false;
+        NamedWarmthBrightnessSetting selectedWarmthBrightness = isComputedWarmColdSettingMatchForInitialWarmColdSetting ?
+                getCurrentMatchForAnyAvailable(currentSetting, availableNamedSettings) :
+                null;
+
+        if (selectedWarmthBrightness == null) {
+            final NamedWarmthBrightnessSetting lastNewSetting = availableNamedSettings[availableNamedSettings.length - 1];
+            selectedWarmthBrightness = new NamedWarmthBrightnessSetting(lastNewSetting.name, currentSetting, lastNewSetting.isForOnyxCompatibility);
+            availableNamedSettings[availableNamedSettings.length - 1] = selectedWarmthBrightness;
+        }
+
+        return new NamedWarmthBrightnessOptions(availableNamedSettings, selectedWarmthBrightness);
+    }
+
+    private static NamedWarmthBrightnessSetting getCurrentMatchForAnyAvailable(WarmthBrightnessSetting currentSetting, NamedWarmthBrightnessSetting[] availableNamedSettings) {
         for (NamedWarmthBrightnessSetting setting : availableNamedSettings) {
             if (setting.setting.equals(currentSetting)){
-                currentMatchesAnyAvailable = true;
+                return setting;
             }
         }
-
-        if (!currentMatchesAnyAvailable) {
-            final NamedWarmthBrightnessSetting lastNewSetting = availableNamedSettings[availableNamedSettings.length - 1];
-            availableNamedSettings[availableNamedSettings.length - 1] = new NamedWarmthBrightnessSetting(lastNewSetting.name, currentSetting, lastNewSetting.isForOnyxCompatibility);
-        }
-
-        return availableNamedSettings;
+        return null;
     }
 
     private static final NamedWarmthBrightnessSetting[] presets = new NamedWarmthBrightnessSetting[] {
