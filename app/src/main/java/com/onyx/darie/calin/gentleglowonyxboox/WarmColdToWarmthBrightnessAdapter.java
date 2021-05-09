@@ -45,8 +45,11 @@ public class WarmColdToWarmthBrightnessAdapter {
 
     private int convertLuxToWarmOrColdSetting(double brightnessLux, int maxResult) {
         if (brightnessLux == 0) return 0;
-        final int assumedMinResult = 1;
-        return Math.max(assumedMinResult, Math.min(maxResult, (int) Math.round(34 * Math.log(17 * brightnessLux))));
+        final int minNonZeroResult = onyxColdValues[1];
+        int result =  Math.max(0, Math.min(maxResult, (int) Math.round(34 * Math.log(17 * brightnessLux))));
+        if (result < minNonZeroResult)
+            return result <= minNonZeroResult/ 2? 0: minNonZeroResult;
+        return result;
     }
 
     public double convertWarmOrColdSettingToLux(int setting) {
