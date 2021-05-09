@@ -127,6 +127,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                 SelectItem item = (SelectItem)arrayAdapter.getItem(position);
                 if (item.item != nullSetting) {
                     setNamedWarmthBrightness(item.item);
+                    saveNamedSettings();
                 }
                 dialog.dismiss();
             }
