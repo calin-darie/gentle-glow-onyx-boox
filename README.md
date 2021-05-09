@@ -51,6 +51,10 @@ At any time, you can go back to any of the presets.
 
 <img alt="Brightness / Warmth configurations are editable: you can adjust warmth and/or brightness and rename the current configuration. You get a ✔ Saved message each time your changes are auto-saved. A dialog pops up when you choose to replace the current configuration with a preset." src="screenshots/warmth-brightness-editable-options.png" width = "320px"/>
 
+The Onyx Slider configuration is there just so changing the frontlight settings via the system sliders doesn't silently change your current configuration. 
+
+The Onyx Slider configuration is also a good way to get your system sliders back to a known good state, see the warning above.
+
 ## License
 
 The MIT license applies to all the files in this repository, except the light bulb icons, both store listing and quick settings tile, which are derivatives of the openmoji bulb svg by Sina Schulz https://openmoji.org/library/#search=bulb&emoji=1F4A1 and thus licensed under CC BY-SA 4.0 .
