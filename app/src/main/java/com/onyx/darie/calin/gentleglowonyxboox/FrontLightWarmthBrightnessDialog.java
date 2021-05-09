@@ -118,6 +118,20 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         final Context context = this;
 
+        final ArrayAdapter arrayAdapter = new ArrayAdapter(context, android.R.layout.select_dialog_item);
+        final AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        alertDialog.setTitle(getText(R.string.replace_with_preset));
+        alertDialog.setSingleChoiceItems(arrayAdapter, -1, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int position) {
+                SelectItem item = (SelectItem)arrayAdapter.getItem(position);
+                if (item.item != nullSetting) {
+                    setNamedWarmthBrightness(item.item);
+                }
+                dialog.dismiss();
+            }
+        });
+
         replaceWithPreset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,19 +146,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
                     items.add(new SelectItem(preset));
                 }
-                ArrayAdapter arrayAdapter = new ArrayAdapter(context, android.R.layout.select_dialog_item, items) {};
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
-                alertDialog.setTitle(getText(R.string.replace_with_preset));
-                alertDialog.setSingleChoiceItems(arrayAdapter, -1, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int position) {
-                        SelectItem item = (SelectItem)items.get(position);
-                        if (item.item != nullSetting) {
-                            setNamedWarmthBrightness(item.item);
-                        }
-                        dialog.dismiss();
-                    }
-                });
+                arrayAdapter.clear();
+                arrayAdapter.addAll(items);
 
                 alertDialog.show();
             }
