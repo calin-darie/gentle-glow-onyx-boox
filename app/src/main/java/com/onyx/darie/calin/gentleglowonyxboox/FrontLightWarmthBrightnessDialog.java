@@ -114,7 +114,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void bindResetSpinner() {
-        final NamedWarmthBrightnessSetting nullSetting = new NamedWarmthBrightnessSetting("", new WarmthBrightnessSetting(-1, -1), false);
 
         final Context context = this;
 
@@ -125,10 +124,10 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             @Override
             public void onClick(DialogInterface dialog, int position) {
                 SelectItem item = (SelectItem)arrayAdapter.getItem(position);
-                if (item.item != nullSetting) {
-                    setNamedWarmthBrightness(item.item);
-                    saveNamedSettings();
-                }
+
+                setNamedWarmthBrightness(item.item);
+                saveNamedSettings();
+
                 dialog.dismiss();
             }
         });
