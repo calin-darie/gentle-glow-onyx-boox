@@ -38,6 +38,19 @@ Tap the Gentle Glow tile to turn the light back off.
 
 You can also long press the tile to open the warmth & brightness dialog without toggling the light.
 
+In the warmth & brightness dialog, you get to choose between three configurations. 
+Initially, you get three presets:
+* Night, to be used in a dark bedroom.
+* Dawn, to be used at first daylight, before sunrise
+* Day, to be used at day time indoors or in the shade
+
+You can easily adjust the brightness or warmth on any of the three configurations. Just play with the sliders or with the fine tune buttons to the left and right of the sliders, and your changes are auto-saved.
+
+Should you use the frontlight under any completely different circumstance, say on the subway, you can easily rename any of these three configurations to Subway and fine tune the warmth and brightness to your daily commute needs.
+At any time, you can go back to any of the presets.
+
+<img alt="Brightness / Warmth configurations are editable: you can adjust warmth and/or brightness and rename the current configuration. You get a ✔ Saved message each time your changes are auto-saved. A dialog pops up when you choose to replace the current configuration with a preset." src="screenshots/warmth-brightness-editable-options.png" width = "320px"/>
+
 ## License
 
 The MIT license applies to all the files in this repository, except the light bulb icons, both store listing and quick settings tile, which are derivatives of the openmoji bulb svg by Sina Schulz https://openmoji.org/library/#search=bulb&emoji=1F4A1 and thus licensed under CC BY-SA 4.0 .
