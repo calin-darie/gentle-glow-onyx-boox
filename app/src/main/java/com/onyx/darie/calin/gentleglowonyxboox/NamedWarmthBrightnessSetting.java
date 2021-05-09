@@ -47,7 +47,7 @@ public class NamedWarmthBrightnessSetting {
         return null;
     }
 
-    private static final NamedWarmthBrightnessSetting[] presets = new NamedWarmthBrightnessSetting[] {
+    public static final NamedWarmthBrightnessSetting[] presets = new NamedWarmthBrightnessSetting[] {
             new NamedWarmthBrightnessSetting("Night", new WarmthBrightnessSetting(85, 6), false),
             new NamedWarmthBrightnessSetting("Dawn", new WarmthBrightnessSetting(0, 5), false),
             new NamedWarmthBrightnessSetting("Day", new WarmthBrightnessSetting(33, 80), false),

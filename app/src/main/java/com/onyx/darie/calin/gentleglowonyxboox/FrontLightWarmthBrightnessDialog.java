@@ -1,11 +1,15 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -22,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import butterknife.Bind;
@@ -61,6 +66,10 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     @Bind(R.id.name_edit)
     EditText name;
 
+    @Bind(R.id.replace_with_preset_button)
+    Button replaceWithPreset;
+
+
     WarmColdToWarmthBrightnessAdapter adapter;
     private NamedWarmthBrightnessOptions namedWarmthBrightnessOptions;
 
@@ -78,7 +87,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             brightness.setEnabled(false);
             warmth.setEnabled(false);
             name.setEnabled(false);
-             return;
+            return;
         }
 
         adapter = new WarmColdToWarmthBrightnessAdapter(
@@ -101,6 +110,45 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         bindNamedSettingsRadioGroup();
 
+        bindResetSpinner();
+    }
+
+    private void bindResetSpinner() {
+        final NamedWarmthBrightnessSetting nullSetting = new NamedWarmthBrightnessSetting("", new WarmthBrightnessSetting(-1, -1), false);
+
+        final Context context = this;
+
+        replaceWithPreset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                final ArrayList<SelectItem> items = new ArrayList<>();
+                for (NamedWarmthBrightnessSetting preset : NamedWarmthBrightnessSetting.presets) {
+                    if (preset.isForOnyxCompatibility)
+                        continue;
+
+                    if (preset.equals(namedWarmthBrightnessOptions.getSelected()))
+                        continue;
+
+                    items.add(new SelectItem(preset));
+                }
+                ArrayAdapter arrayAdapter = new ArrayAdapter(context, android.R.layout.select_dialog_item, items) {};
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+                alertDialog.setTitle(getText(R.string.replace_with_preset));
+                alertDialog.setSingleChoiceItems(arrayAdapter, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int position) {
+                        SelectItem item = (SelectItem)items.get(position);
+                        if (item.item != nullSetting) {
+                            setNamedWarmthBrightness(item.item);
+                        }
+                        dialog.dismiss();
+                    }
+                });
+
+                alertDialog.show();
+            }
+        });
     }
 
     private NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptions(WarmColdSetting initialWarmColdSetting) {
@@ -233,6 +281,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         increaseBrightnessButton.setEnabled(canEdit);
         decreaseWarmthButton.setEnabled(canEdit);
         increaseWarmthButton.setEnabled(canEdit);
+        replaceWithPreset.setEnabled(canEdit);
+
         warmth.setProgress(namedWarmthBrightnessOptions.getSelected().setting.warmth);
         brightness.setProgress(namedWarmthBrightnessOptions.getSelected().setting.brightness);
     }
@@ -365,6 +415,23 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                     new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth + 1, namedWarmthBrightnessOptions.getSelected().setting.brightness) ,
                     namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
             saveNamedSettings();
+        }
+    }
+
+    private class SelectItem {
+        private final NamedWarmthBrightnessSetting item;
+
+        private SelectItem(NamedWarmthBrightnessSetting item) {
+            this.item = item;
+        }
+
+        public NamedWarmthBrightnessSetting getItem() {
+            return item;
+        }
+
+        @Override
+        public String toString() {
+            return item.name;
         }
     }
 }
