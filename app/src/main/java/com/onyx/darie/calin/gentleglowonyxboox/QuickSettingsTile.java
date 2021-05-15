@@ -46,19 +46,16 @@ public class QuickSettingsTile extends TileService {
             }
             if (FrontLightController.getWarmLightConfigValue(this)  +
                 FrontLightController.getColdLightConfigValue(this)== 0) {
-                loadPreset();
+                loadPreset(); // todo load last saved preset
             }
+            updateTile(true);
         }
         else {
             FrontLightController.closeWarmLight();
             FrontLightController.closeColdLight();
 
             updateTile(false);
-            return;
         }
-        Intent intent = new Intent(this, FrontLightWarmthBrightnessDialog.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivityAndCollapse(intent);
      }
 
     private void loadPreset() {

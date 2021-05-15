@@ -22,21 +22,22 @@ If you like this app, you can help with any combination of the following:
 
 ## Screenshots
 
-Tap the Gentle Glow tile to turn the light on.
+Tap the Gentle Glow tile to toggle between light on and light off.
 
 <img alt="The Gentle Glow quick settings tile will show you when the frontlight is off." src="screenshots/quick-settings-light-off.png" width = "320px"/>
 
-⚠️ With this app, you have more fine control over the frontlight than the native controls offer. Most of the time, the system controls will show the light toggles as on, but the cold / warm sliders will stay at zero, because the setting is not one of their fixed increments.
+<img alt="The Gentle Glow quick settings tile will show you when the frontlight is on." src="screenshots/quick-settings-light-on.png" width = "320px"/>
 
-When you turn on the light using the tile, you get a dialog to choose the desired warmth and brightness.
+You can also long press the tile to get a dialog where you can choose the desired warmth and brightness.
 
 <img alt="Brightness / Warmth silders in a dialog that shows over the current open app, so you can tune for desired readability" src="screenshots/warmth-brightness-dialog.png" width = "320px"/>
 
-Tap the Gentle Glow tile to turn the light back off.
+⚠️ With this app, you have finer control over the frontlight than the native controls offer. Most of the time, the system controls will show the warm and cold lights are toggled on, but the cold / warm sliders will stay at zero, because the setting is not one of their fixed increments.
 
-<img alt="The Gentle Glow quick settings tile will show you when the frontlight is on." src="screenshots/quick-settings-light-on.png" width = "320px"/>
-
-You can also long press the tile to open the warmth & brightness dialog without toggling the light.
+The new approach for the controls may take a bit of time to grow on you, but think larger than Onyx: 
+* Think of Android night mode, iOS Night Shift, Windows Night light or the old f.lux. In all these systems, display brightness remains a separate setting from night light warmth. 
+* Think color pickers where you choose hue separately from brightness and RGB disks are just a feature for developers.
+* Think thermostatic faucets!
 
 In the warmth & brightness dialog, you get to choose between three configurations. 
 Initially, you get three presets:
