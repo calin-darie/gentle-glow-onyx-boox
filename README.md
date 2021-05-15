@@ -32,7 +32,7 @@ You can also long press the tile to get a dialog where you can choose the desire
 
 <img alt="Brightness / Warmth silders in a dialog that shows over the current open app, so you can tune for desired readability" src="screenshots/warmth-brightness-dialog.png" width = "320px"/>
 
-⚠️ With this app, you have finer control over the frontlight than the native controls offer. Most of the time, the system controls will show the warm and cold lights are toggled on, but the cold / warm sliders will stay at zero, because the setting is not one of their fixed increments.
+⚠️With this app, you have finer control over the frontlight than with the native sliders. Most of the time, the native controls will show the lights are toggled on, but the cold / warm sliders will stay at zero, because the setting is not one of their fixed increments.
 
 The new approach for the controls may take a bit of time to grow on you, but think larger than Onyx: 
 * Think of Android night mode, iOS Night Shift, Windows Night light or the old f.lux. In all these systems, display brightness remains a separate setting from night light warmth. 
