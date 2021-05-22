@@ -90,6 +90,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             return;
         }
 
+        Frontlight.ensureTurnedOn(this);
+
         adapter = Frontlight.getWarmColdToWarmthBrightnessAdapter(this);
 
         final WarmColdSetting initialWarmColdSetting = Frontlight.getWarmCold(this);

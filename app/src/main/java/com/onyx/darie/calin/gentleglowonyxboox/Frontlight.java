@@ -53,4 +53,10 @@ public class Frontlight {
                 FrontLightController.getColdLightValues(context)
         );
     }
+
+    public static void ensureTurnedOn(Context context) {
+        if (!isOn(context)) {
+            turnOn(context);
+        }
+    }
 }
