@@ -1,5 +1,6 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.service.quicksettings.Tile;
@@ -10,8 +11,7 @@ import com.onyx.android.sdk.api.device.FrontLightController;
 public class QuickSettingsTile extends TileService {
     @Override
     public void onStartListening() {
-        boolean isLightOn = isLightOn();
-        updateTile(isLightOn);
+        updateTile(Frontlight.isOn(this));
     }
 
     private void updateTile(boolean isLightOn) {
@@ -31,35 +31,15 @@ public class QuickSettingsTile extends TileService {
         tile.updateTile();
     }
 
-    private boolean isLightOn() {
-        return FrontLightController.isColdLightOn(this) || FrontLightController.isWarmLightOn((this));
-    }
-
     @Override
     public void onClick() {
-        if (!isLightOn()) {
-            if (FrontLightController.getWarmLightConfigValue(this) != 0) {
-                FrontLightController.openWarmLight();
-            }
-            if (FrontLightController.getColdLightConfigValue(this) != 0) {
-                FrontLightController.openColdLight();
-            }
-            if (FrontLightController.getWarmLightConfigValue(this)  +
-                FrontLightController.getColdLightConfigValue(this)== 0) {
-                loadPreset(); // todo load last saved preset
-            }
+        if (!Frontlight.isOn(this)) {
+            Frontlight.turnOn(this);
             updateTile(true);
         }
         else {
-            FrontLightController.closeWarmLight();
-            FrontLightController.closeColdLight();
-
+            Frontlight.turnOff(this);
             updateTile(false);
         }
      }
-
-    private void loadPreset() {
-        FrontLightController.openWarmLight();
-        FrontLightController.openColdLight();
-    }
 }

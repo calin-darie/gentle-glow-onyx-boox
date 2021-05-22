@@ -81,7 +81,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         ButterKnife.bind(this);
 
-        if (!FrontLightController.hasCTMBrightness(this)) {
+        if (!Frontlight.hasDualFrontlight(this)) {
             status.setText(getText(R.string.device_not_supported));
             namedSettings.setEnabled(false);
             brightness.setEnabled(false);
@@ -90,15 +90,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             return;
         }
 
-        adapter = new WarmColdToWarmthBrightnessAdapter(
-                FrontLightController.getWarmLightValues(this),
-                FrontLightController.getColdLightValues(this)
-        );
+        adapter = Frontlight.getWarmColdToWarmthBrightnessAdapter(this);
 
-        final WarmColdSetting initialWarmColdSetting = new WarmColdSetting(
-                FrontLightController.isWarmLightOn(this)?  FrontLightController.getWarmLightConfigValue(this): 0,
-                FrontLightController.isColdLightOn(this)?  FrontLightController.getColdLightConfigValue(this): 0
-        );
+        final WarmColdSetting initialWarmColdSetting = Frontlight.getWarmCold(this);
 
         namedWarmthBrightnessOptions = getNamedWarmthBrightnessOptions(initialWarmColdSetting);
 
@@ -349,8 +343,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     private void updateFrontLight() {
         WarmColdSetting setting = adapter.convertWarmthBrightnessToWarmCold(namedWarmthBrightnessOptions.getSelected());
 
-        FrontLightController.setWarmLightDeviceValue(this, setting.warm);
-        FrontLightController.setColdLightDeviceValue(this, setting.cold);
+        Frontlight.setWarmCold(setting, this);
     }
 
     private void saveNamedSettings() {
