@@ -3,11 +3,18 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 public class NamedWarmthBrightnessOptions {
 
     private final NamedWarmthBrightnessSetting[] available;
-    private NamedWarmthBrightnessSetting selected;
+    private int selectedIndex;
 
-    public NamedWarmthBrightnessOptions(NamedWarmthBrightnessSetting[] available, NamedWarmthBrightnessSetting selected) {
+    public NamedWarmthBrightnessOptions(NamedWarmthBrightnessSetting[] available, int selectedIndex) {
         this.available = available;
-        this.selected = selected;
+        setSelectedIndex(selectedIndex);
+    }
+
+    private void setSelectedIndex(int value) {
+        if (value < 0 || value >= available.length) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        this.selectedIndex = value;
     }
 
     NamedWarmthBrightnessSetting[] getAvailable() {
@@ -15,14 +22,27 @@ public class NamedWarmthBrightnessOptions {
     }
 
     NamedWarmthBrightnessSetting getSelected() {
-        return selected;
+        return available[selectedIndex];
+    }
+
+    int getSelectedIndex() {
+        return selectedIndex;
     }
 
     public void replaceAndSelect(NamedWarmthBrightnessSetting oldSetting, NamedWarmthBrightnessSetting namedWarmthBrightnessSetting) {
-        selected = namedWarmthBrightnessSetting;
         for (int i = 0; i < available.length; i ++ ) {
             if (available[i] == oldSetting) {
                 available[i] = namedWarmthBrightnessSetting;
+                setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
+    public void select(NamedWarmthBrightnessSetting namedWarmthBrightnessSetting) {
+        for (int i = 0; i < available.length; i ++ ) {
+            if (available[i] == namedWarmthBrightnessSetting) {
+                setSelectedIndex(i);
                 break;
             }
         }

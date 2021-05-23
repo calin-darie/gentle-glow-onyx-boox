@@ -1,5 +1,6 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
+import java.util.HashMap;
 
 public class WarmColdToWarmthBrightnessAdapter {
     private final WarmColdSetting maxWarmColdSetting;
@@ -13,21 +14,19 @@ public class WarmColdToWarmthBrightnessAdapter {
         this.onyxColdValues = coldValues;
     }
 
-    public WarmColdSetting convertWarmthBrightnessToWarmCold (NamedWarmthBrightnessSetting warmthBrightnessSetting) {
-        final double desiredBrightnessLux = convertBrightnessSettingToLux(warmthBrightnessSetting.setting.brightness);
+    public WarmColdSetting convertWarmthBrightnessToWarmCold (WarmthBrightnessSetting warmthBrightness) {
+        final double desiredBrightnessLux = convertBrightnessSettingToLux(warmthBrightness.brightness);
 
-        final double warmBrightnessLux = (double)desiredBrightnessLux * warmthBrightnessSetting.setting.warmth / 100;
+        final double warmBrightnessLux = desiredBrightnessLux * warmthBrightness.warmth / 100;
         final int warmSetting = convertLuxToWarmOrColdSetting(warmBrightnessLux, maxWarmColdSetting.warm);
 
         final double coldBrightnessLux = desiredBrightnessLux - warmBrightnessLux;
         final int coldSetting = convertLuxToWarmOrColdSetting(coldBrightnessLux, maxWarmColdSetting.cold);
 
-        return warmthBrightnessSetting.isForOnyxCompatibility?
-                new WarmColdSetting(closest(warmSetting, onyxWarmValues), closest(coldSetting, onyxColdValues)):
-                new WarmColdSetting(warmSetting, coldSetting);
+        return new WarmColdSetting(warmSetting, coldSetting);
     }
 
-    public WarmthBrightnessSetting convertWarmColdToWarmthBrightness (WarmColdSetting warmCold) {
+    public WarmthBrightnessSetting findWarmthBrightnessApproximationForWarmCold(WarmColdSetting warmCold) {
         final double warmBrightnessLux = convertWarmOrColdSettingToLux(warmCold.warm);
         final double coldBrightnessLux = convertWarmOrColdSettingToLux(warmCold.cold);
 
@@ -40,19 +39,17 @@ public class WarmColdToWarmthBrightnessAdapter {
         final int brightness = convertLuxToBrigthnessSetting(brightnessLux);
 
         return new WarmthBrightnessSetting(warmthPercent, brightness);
-    }// todo unit test multiple conversions caused by simply opening & closing the dialog should not result in changes
+    }
 
 
     private int convertLuxToWarmOrColdSetting(double brightnessLux, int maxResult) {
-        if (brightnessLux == 0) return 0;
+        if (brightnessLux <= 0.05) return 0;
         final int minNonZeroResult = onyxColdValues[1];
-        int result =  Math.max(0, Math.min(maxResult, (int) Math.round(34 * Math.log(17 * brightnessLux))));
-        if (result < minNonZeroResult)
-            return result <= minNonZeroResult/ 2? 0: minNonZeroResult;
+        int result =  Math.max(minNonZeroResult, Math.min(maxResult, (int) Math.round(34 * Math.log(17 * brightnessLux))));
         return result;
     }
 
-    public double convertWarmOrColdSettingToLux(int setting) {
+    private double convertWarmOrColdSettingToLux(int setting) {
         if (setting == 0) return 0;
         return Math.pow(Math.E, (double)setting/34)/17;
     }
@@ -62,10 +59,10 @@ public class WarmColdToWarmthBrightnessAdapter {
             return 0;
 
         if (slider <= 5) {
-            return 0.0223609 * Math.pow(slider, 2) - 0.0406061 * slider + 0.0861964;
+            return Math.max(0, 0.0223609 * Math.pow(slider, 2) - 0.0406061 * slider + 0.0861964);
         }
 
-        return Math.min(MAX_BRIGHTNESS_LUX, 0.501717 * Math.pow(Math.E, (0.0545382 * slider)));
+        return Math.min(MAX_BRIGHTNESS_LUX, 0.5 * Math.pow(Math.E, (0.0535 * slider)));
     }
 
     private int convertLuxToBrigthnessSetting (double lux) {
@@ -77,7 +74,7 @@ public class WarmColdToWarmthBrightnessAdapter {
         }
 
         final double MAX_BRIGHTNESS_SETTING = 100;
-        return (int)Math.round(Math.max(1, Math.min(MAX_BRIGHTNESS_SETTING, Math.round(18.3358 * Math.log(1.993155503999267 * lux)))));
+        return (int)Math.round(Math.max(1, Math.min(MAX_BRIGHTNESS_SETTING, Math.round(18.6916 * Math.log(2 * lux)))));
     }
 
     private static Integer max(Integer[] values) {
@@ -89,19 +86,5 @@ public class WarmColdToWarmthBrightnessAdapter {
             }
         }
         return max;
-    }
-
-    private static Integer closest(double target, Integer[] values) {
-        if (values.length == 0) return Integer.MIN_VALUE;
-        double minDiff = Math.abs(target - values[0]);
-        int closest = values [0];
-        for (int i = 1; i < values.length; i++) {
-            final double diff = Math.abs(target - values[i]);
-            if (diff < minDiff) {
-                minDiff = diff;
-                closest = values[i];
-            }
-        }
-        return closest;
     }
 }

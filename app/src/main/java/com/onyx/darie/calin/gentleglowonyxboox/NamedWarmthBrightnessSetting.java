@@ -7,6 +7,7 @@ public class NamedWarmthBrightnessSetting {
     public final WarmthBrightnessSetting setting;
     public final String name;
     public final boolean isForOnyxCompatibility;
+
     public boolean canEdit() {
         return !isForOnyxCompatibility;
     }
@@ -17,34 +18,34 @@ public class NamedWarmthBrightnessSetting {
         this.isForOnyxCompatibility = isForOnyxCompatibility;
     }
 
-    public static NamedWarmthBrightnessOptions getNamedSettings(
-            NamedWarmthBrightnessSetting[] savedNamedWarmthBrightnessSettings,
-            WarmthBrightnessSetting currentSetting,
-            boolean isComputedWarmColdSettingMatchForInitialWarmColdSetting) {
-        final NamedWarmthBrightnessSetting[] availableNamedSettings = savedNamedWarmthBrightnessSettings.length != 0?
-                savedNamedWarmthBrightnessSettings :
-                Arrays.copyOf(presets, presets.length);
-
-        NamedWarmthBrightnessSetting selectedWarmthBrightness = isComputedWarmColdSettingMatchForInitialWarmColdSetting ?
-                getCurrentMatchForAnyAvailable(currentSetting, availableNamedSettings) :
-                null;
-
-        if (selectedWarmthBrightness == null) {
-            final NamedWarmthBrightnessSetting lastNewSetting = availableNamedSettings[availableNamedSettings.length - 1];
-            selectedWarmthBrightness = new NamedWarmthBrightnessSetting(lastNewSetting.name, currentSetting, lastNewSetting.isForOnyxCompatibility);
-            availableNamedSettings[availableNamedSettings.length - 1] = selectedWarmthBrightness;
-        }
-
-        return new NamedWarmthBrightnessOptions(availableNamedSettings, selectedWarmthBrightness);
+    public static NamedWarmthBrightnessOptions getPresetNamedSettings(WarmthBrightnessSetting onyxSliderApproximationAsWarmthBrightness) {
+        return getNamedWarmthBrightnessOptionsWithOnyxSliderSelected(Arrays.copyOf(presets, presets.length), onyxSliderApproximationAsWarmthBrightness);
     }
 
-    private static NamedWarmthBrightnessSetting getCurrentMatchForAnyAvailable(WarmthBrightnessSetting currentSetting, NamedWarmthBrightnessSetting[] availableNamedSettings) {
-        for (NamedWarmthBrightnessSetting setting : availableNamedSettings) {
-            if (setting.setting.equals(currentSetting)){
-                return setting;
-            }
-        }
-        return null;
+    public static NamedWarmthBrightnessOptions getNamedSettings(
+            NamedWarmthBrightnessSetting[] savedNamedWarmthBrightnessSettings,
+            int savedSelectedIndex) {
+        return new NamedWarmthBrightnessOptions(savedNamedWarmthBrightnessSettings, savedSelectedIndex);
+    }
+
+    public static NamedWarmthBrightnessOptions getNamedSettings(
+            NamedWarmthBrightnessSetting[] savedNamedWarmthBrightnessSettings,
+            WarmthBrightnessSetting onyxSliderApproximationAsWarmthBrightness) {
+        return getNamedWarmthBrightnessOptionsWithOnyxSliderSelected(savedNamedWarmthBrightnessSettings, onyxSliderApproximationAsWarmthBrightness);
+    }
+
+    private static NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptionsWithOnyxSliderSelected(
+            NamedWarmthBrightnessSetting[] availableNamedSettings,
+            WarmthBrightnessSetting onyxSliderApproximationAsWarmthBrightness) {
+        final int indexOfOnyxCompatibilityPreset = availableNamedSettings.length - 1;
+        final NamedWarmthBrightnessSetting lastNewSetting = availableNamedSettings[indexOfOnyxCompatibilityPreset];
+        NamedWarmthBrightnessSetting selectedWarmthBrightness = new NamedWarmthBrightnessSetting(
+                lastNewSetting.name,
+                onyxSliderApproximationAsWarmthBrightness,
+                true);
+        availableNamedSettings[indexOfOnyxCompatibilityPreset] = selectedWarmthBrightness;
+
+        return new NamedWarmthBrightnessOptions(availableNamedSettings, indexOfOnyxCompatibilityPreset);
     }
 
     public static final NamedWarmthBrightnessSetting[] presets = new NamedWarmthBrightnessSetting[] {
@@ -61,6 +62,10 @@ public class NamedWarmthBrightnessSetting {
         NamedWarmthBrightnessSetting that = (NamedWarmthBrightnessSetting) o;
         return Objects.equals(setting, that.setting) &&
                 Objects.equals(name, that.name);
+    }
+
+    public static NamedWarmthBrightnessSetting onyxSliderPreset() {
+        return presets[presets.length - 1];
     }
 
     @Override
