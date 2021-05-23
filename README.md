@@ -11,11 +11,11 @@ This is the thermostatic faucet for your frontlight!
 ## Ways you can help
 
 If you like this app, you can help with any combination of the following:
-* pick an open issue and contribute with a pull request
+* pick an open issue and help define the specs or contribute with a pull request if the specs are already clear
 * let me know how you use the app - which warmth / brightness settings you use, at what times of the day.
 * put any negative feedback in an issue [here on ghithub](https://github.com/calin-darie/gentle-glow-onyx-boox/issues) and give me a couple weeks to answer before you rate on Google Play. I'm doing this in my free time.
 * tell your friends about it!
-* rate 5 stars on Google Play - Play store release coming soon
+* rate 5 stars [on Google Play](https://play.google.com/store/apps/details?id=com.onyx.darie.calin.gentleglowonyxboox)
 * star this repo!
 * [buy me a beer](https://paypal.me/CalinDarie?locale.x=en_US)
 
