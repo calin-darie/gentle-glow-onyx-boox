@@ -18,6 +18,7 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.android.flexbox.FlexboxLayout;
 import com.google.gson.Gson;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.concurrent.Callable;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -60,15 +62,13 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     @Bind(R.id.increase_warmth_by_1)
     Button increaseWarmthButton;
 
-    @Bind(R.id.namedSettings)
-    RadioGroup namedSettings;
-
     @Bind(R.id.name_edit)
     EditText name;
 
     @Bind(R.id.replace_with_preset_button)
     Button replaceWithPreset;
 
+    MutuallyExclusiveChoiceGroup namedSettingsGroup = new MutuallyExclusiveChoiceGroup();
 
     WarmColdToWarmthBrightnessAdapter adapter;
     private NamedWarmthBrightnessOptions namedWarmthBrightnessOptions;
@@ -83,7 +83,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         if (!Frontlight.hasDualFrontlight(this)) {
             status.setText(getText(R.string.device_not_supported));
-            namedSettings.setEnabled(false);
             brightness.setEnabled(false);
             warmth.setEnabled(false);
             name.setEnabled(false);
@@ -181,8 +180,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             @Override
             public void afterTextChanged(Editable s) {
                 changeName(name.getText().toString());
-
-                RadioButton selectedRadio = namedSettings.findViewById(namedSettings.getCheckedRadioButtonId());
+                
+                // todo move to binding of radiobuttons
+                RadioButton selectedRadio = findViewById(namedSettingsGroup.getCheckedRadioButtonId());
                 selectedRadio.setText(name.getText().toString());
             }
         });
@@ -275,8 +275,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                 oldSetting,
                 namedWarmthBrightnessSetting);
 
-        namedSettingByRadioButtonId.remove(namedSettings.getCheckedRadioButtonId());
-        namedSettingByRadioButtonId.put(namedSettings.getCheckedRadioButtonId(), namedWarmthBrightnessOptions.getSelected());
+        namedSettingByRadioButtonId.remove(namedSettingsGroup.getCheckedRadioButtonId());
+        namedSettingByRadioButtonId.put(namedSettingsGroup.getCheckedRadioButtonId(), namedWarmthBrightnessOptions.getSelected());
 
         onWarmthBrightnessChanged();
     }
@@ -310,7 +310,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     Hashtable<Integer, NamedWarmthBrightnessSetting> namedSettingByRadioButtonId = new Hashtable<>();;
 
     private void bindNamedSettingsRadioGroup() {
-        int nextId = 15000;
         for (NamedWarmthBrightnessSetting namedSetting : namedWarmthBrightnessOptions.getAvailable()) {
             final RadioButton radioButton = new RadioButton(this);
             final WarmthBrightnessSetting setting = namedSetting.setting;
@@ -319,20 +318,21 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             if (namedSetting == namedWarmthBrightnessOptions.getSelected()) {
                 radioButton.setChecked(true);
             }
-            final int id = nextId;
-            nextId ++;
-            radioButton.setId(id);
-            namedSettingByRadioButtonId.put(id, namedSetting);
-            radioButton.setLayoutParams(new RadioGroup.LayoutParams(RadioGroup.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT, 1));
-            radioButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    selectNamedWarmthBrightness(namedSettingByRadioButtonId.get(id));
-                    saveSelectedIndex();
-                }
-            });
-            namedSettings.addView(radioButton);
+            radioButton.setId(View.generateViewId());
+            namedSettingByRadioButtonId.put(radioButton.getId(), namedSetting);
+            radioButton.setLayoutParams(new RadioGroup.LayoutParams(FlexboxLayout.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT, 1));
+
+            namedSettingsGroup.add(radioButton);
+            ((FlexboxLayout)findViewById(R.id.namedSettingsLayout)).addView(radioButton);
         }
+        namedSettingsGroup.setOnChoiceChanged(new Callable() {
+            @Override
+            public Object call() {
+                selectNamedWarmthBrightness(namedSettingByRadioButtonId.get(namedSettingsGroup.getCheckedRadioButtonId()));
+                saveSelectedIndex();
+                return null;
+            }
+        });
     }
 
     private void updateName() {
