@@ -37,15 +37,23 @@ public class NamedWarmthBrightnessSetting {
     private static NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptionsWithOnyxSliderSelected(
             NamedWarmthBrightnessSetting[] availableNamedSettings,
             WarmthBrightnessSetting onyxSliderApproximationAsWarmthBrightness) {
-        final int indexOfOnyxCompatibilityPreset = availableNamedSettings.length - 1;
-        final NamedWarmthBrightnessSetting lastNewSetting = availableNamedSettings[indexOfOnyxCompatibilityPreset];
+        final int indexOfOnyxCompatibilityPreset = getIndexOfOnyxCompatibilityPreset(availableNamedSettings);
+        final NamedWarmthBrightnessSetting onyxCompatibilityPreset = availableNamedSettings[indexOfOnyxCompatibilityPreset];
         NamedWarmthBrightnessSetting selectedWarmthBrightness = new NamedWarmthBrightnessSetting(
-                lastNewSetting.name,
+                onyxCompatibilityPreset.name,
                 onyxSliderApproximationAsWarmthBrightness,
                 true);
         availableNamedSettings[indexOfOnyxCompatibilityPreset] = selectedWarmthBrightness;
 
         return new NamedWarmthBrightnessOptions(availableNamedSettings, indexOfOnyxCompatibilityPreset);
+    }
+
+    private static int getIndexOfOnyxCompatibilityPreset(NamedWarmthBrightnessSetting[] availableNamedSettings) {
+        for (int index = 0; index < availableNamedSettings.length; index++) {
+            if (availableNamedSettings[index].isForOnyxCompatibility)
+                return index;
+        }
+        throw new ArrayIndexOutOfBoundsException("onyx compatibility setting is missing!");
     }
 
     public static final NamedWarmthBrightnessSetting[] presets = new NamedWarmthBrightnessSetting[] {

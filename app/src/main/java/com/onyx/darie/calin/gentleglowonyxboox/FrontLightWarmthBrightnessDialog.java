@@ -21,8 +21,6 @@ import android.widget.TextView;
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.gson.Gson;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -372,9 +370,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     private void saveNamedSettings() {
         try {
-            NamedWarmthBrightnessSetting[] namedSettingsToSave =
-                    namedSettingByRadioButtonId.values().toArray(new NamedWarmthBrightnessSetting[0]);
-            ArrayUtils.reverse(namedSettingsToSave);
+            NamedWarmthBrightnessSetting[] namedSettingsToSave = namedWarmthBrightnessOptions.getAvailable();
+
             writeFile(namedSettingsFile(), json.toJson(namedSettingsToSave));
             status.setText(getText(R.string.saved));
         }
