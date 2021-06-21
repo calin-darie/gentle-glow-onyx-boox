@@ -1,5 +1,8 @@
 # Gentle Glow for Onyx BOOX
 
+[<img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' height="80px"/>](https://play.google.com/store/apps/details?id=com.onyx.darie.calin.gentleglowonyxboox)
+[<img alt='Get it on IzzyOnDroid' src='https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png' height="80px"/>](https://apt.izzysoft.de/fdroid/index/apk/com.onyx.darie.calin.gentleglowonyxboox)
+
 Adds a quick settings tile 💡 to turn the frontlight on or off on Onyx BOOX E-readers running Android 9+. 
 
 When you long tap this new quick settings tile, you can set warmth and brightness independently, instead of having to manually combine warm brightness with cold brightness.
