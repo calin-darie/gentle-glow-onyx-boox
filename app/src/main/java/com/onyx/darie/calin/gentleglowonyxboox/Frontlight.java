@@ -26,7 +26,7 @@ public class Frontlight {
         return FrontLightController.isColdLightOn(context) || FrontLightController.isWarmLightOn((context));
     }
 
-    public static void turnOff(QuickSettingsTile quickSettingsTile) {
+    public static void turnOff() {
         FrontLightController.closeWarmLight();
         FrontLightController.closeColdLight();
     }

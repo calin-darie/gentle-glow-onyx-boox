@@ -38,7 +38,7 @@ public class QuickSettingsTile extends TileService {
             updateTile(true);
         }
         else {
-            Frontlight.turnOff(this);
+            Frontlight.turnOff();
             updateTile(false);
         }
      }
