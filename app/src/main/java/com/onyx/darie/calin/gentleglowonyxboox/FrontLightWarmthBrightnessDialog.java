@@ -12,10 +12,12 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.android.flexbox.FlexboxLayout;
@@ -33,6 +35,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 public class FrontLightWarmthBrightnessDialog extends Activity {
+
     @Bind(R.id.status_textview)
     TextView status;
 
@@ -99,15 +102,41 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             saveOnyxSliderWarmCold(initialWarmColdSetting);
         }
 
+         bindLightSwitch();
+
         initNamedWarmthBrightness();
 
         bindSliders();
 
-        bindName();;
+        bindName();
 
         bindNamedSettingsRadioGroup();
 
         bindResetSpinner();
+    }
+
+    private void bindLightSwitch() {
+        final Switch light = findViewById(R.id.light_switch);
+        light.setChecked(Frontlight.isOn(this));
+        light.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked) {
+                    updateFrontLight();
+                    findViewById(R.id.namedSettingsLayout).setVisibility(View.VISIBLE);
+                    findViewById(R.id.named_settings_editor).setVisibility(View.VISIBLE);
+                    ((View)replaceWithPreset.getParent()).setVisibility(View.VISIBLE);
+                    status.setText("");
+                } else {
+                    Frontlight.turnOff();
+                    findViewById(R.id.namedSettingsLayout).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.named_settings_editor).setVisibility(View.INVISIBLE);
+                    ((View)replaceWithPreset.getParent()).setVisibility(View.GONE);
+                    status.setText(R.string.LightsOff);
+                }
+            }
+        });
+
     }
 
     private void bindResetSpinner() {
@@ -305,7 +334,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         brightness.setProgress(namedWarmthBrightnessOptions.getSelected().setting.brightness);
     }
 
-    Hashtable<Integer, NamedWarmthBrightnessSetting> namedSettingByRadioButtonId = new Hashtable<>();;
+    Hashtable<Integer, NamedWarmthBrightnessSetting> namedSettingByRadioButtonId = new Hashtable<>();
 
     private void bindNamedSettingsRadioGroup() {
         for (NamedWarmthBrightnessSetting namedSetting : namedWarmthBrightnessOptions.getAvailable()) {
@@ -407,7 +436,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             return 0;
         }
         String selectedAsString = new String(bytes);
-        return Integer.valueOf(selectedAsString);
+        return Integer.parseInt(selectedAsString);
     }
 
     File onyxSliderFile()  {
@@ -439,14 +468,10 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     void writeFile(File file, String data) throws IOException {
-        FileOutputStream out = new FileOutputStream(file, false);
-        try {
+        try (FileOutputStream out = new FileOutputStream(file, false)) {
             byte[] contents = data.getBytes();
             out.write(contents);
             out.flush();
-        }
-        finally {
-            out.close();
         }
     }
 
@@ -498,10 +523,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         private SelectItem(NamedWarmthBrightnessSetting item) {
             this.item = item;
-        }
-
-        public NamedWarmthBrightnessSetting getItem() {
-            return item;
         }
 
         @Override

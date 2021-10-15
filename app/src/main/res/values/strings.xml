@@ -13,5 +13,6 @@
     <string name="saved">✔ Saved.</string>
     <string name="could_not_save">Could not save: %1$s</string>
     <string name="name">Name:</string>
-    <string name="replace_with_preset">Replace with preset...</string>
+    <string name="replace_with_preset">Replace with preset…</string>
+    <string name="LightsOff">Turn on the light to edit the profiles.</string>
 </resources>

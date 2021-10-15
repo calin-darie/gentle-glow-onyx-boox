@@ -6,227 +6,231 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingHorizontal="48dp"
+    android:paddingVertical="8dp"
     tools:context=".FrontLightWarmthBrightnessDialog">
 
-    <TableLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginVertical="16sp"
+        android:gravity="end"
+        android:orientation="horizontal">
 
-        <TableRow
-            android:layout_marginTop="20sp"
-            android:layout_marginBottom="20sp"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+        <Switch
+            android:id="@+id/light_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:theme="@style/switch_with_large_thumb"
+            android:track="@drawable/switch_track"
+            android:thumb="@drawable/switch_thumb"
+            />
+    </LinearLayout>
 
-            <com.google.android.flexbox.FlexboxLayout
-                android:id="@+id/namedSettingsLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_span="2"
-                android:layout_weight="1"
-                app:flexWrap="wrap"
-                app:justifyContent="space_between">
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/namedSettingsLayout"
+        android:layout_width="match_parent"
+        android:layout_marginBottom="32sp"
+        android:layout_height="wrap_content"
+        app:flexWrap="wrap"
+        app:justifyContent="space_between">
 
-            </com.google.android.flexbox.FlexboxLayout>
+    </com.google.android.flexbox.FlexboxLayout>
 
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/brightness_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20sp"
-                android:layout_marginBottom="20sp"
-                android:labelFor="@+id/brightness_slider"
-                android:text="@string/brightness"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/brightness_value_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="14dp"
-                android:layout_marginTop="20sp"
-                android:layout_marginBottom="20sp"
-                android:text="0"
-                android:textSize="20sp" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="94dp">
-
-            <RelativeLayout
-                android:orientation="horizontal"
-                android:layout_width="180dp"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:layout_height="wrap_content"
-                android:layout_span="2"
-                android:layout_weight="1">
-                <Button
-                    android:id="@+id/decrease_brightness_by_1"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="14dp"
-                    android:text="🔅"
-                    android:contentDescription="@string/decrease_brightness_by_1"
-                    />
-                <Button
-                    android:id="@+id/increase_brightness_by_1"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="14dp"
-                    android:text="🔆"
-                    android:contentDescription="@string/increase_brightness_by_1"
-                    />
-                <SeekBar
-                    android:id="@+id/brightness_slider"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@id/decrease_brightness_by_1"
-                    android:layout_toLeftOf="@id/increase_brightness_by_1"
-                    android:layout_centerVertical="true"
-                    android:max="100" />
-            </RelativeLayout>
-        </TableRow>
-
-        <TableRow
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TableLayout
+            android:id="@+id/named_settings_editor"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/warmth_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20sp"
-                android:labelFor="@+id/warmth_slider"
-                android:text="@string/warmth"
-                android:textSize="20sp" />
-
-            <TextView
-                android:id="@+id/warmth_value_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="14dp"
-                android:layout_marginTop="20sp"
-                android:layout_marginBottom="20sp"
-                android:text="0"
-                android:textSize="20sp" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <RelativeLayout
-                android:orientation="horizontal"
-                android:layout_width="180dp"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:layout_height="wrap_content"
-                android:layout_span="2"
-                android:layout_weight="1">
-                <Button
-                    android:id="@+id/decrease_warmth_by_1"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="14dp"
-                    android:text="🌙"
-                    android:contentDescription="@string/decrease_warmth_by_1"
-                    />
-                <Button
-                    android:id="@+id/increase_warmth_by_1"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:padding="14dp"
-                    android:text="☀"
-                    android:contentDescription="@string/increase_warmth_by_1"
-                    />
-                <SeekBar
-                    android:id="@+id/warmth_slider"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_toRightOf="@id/decrease_warmth_by_1"
-                    android:layout_toLeftOf="@id/increase_warmth_by_1"
-                    android:layout_centerVertical="true"
-                    android:max="100" />
-            </RelativeLayout>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <TextView
-                android:id="@+id/name_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20sp"
-                android:layout_marginBottom="20sp"
-                android:labelFor="@+id/name_edit"
-                android:text="@string/name"
-                android:textSize="20sp" />
-
-            <EditText
-                android:id="@+id/name_edit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20sp"
-                android:layout_marginBottom="20sp"
-                android:maxLength="11"
-                android:textSize="20sp" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="20sp"
-            android:layout_marginBottom="20sp">
-
-            <TextView
-                android:id="@+id/status_textview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="20sp" />
-
-            <LinearLayout
+            <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="2"
-                android:gravity="right"
-                android:orientation="horizontal"
-                >
+                android:layout_marginVertical="16sp">
 
-                <Button
-                    android:id="@+id/replace_with_preset_button"
+                <TextView
+                    android:id="@+id/brightness_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/replace_with_preset"
+                    android:labelFor="@+id/brightness_slider"
+                    android:text="@string/brightness"
                     android:textSize="20sp" />
-            </LinearLayout>
 
-        </TableRow>
+                <TextView
+                    android:id="@+id/brightness_value_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="14dp"
+                    android:text="0"
+                    android:textSize="20sp" />
+            </TableRow>
 
-    </TableLayout>
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RelativeLayout
+                    android:orientation="horizontal"
+                    android:layout_width="180dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_height="wrap_content"
+                    android:layout_span="2"
+                    android:layout_weight="1">
+                    <Button
+                        android:id="@+id/decrease_brightness_by_1"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="14dp"
+                        android:text="🔅"
+                        android:contentDescription="@string/decrease_brightness_by_1"
+                        />
+                    <Button
+                        android:id="@+id/increase_brightness_by_1"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="14dp"
+                        android:text="🔆"
+                        android:contentDescription="@string/increase_brightness_by_1"
+                        />
+                    <SeekBar
+                        android:id="@+id/brightness_slider"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/decrease_brightness_by_1"
+                        android:layout_toLeftOf="@id/increase_brightness_by_1"
+                        android:layout_centerVertical="true"
+                        android:max="100" />
+                </RelativeLayout>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/warmth_label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="16sp"
+                    android:labelFor="@+id/warmth_slider"
+                    android:text="@string/warmth"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/warmth_value_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="14dp"
+                    android:layout_marginVertical="16sp"
+                    android:text="0"
+                    android:textSize="20sp" />
+
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RelativeLayout
+                    android:orientation="horizontal"
+                    android:layout_width="180dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_height="wrap_content"
+                    android:layout_span="2"
+                    android:layout_weight="1">
+                    <Button
+                        android:id="@+id/decrease_warmth_by_1"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="14dp"
+                        android:text="🌙"
+                        android:contentDescription="@string/decrease_warmth_by_1"
+                        />
+                    <Button
+                        android:id="@+id/increase_warmth_by_1"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerVertical="true"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="14dp"
+                        android:text="☀"
+                        android:contentDescription="@string/increase_warmth_by_1"
+                        />
+                    <SeekBar
+                        android:id="@+id/warmth_slider"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@id/decrease_warmth_by_1"
+                        android:layout_toLeftOf="@id/increase_warmth_by_1"
+                        android:layout_centerVertical="true"
+                        android:max="100" />
+                </RelativeLayout>
+            </TableRow>
+
+            <TableRow
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginVertical="8sp">
+
+                <TextView
+                    android:id="@+id/name_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@+id/name_edit"
+                    android:text="@string/name"
+                    android:textSize="20sp" />
+
+                <EditText
+                    android:id="@+id/name_edit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLength="11"
+                    android:textSize="20sp" />
+            </TableRow>
+
+        </TableLayout>
+
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="32sp"
+        android:layout_marginBottom="16sp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/status_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="end"
+            android:orientation="horizontal"
+            >
+
+            <Button
+                android:id="@+id/replace_with_preset_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/replace_with_preset"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>
