@@ -340,8 +340,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         for (NamedWarmthBrightnessSetting namedSetting : namedWarmthBrightnessOptions.getAvailable()) {
             final RadioButton radioButton = new RadioButton(this);
             final WarmthBrightnessSetting setting = namedSetting.setting;
-            radioButton.setTextSize(20); // todo can we use style for this?
-            radioButton.setText(namedSetting.name); // todo translate
+            radioButton.setText(namedSetting.name);
             if (namedSetting == namedWarmthBrightnessOptions.getSelected()) {
                 radioButton.setChecked(true);
             }
