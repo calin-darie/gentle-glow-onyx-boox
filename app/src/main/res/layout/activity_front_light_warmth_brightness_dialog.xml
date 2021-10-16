@@ -24,6 +24,7 @@
             android:theme="@style/switch_with_large_thumb"
             android:track="@drawable/switch_track"
             android:thumb="@drawable/switch_thumb"
+            android:text="@string/frontlight_switch_label"
             />
     </LinearLayout>
 

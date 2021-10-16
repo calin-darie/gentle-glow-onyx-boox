@@ -15,4 +15,7 @@
     <string name="name">Name:</string>
     <string name="replace_with_preset">Replace with preset…</string>
     <string name="LightsOff">Turn on the light to edit the profiles.</string>
+    <string name="frontlight_switch_label">Frontlight</string>
+    <string name="switch_off">off</string>
+    <string name="switch_on">on</string>
 </resources>

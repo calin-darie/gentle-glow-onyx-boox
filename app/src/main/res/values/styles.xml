@@ -19,11 +19,14 @@
         <item name="android:buttonStyle">@android:attr/borderlessButtonStyle</item>
 
         <item name="android:textColor">@android:color/black</item>
+        <item name="android:textSize">20sp</item>
     </style>
 
     <style name="switch_with_large_thumb" parent="android:Theme.Material.Light.Dialog.NoActionBar.MinWidth">
-        <item name="android:textOn">@string/quick_settings__light_on</item>
-        <item name="android:textOff">@string/quick_settings__light_off</item>
+        <item name="android:textOn">@string/switch_on</item>
+        <item name="android:textOff">@string/switch_off</item>
         <item name="android:showText">false</item>
+        <item name="android:switchPadding">10dp</item>
     </style>
+
 </resources>
