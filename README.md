@@ -3,9 +3,9 @@
 [<img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' height="80px"/>](https://play.google.com/store/apps/details?id=com.onyx.darie.calin.gentleglowonyxboox)
 [<img alt='Get it on IzzyOnDroid' src='https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png' height="80px"/>](https://apt.izzysoft.de/fdroid/index/apk/com.onyx.darie.calin.gentleglowonyxboox)
 
-Adds a quick settings tile 💡 to turn the frontlight on or off on Onyx BOOX E-readers running Android 9+. 
+Adds a dialog and a quick settings tile 💡 to control the frontlight on Onyx BOOX E-readers running Android 9+. 
 
-When you long tap this new quick settings tile, you can set warmth and brightness independently, instead of having to manually combine warm brightness with cold brightness.
+The dialog gives you three editable light configurations. For each configuration, you can set warmth and brightness independently, instead of having to manually combine warm brightness with cold brightness.
 
 This is like the evolution of faucets: first you have separate faucets for hot and cold water, then the interaction metaphor became navigating a 2D space where horizontal movement controls temperature and vertical movement controls flow, then you went to thermostatic faucets where you explicitly set temperature on one side and flow on the other. 
 This is the thermostatic faucet for your frontlight!
@@ -23,10 +23,9 @@ If you like this app, you can help with any combination of the following:
 * [buy me a beer](https://paypal.me/CalinDarie?locale.x=en_US)
 
 
-## Screenshots
+## How it works
 
-Tap the Gentle Glow tile to toggle between light on and light off.
-
+Go to the quick settings and tap the Gentle Glow tile to toggle between light on and light off.
 <img alt="The Gentle Glow quick settings tile will show you when the frontlight is off." src="screenshots/quick-settings-light-off.png" width = "320px"/>
 
 <img alt="The Gentle Glow quick settings tile will show you when the frontlight is on." src="screenshots/quick-settings-light-on.png" width = "320px"/>
@@ -34,6 +33,8 @@ Tap the Gentle Glow tile to toggle between light on and light off.
 You can also long press the tile to get a dialog where you can choose the desired warmth and brightness.
 
 <img alt="Brightness / Warmth silders in a dialog that shows over the current open app, so you can tune for desired readability" src="screenshots/warmth-brightness-dialog.png" width = "320px"/>
+
+Alternatively, set Gentle Glow as a floating navigation ball button to always have it at your fingertips. You now have a light switch inside the dialog, so you never have pull down quick settings for this if you don't want to.
 
 ⚠️With this app, you have finer control over the frontlight than with the native sliders. Most of the time, the native controls will show the lights are toggled on, but the cold / warm sliders will stay at zero, because the setting is not one of their fixed increments.
 
