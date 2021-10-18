@@ -1,6 +1,7 @@
 <resources>
 
-    <style name="Theme_Dialog" parent="android:Theme.Holo.Light.Dialog.NoActionBar.MinWidth">
+    <style name="Theme_Dialog" parent="android:Theme.Holo.Light.Dialog.NoActionBar.MinWidth"
+        xmlns:android="http://schemas.android.com/apk/res-auto">
         <!-- let people preview their content in the light that they're setting -->
         <!-- so leave some space around the dialog... -->
         <item name="android:windowMinWidthMajor">65%</item>
@@ -18,15 +19,25 @@
 
         <item name="android:buttonStyle">@android:attr/borderlessButtonStyle</item>
 
+        <item name="android:thumbTint">@android:color/black</item>
+        <item name="android:progressTint">@android:color/black</item>
+        <item name="android:buttonTint">@android:color/black</item>
+        <item name="editTextStyle">@style/edit_text_black_tint</item>
+
         <item name="android:textColor">@android:color/black</item>
         <item name="android:textSize">20sp</item>
     </style>
 
-    <style name="switch_with_large_thumb" parent="android:Theme.Material.Light.Dialog.NoActionBar.MinWidth">
+    <style name="switch_with_large_thumb" parent="android:Theme.Material.Light">
         <item name="android:textOn">@string/switch_on</item>
         <item name="android:textOff">@string/switch_off</item>
         <item name="android:showText">false</item>
         <item name="android:switchPadding">10dp</item>
+        <item name="android:thumbTint">@android:color/white</item>
+    </style>
+
+    <style name="edit_text_black_tint" parent="android:Theme.Holo.Light">
+        <item name="android:backgroundTint">@android:color/black</item>
     </style>
 
 </resources>
