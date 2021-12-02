@@ -1,5 +1,9 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
+import java.util.Arrays;
+
+import io.reactivex.annotations.NonNull;
+
 public class NamedWarmthBrightnessOptions {
 
     private final NamedWarmthBrightnessSetting[] available;
@@ -10,7 +14,7 @@ public class NamedWarmthBrightnessOptions {
         setSelectedIndex(selectedIndex);
     }
 
-    private void setSelectedIndex(int value) {
+    public void setSelectedIndex(int value) {
         if (value < 0 || value >= available.length) {
             throw new ArrayIndexOutOfBoundsException();
         }
@@ -46,5 +50,14 @@ public class NamedWarmthBrightnessOptions {
                 break;
             }
         }
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "NamedWarmthBrightnessOptions{" +
+                "available=" + Arrays.toString(available) +
+                ", selectedIndex=" + selectedIndex +
+                '}';
     }
 }

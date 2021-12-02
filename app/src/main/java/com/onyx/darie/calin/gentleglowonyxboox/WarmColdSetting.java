@@ -2,6 +2,8 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import java.util.Objects;
 
+import io.reactivex.annotations.NonNull;
+
 public class WarmColdSetting {
     public final int warm;
     public final int cold;
@@ -23,5 +25,14 @@ public class WarmColdSetting {
     @Override
     public int hashCode() {
         return Objects.hash(warm, cold);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "{" +
+                "warm=" + warm +
+                ", cold=" + cold +
+                '}';
     }
 }

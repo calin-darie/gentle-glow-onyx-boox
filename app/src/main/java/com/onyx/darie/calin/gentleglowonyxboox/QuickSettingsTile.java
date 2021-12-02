@@ -1,17 +1,32 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
-import com.onyx.android.sdk.api.device.FrontLightController;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 
 public class QuickSettingsTile extends TileService {
+    private Disposable externalChangeSubscription;
+
     @Override
     public void onStartListening() {
-        updateTile(Frontlight.isOn(this));
+        updateTile(Frontlight.isOn());
+        externalChangeSubscription = Frontlight.getLightSwitchState$()
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean isOn) {
+                        updateTile(isOn);
+                    }
+                });
+    }
+
+    @Override
+    public void onStopListening() {
+        externalChangeSubscription.dispose();
     }
 
     private void updateTile(boolean isLightOn) {
@@ -33,8 +48,8 @@ public class QuickSettingsTile extends TileService {
 
     @Override
     public void onClick() {
-        if (!Frontlight.isOn(this)) {
-            Frontlight.turnOn(this);
+        if (!Frontlight.isOn()) {
+            Frontlight.turnOn();
             updateTile(true);
         }
         else {

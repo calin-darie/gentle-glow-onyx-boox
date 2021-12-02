@@ -3,6 +3,8 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 import java.util.Arrays;
 import java.util.Objects;
 
+import io.reactivex.annotations.NonNull;
+
 public class NamedWarmthBrightnessSetting {
     public final WarmthBrightnessSetting setting;
     public final String name;
@@ -35,8 +37,9 @@ public class NamedWarmthBrightnessSetting {
     }
 
     private static NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptionsWithOnyxSliderSelected(
-            NamedWarmthBrightnessSetting[] availableNamedSettings,
+            NamedWarmthBrightnessSetting[] savedNamedSettings,
             WarmthBrightnessSetting onyxSliderApproximationAsWarmthBrightness) {
+        final NamedWarmthBrightnessSetting[] availableNamedSettings = Arrays.copyOf(savedNamedSettings, savedNamedSettings.length);
         final int indexOfOnyxCompatibilityPreset = getIndexOfOnyxCompatibilityPreset(availableNamedSettings);
         final NamedWarmthBrightnessSetting onyxCompatibilityPreset = availableNamedSettings[indexOfOnyxCompatibilityPreset];
         NamedWarmthBrightnessSetting selectedWarmthBrightness = new NamedWarmthBrightnessSetting(
@@ -79,5 +82,14 @@ public class NamedWarmthBrightnessSetting {
     @Override
     public int hashCode() {
         return Objects.hash(setting, name);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "{" +
+                "setting=" + setting +
+                ", name='" + name + '\'' +
+                '}';
     }
 }
