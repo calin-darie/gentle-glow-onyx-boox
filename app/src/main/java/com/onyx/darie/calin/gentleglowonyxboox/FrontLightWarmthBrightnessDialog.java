@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
@@ -71,6 +72,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     @Bind(R.id.replace_with_preset_button)
     Button replaceWithPreset;
 
+    @Bind(R.id.permissions_button)
+    Button goToPermissions;
+
     MutuallyExclusiveChoiceGroup namedSettingsGroup = new MutuallyExclusiveChoiceGroup();
 
     WarmColdToWarmthBrightnessAdapter adapter;
@@ -85,14 +89,45 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         ButterKnife.bind(this);
 
         if (!Frontlight.hasDualFrontlight()) {
+            disableControls();
             status.setText(getText(R.string.device_not_supported));
-            brightness.setEnabled(false);
-            warmth.setEnabled(false);
-            name.setEnabled(false);
-            replaceWithPreset.setVisibility(View.GONE);
-            return;
+             return;
         }
 
+        if (Frontlight.hasPermissions()) {
+            bindControls();
+        } else {
+            disableControls();
+            status.setText(R.string.GentleGlowNeedsPermission);
+            goToPermissions.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showPermissionDialog();
+                }
+            });
+            goToPermissions.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void disableControls() {
+        brightness.setEnabled(false);
+        warmth.setEnabled(false);
+        name.setEnabled(false);
+        final Switch light = findViewById(R.id.light_switch);
+        light.setEnabled(false);
+        replaceWithPreset.setVisibility(View.GONE);
+    }
+
+    private void enableControls() {
+        brightness.setEnabled(true);
+        warmth.setEnabled(true);
+        name.setEnabled(true);
+        final Switch light = findViewById(R.id.light_switch);
+        light.setEnabled(true);
+        replaceWithPreset.setVisibility(View.VISIBLE);
+    }
+
+    private void bindControls() {
         Frontlight.ensureTurnedOn();
 
         adapter = Frontlight.getWarmColdToWarmthBrightnessAdapter();
@@ -105,7 +140,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             saveOnyxSliderWarmCold(initialWarmColdSetting);
         }
 
-         bindLightSwitch();
+        enableControls();
+
+        bindLightSwitch();
 
         initNamedWarmthBrightness();
 
@@ -118,6 +155,23 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         bindResetSpinner();
 
         listenForExternalLightChanges();
+    }
+
+    private final static int GET_PERMISSIONS_REQUEST = 1;
+    private  void showPermissionDialog() {
+        Intent intent = Frontlight.getPermissionsIntent();
+        startActivityForResult(intent, GET_PERMISSIONS_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == GET_PERMISSIONS_REQUEST) {
+            if (Frontlight.hasPermissions()) {
+                goToPermissions.setVisibility(View.GONE);
+                status.setText("");
+                bindControls();
+            }
+        }
     }
 
     private void listenForExternalLightChanges() {

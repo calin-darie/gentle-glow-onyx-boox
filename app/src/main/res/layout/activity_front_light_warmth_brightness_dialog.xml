@@ -215,22 +215,29 @@
             android:id="@+id/status_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            />
+            android:layout_marginEnd="32dp"
+            android:layout_weight="1" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="end"
-            android:orientation="horizontal"
-            >
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/permissions_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/GoToPermissions"
+                android:visibility="gone"
+                tools:visibility="gone" />
 
             <Button
                 android:id="@+id/replace_with_preset_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/replace_with_preset"
-                />
+                android:text="@string/replace_with_preset" />
         </LinearLayout>
 
     </LinearLayout>

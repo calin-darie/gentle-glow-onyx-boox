@@ -18,4 +18,6 @@
     <string name="frontlight_switch_label">Frontlight</string>
     <string name="switch_off">off</string>
     <string name="switch_on">on</string>
+    <string name="GentleGlowNeedsPermission">Gentle Glow needs your permission to modify the frontlight system settings.</string>
+    <string name="GoToPermissions">Permissions…</string>
 </resources>

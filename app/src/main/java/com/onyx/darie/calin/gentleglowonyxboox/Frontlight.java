@@ -2,7 +2,9 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.provider.Settings;
 
 import com.onyx.android.sdk.api.device.FrontLightController;
 
@@ -88,7 +90,16 @@ public class Frontlight {
     }
 
     public static boolean hasDualFrontlight() {
-        return FrontLightController.hasCTMBrightness(applicationContext);
+        final Integer[] warmValues = FrontLightController.getWarmLightValues(applicationContext);
+        if (warmValues == null || warmValues.length == 0)
+            return false;
+
+        final Integer[] coldValues = FrontLightController.getWarmLightValues(applicationContext);
+        return coldValues != null && coldValues.length != 0;
+    }
+
+    public static boolean hasPermissions() {
+        return Settings.System.canWrite(applicationContext);
     }
 
     public static WarmColdToWarmthBrightnessAdapter getWarmColdToWarmthBrightnessAdapter() {
@@ -120,11 +131,10 @@ public class Frontlight {
                 });
     }
 
-    public static void initContext(Context context) {
+    public static void injectApplicationContext(Context context) {
         Frontlight.applicationContext = context;
         initFrontlightStateObservable(context);
     }
-
 
     private static void initFrontlightStateObservable(Context context) {
         warmColdSetting$ =
@@ -159,5 +169,11 @@ public class Frontlight {
                             }
                         )
                         .share();
+    }
+
+    public static Intent getPermissionsIntent() {
+        final Intent intent = new Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS);
+        intent.setData(Uri.parse("package:" + applicationContext.getPackageName()));
+        return intent;
     }
 }
