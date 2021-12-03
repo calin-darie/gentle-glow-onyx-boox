@@ -89,6 +89,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             brightness.setEnabled(false);
             warmth.setEnabled(false);
             name.setEnabled(false);
+            replaceWithPreset.setVisibility(View.GONE);
             return;
         }
 
