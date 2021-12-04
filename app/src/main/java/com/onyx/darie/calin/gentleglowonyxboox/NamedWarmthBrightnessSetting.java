@@ -30,7 +30,7 @@ public class NamedWarmthBrightnessSetting {
         return new NamedWarmthBrightnessOptions(savedNamedWarmthBrightnessSettings, savedSelectedIndex);
     }
 
-    public static NamedWarmthBrightnessOptions getNamedSettings(
+    public static NamedWarmthBrightnessOptions getNamedSettingsWithOnyxSliderSelected(
             NamedWarmthBrightnessSetting[] savedNamedWarmthBrightnessSettings,
             WarmthBrightnessSetting onyxSliderApproximationAsWarmthBrightness) {
         return getNamedWarmthBrightnessOptionsWithOnyxSliderSelected(savedNamedWarmthBrightnessSettings, onyxSliderApproximationAsWarmthBrightness);

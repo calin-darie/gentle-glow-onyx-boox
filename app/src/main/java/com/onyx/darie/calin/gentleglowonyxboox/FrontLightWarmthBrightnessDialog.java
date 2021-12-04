@@ -333,7 +333,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         return  isSavedWarmColdStillCurrent?
                 NamedWarmthBrightnessSetting.getNamedSettings(savedSettings, selectedIndex):
-                NamedWarmthBrightnessSetting.getNamedSettings(savedSettings, adapter.findWarmthBrightnessApproximationForWarmCold(initialWarmColdSetting));
+                NamedWarmthBrightnessSetting.getNamedSettingsWithOnyxSliderSelected(savedSettings, adapter.findWarmthBrightnessApproximationForWarmCold(initialWarmColdSetting));
     }
 
     private void bindName() {
