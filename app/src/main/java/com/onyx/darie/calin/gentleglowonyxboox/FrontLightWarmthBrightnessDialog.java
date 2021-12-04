@@ -84,6 +84,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        migrateSavedSettings();
+
         setContentView(R.layout.activity_front_light_warmth_brightness_dialog);
 
         ButterKnife.bind(this);
@@ -520,6 +522,20 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     Gson json = new Gson();
+    private void migrateSavedSettings() {
+        NamedWarmthBrightnessSetting[] savedSettings = loadNamedSettings();
+        boolean changed = false;
+        for (int i = 0; i< savedSettings.length; i++) {
+            if (savedSettings[i].setting.brightness == 0) {
+                savedSettings[i] = NamedWarmthBrightnessSetting.presets[i];
+                changed = true;
+            }
+        }
+        if (changed) {
+            saveNamedSettings(savedSettings);
+        }
+    }
+
     private NamedWarmthBrightnessSetting[] loadNamedSettings() {
         File namedSettingsFile = namedSettingsFile();
         if (! namedSettingsFile.exists())
@@ -537,11 +553,16 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void saveNamedSettings() {
-        try {
-            NamedWarmthBrightnessSetting[] namedSettingsToSave = namedWarmthBrightnessOptions.getAvailable();
+        NamedWarmthBrightnessSetting[] namedSettingsToSave = namedWarmthBrightnessOptions.getAvailable();
 
+        saveNamedSettings(namedSettingsToSave);
+
+        status.setText(getText(R.string.saved));
+    }
+
+    private void saveNamedSettings(NamedWarmthBrightnessSetting[] namedSettingsToSave) {
+        try {
             writeFile(namedSettingsFile(), json.toJson(namedSettingsToSave));
-            status.setText(getText(R.string.saved));
         }
         catch (IOException e){
             status.setText(getString(R.string.could_not_save, e.getMessage()));
