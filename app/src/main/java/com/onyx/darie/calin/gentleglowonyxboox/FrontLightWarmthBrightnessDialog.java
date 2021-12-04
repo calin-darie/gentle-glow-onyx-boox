@@ -388,7 +388,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
                         namedWarmthBrightnessOptions.getSelected().name,
-                        new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth, progress),
+                        new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth, progress == 0? 1: progress),
                         namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
             }
 
@@ -620,7 +620,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     public void decreaseBrightness() {
-        if (namedWarmthBrightnessOptions.getSelected().setting.brightness > 0) {
+        if (namedWarmthBrightnessOptions.getSelected().setting.brightness > 1) {
             replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
                     namedWarmthBrightnessOptions.getSelected().name,
                     new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth, namedWarmthBrightnessOptions.getSelected().setting.brightness - 1),
