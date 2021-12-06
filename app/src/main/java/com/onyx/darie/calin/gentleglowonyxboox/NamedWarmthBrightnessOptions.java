@@ -2,8 +2,6 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import java.util.Arrays;
 
-import io.reactivex.annotations.NonNull;
-
 public class NamedWarmthBrightnessOptions {
 
     private final NamedWarmthBrightnessSetting[] available;
@@ -52,7 +50,6 @@ public class NamedWarmthBrightnessOptions {
         }
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "NamedWarmthBrightnessOptions{" +

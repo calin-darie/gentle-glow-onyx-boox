@@ -3,8 +3,6 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 import java.util.Arrays;
 import java.util.Objects;
 
-import io.reactivex.annotations.NonNull;
-
 public class NamedWarmthBrightnessSetting {
     public final WarmthBrightnessSetting setting;
     public final String name;
@@ -84,7 +82,6 @@ public class NamedWarmthBrightnessSetting {
         return Objects.hash(setting, name);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "{" +

@@ -22,7 +22,7 @@
         <item name="android:thumbTint">@android:color/black</item>
         <item name="android:progressTint">@android:color/black</item>
         <item name="android:buttonTint">@android:color/black</item>
-        <item name="editTextStyle">@style/edit_text_black_tint</item>
+        <item name="android:editTextStyle">@style/edit_text_black_tint</item>
 
         <item name="android:textColor">@android:color/black</item>
         <item name="android:textSize">20sp</item>

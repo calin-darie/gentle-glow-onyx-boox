@@ -2,8 +2,6 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import java.util.Objects;
 
-import io.reactivex.annotations.NonNull;
-
 public class WarmthBrightnessSetting {
     public final int warmth;
     public final int brightness;
@@ -27,7 +25,6 @@ public class WarmthBrightnessSetting {
         return Objects.hash(warmth, brightness);
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "WarmthBrightnessSetting{" +

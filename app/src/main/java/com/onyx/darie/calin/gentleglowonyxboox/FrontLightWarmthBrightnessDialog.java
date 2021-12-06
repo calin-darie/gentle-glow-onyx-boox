@@ -34,8 +34,7 @@ import java.util.concurrent.Callable;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.Consumer;
+import io.reactivex.rxjava3.functions.Consumer;
 
 public class FrontLightWarmthBrightnessDialog extends Activity {
 
@@ -685,7 +684,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             this.item = item;
         }
 
-        @NonNull
         @Override
         public String toString() {
             return item.name;

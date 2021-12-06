@@ -8,15 +8,14 @@ import android.os.Handler;
 import androidx.annotation.NonNull;
 
 import java.lang.ref.WeakReference;
-import java.util.concurrent.Callable;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.ObservableSource;
-import io.reactivex.disposables.Disposables;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.ObservableSource;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Supplier;
 
 /**
  * Based on work by Mateusz Perlak Copyright 2016 - http://www.apache.org/licenses/LICENSE-2.0
@@ -27,15 +26,15 @@ public abstract class ContentObserverSubscriber<T> implements ObservableOnSubscr
     private volatile boolean isObserverRegistered = false;
 
     public static <T> Observable<T> create(final ContentResolver resolver, final Uri[] observedUris, final Function<Uri, T> fetchStatusFun) {
-        return Observable.defer(new Callable<ObservableSource<? extends T>>() {
+        return Observable.defer(new Supplier<ObservableSource<? extends T>>() {
             @Override
-            public ObservableSource<? extends T> call() {
+            public ObservableSource<? extends T> get() {
                 ContentObserverSubscriber<T> contentObserverSubscriber = new ContentObserverSubscriber<T>(resolver, observedUris) {
                     @Override
                     protected T fetchItem(Uri itemUri) {
                         try {
                             return fetchStatusFun.apply(itemUri);
-                        } catch (Exception e) {
+                        } catch (Throwable throwable) {
                             return null;
                         }
                     }
@@ -71,15 +70,22 @@ public abstract class ContentObserverSubscriber<T> implements ObservableOnSubscr
                 }
                 isObserverRegistered = true;
 
-                emitter.setDisposable(Disposables.fromAction(new Action() {
+                emitter.setDisposable(new Disposable() {
+                    private boolean isDisposed;
                     @Override
-                    public void run() {
+                    public void dispose() {
                         if (contentResolverRef.get() != null && isObserverRegistered) {
                             contentResolverRef.get().unregisterContentObserver(contentObserver);
                         }
                         isObserverRegistered = false;
+                        isDisposed = true;
                     }
-                }));
+
+                    @Override
+                    public boolean isDisposed() {
+                        return isDisposed;
+                    }
+                });
 
             }
         } catch (Exception ex) {
