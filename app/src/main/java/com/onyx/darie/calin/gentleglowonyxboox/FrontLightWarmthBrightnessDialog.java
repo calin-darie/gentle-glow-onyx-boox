@@ -260,7 +260,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
-                    updateFrontLight();
+                    Frontlight.ensureTurnedOn();
+                    checkForWarmthOrBrightnessChange(Frontlight.getWarmCold());
                     findViewById(R.id.namedSettingsLayout).setVisibility(View.VISIBLE);
                     findViewById(R.id.named_settings_editor).setVisibility(View.VISIBLE);
                     ((View)replaceWithPreset.getParent()).setVisibility(View.VISIBLE);
@@ -480,7 +481,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     private void bindNamedSettingsRadioGroup() {
         for (NamedWarmthBrightnessSetting namedSetting : namedWarmthBrightnessOptions.getAvailable()) {
             final RadioButton radioButton = new RadioButton(this);
-            final WarmthBrightnessSetting setting = namedSetting.setting;
             radioButton.setText(namedSetting.name);
             if (namedSetting == namedWarmthBrightnessOptions.getSelected()) {
                 radioButton.setChecked(true);
