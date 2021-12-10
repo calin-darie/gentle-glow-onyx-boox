@@ -9,7 +9,7 @@ public class GentleGlowApplication extends Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        Frontlight.injectApplicationContext(base);
+        OnyxLight.injectApplicationContext(base);
     }
 
 }

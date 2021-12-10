@@ -13,8 +13,8 @@ public class QuickSettingsTile extends TileService {
 
     @Override
     public void onStartListening() {
-        updateTile(Frontlight.isOn());
-        externalChangeSubscription = Frontlight.getLightSwitchState$()
+        updateTile(OnyxLight.isOn());
+        externalChangeSubscription = OnyxLight.getLightSwitchState$()
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Boolean>() {
                     @Override
@@ -48,12 +48,12 @@ public class QuickSettingsTile extends TileService {
 
     @Override
     public void onClick() {
-        if (!Frontlight.isOn()) {
-            Frontlight.turnOn();
+        if (!OnyxLight.isOn()) {
+            OnyxLight.turnOn();
             updateTile(true);
         }
         else {
-            Frontlight.turnOff();
+            OnyxLight.turnOff();
             updateTile(false);
         }
      }

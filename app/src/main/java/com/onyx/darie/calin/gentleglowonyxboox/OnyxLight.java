@@ -14,8 +14,8 @@ import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.functions.Predicate;
 
-public class Frontlight {
-    private Frontlight() {}
+public class OnyxLight {
+    private OnyxLight() {}
 
     @SuppressLint("StaticFieldLeak") // because we're storing the application context
     private static Context applicationContext;
@@ -132,7 +132,7 @@ public class Frontlight {
     }
 
     public static void injectApplicationContext(Context context) {
-        Frontlight.applicationContext = context;
+        OnyxLight.applicationContext = context;
         initFrontlightStateObservable(context);
     }
 
@@ -148,7 +148,7 @@ public class Frontlight {
                             new Function<Uri, WarmColdSetting>() {
                                 @Override
                                 public WarmColdSetting apply(@NonNull Uri uri) {
-                                    return Frontlight.getWarmCold();
+                                    return OnyxLight.getWarmCold();
                                 }
                             }
                         )
@@ -164,7 +164,7 @@ public class Frontlight {
                             new Function<Uri, Boolean>() {
                                 @Override
                                 public Boolean apply(@NonNull Uri uri) {
-                                    return Frontlight.isOn();
+                                    return OnyxLight.isOn();
                                 }
                             }
                         )

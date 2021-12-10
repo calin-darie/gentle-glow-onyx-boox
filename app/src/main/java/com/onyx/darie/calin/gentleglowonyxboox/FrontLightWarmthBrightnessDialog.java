@@ -89,13 +89,13 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         ButterKnife.bind(this);
 
-        if (!Frontlight.hasDualFrontlight()) {
+        if (!OnyxLight.hasDualFrontlight()) {
             disableControls();
             status.setText(getText(R.string.device_not_supported));
              return;
         }
 
-        if (Frontlight.hasPermissions()) {
+        if (OnyxLight.hasPermissions()) {
             bindControls();
         } else {
             disableControls();
@@ -129,11 +129,11 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void bindControls() {
-        Frontlight.ensureTurnedOn();
+        OnyxLight.ensureTurnedOn();
 
-        adapter = Frontlight.getWarmColdToWarmthBrightnessAdapter();
+        adapter = OnyxLight.getWarmColdToWarmthBrightnessAdapter();
 
-        final WarmColdSetting initialWarmColdSetting = Frontlight.getWarmCold();
+        final WarmColdSetting initialWarmColdSetting = OnyxLight.getWarmCold();
 
         namedWarmthBrightnessOptions = getNamedWarmthBrightnessOptions(initialWarmColdSetting);
 
@@ -160,14 +160,14 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     private final static int GET_PERMISSIONS_REQUEST = 1;
     private  void showPermissionDialog() {
-        Intent intent = Frontlight.getPermissionsIntent();
+        Intent intent = OnyxLight.getPermissionsIntent();
         startActivityForResult(intent, GET_PERMISSIONS_REQUEST);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == GET_PERMISSIONS_REQUEST) {
-            if (Frontlight.hasPermissions()) {
+            if (OnyxLight.hasPermissions()) {
                 goToPermissions.setVisibility(View.GONE);
                 status.setText("");
                 bindControls();
@@ -184,7 +184,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         };
         final LifecycleAwareSubscription<WarmColdSetting> subscription =
                 new LifecycleAwareSubscription<>(this,
-                        Frontlight.getWarmColdExternalChange$(),
+                        OnyxLight.getWarmColdExternalChange$(),
                         checkForExternalWarmthBrightnessChange);
         getApplication().registerActivityLifecycleCallbacks(subscription);
 
@@ -196,7 +196,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         };
         final LifecycleAwareSubscription<Boolean> switchSubscription =
                 new LifecycleAwareSubscription<>(this,
-                        Frontlight.getLightSwitchState$(),
+                        OnyxLight.getLightSwitchState$(),
                         checkForLightSwitchChange);
         getApplication().registerActivityLifecycleCallbacks(switchSubscription);
     }
@@ -255,19 +255,19 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     private void bindLightSwitch() {
         final Switch light = findViewById(R.id.light_switch);
-        light.setChecked(Frontlight.isOn());
+        light.setChecked(OnyxLight.isOn());
         light.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
-                    Frontlight.ensureTurnedOn();
-                    checkForWarmthOrBrightnessChange(Frontlight.getWarmCold());
+                    OnyxLight.ensureTurnedOn();
+                    checkForWarmthOrBrightnessChange(OnyxLight.getWarmCold());
                     findViewById(R.id.namedSettingsLayout).setVisibility(View.VISIBLE);
                     findViewById(R.id.named_settings_editor).setVisibility(View.VISIBLE);
                     ((View)replaceWithPreset.getParent()).setVisibility(View.VISIBLE);
                     status.setText("");
                 } else {
-                    Frontlight.turnOff();
+                    OnyxLight.turnOff();
                     findViewById(R.id.namedSettingsLayout).setVisibility(View.INVISIBLE);
                     findViewById(R.id.named_settings_editor).setVisibility(View.INVISIBLE);
                     ((View)replaceWithPreset.getParent()).setVisibility(View.GONE);
@@ -513,7 +513,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         WarmColdSetting warmCold = namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility?
                 loadOnyxSliderWarmCold() :
                 adapter.convertWarmthBrightnessToWarmCold(namedWarmthBrightnessOptions.getSelected().setting);
-        Frontlight.setWarmCold(warmCold);
+        OnyxLight.setWarmCold(warmCold);
     }
 
     File namedSettingsFile()  {
