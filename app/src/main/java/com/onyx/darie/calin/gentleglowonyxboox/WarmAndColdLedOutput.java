@@ -2,13 +2,11 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import java.util.Objects;
 
-@Deprecated
-/** to be replaced by {@link WarmAndColdLedOutput} **/
-public class WarmColdSetting {
+public class WarmAndColdLedOutput {
     public final int warm;
     public final int cold;
 
-    public WarmColdSetting(int warm, int cold) {
+    public WarmAndColdLedOutput(int warm, int cold) {
         this.warm = warm;
         this.cold = cold;
     }
@@ -17,7 +15,7 @@ public class WarmColdSetting {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        WarmColdSetting that = (WarmColdSetting) o;
+        WarmAndColdLedOutput that = (WarmAndColdLedOutput) o;
         return warm == that.warm &&
                 cold == that.cold;
     }
@@ -35,4 +33,3 @@ public class WarmColdSetting {
                 '}';
     }
 }
-

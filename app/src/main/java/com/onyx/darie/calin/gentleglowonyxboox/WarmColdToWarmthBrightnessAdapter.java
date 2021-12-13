@@ -1,13 +1,13 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
-import java.util.HashMap;
-
 public class WarmColdToWarmthBrightnessAdapter {
     private final WarmColdSetting maxWarmColdSetting;
     private final int MAX_BRIGHTNESS_LUX = 112;
     private final Integer[] onyxWarmValues;
     private final Integer[] onyxColdValues;
 
+    /** to be replaced by {@link BrightnessAndWarmthToWarmAndColdLedOutputAdapter} **/
+    @Deprecated
     public WarmColdToWarmthBrightnessAdapter(Integer[] warmValues, Integer[] coldValues) {
         this.maxWarmColdSetting = new WarmColdSetting(max(warmValues), max(coldValues));
         this.onyxWarmValues = warmValues;

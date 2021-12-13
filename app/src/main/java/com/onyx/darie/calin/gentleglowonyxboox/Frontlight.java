@@ -46,6 +46,7 @@ public class Frontlight {
         FrontLightController.closeColdLight();
     }
 
+    @Deprecated
     public static WarmColdSetting getWarmCold() {
         return new WarmColdSetting(
                 FrontLightController.isWarmLightOn(applicationContext)?  FrontLightController.getWarmLightConfigValue(applicationContext): 0,
