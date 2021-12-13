@@ -1,7 +1,5 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
-import java.util.HashMap;
-
 public class WarmColdToWarmthBrightnessAdapter {
     private final WarmColdSetting maxWarmColdSetting;
     private final int MAX_BRIGHTNESS_LUX = 112;

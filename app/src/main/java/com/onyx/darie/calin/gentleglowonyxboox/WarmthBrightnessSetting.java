@@ -2,6 +2,11 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import java.util.Objects;
 
+/**
+ * @deprecated
+ * to be strangled by {@link BrightnessAndWarmth}
+ */
+@Deprecated
 public class WarmthBrightnessSetting {
     public final int warmth;
     public final int brightness;
@@ -33,3 +38,4 @@ public class WarmthBrightnessSetting {
                 '}';
     }
 }
+
