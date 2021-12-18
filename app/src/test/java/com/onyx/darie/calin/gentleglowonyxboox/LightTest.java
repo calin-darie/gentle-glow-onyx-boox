@@ -76,7 +76,7 @@ public class LightTest {
             Range<Double> newRange = getNewRange(totalLuxScale, range);
             boolean isRangeWithinSevenPercentOfLower = (newRange.getUpper() - newRange.getLower()) / newRange.getLower() < 0.07;
             if (!isRangeWithinSevenPercentOfLower) {
-                fail("brightness = " + brightness + ", warmth = " + warmthPercent + "% : " + newRange);
+                fail("brightness = " + brightness + ", warmth = " + warmthPercent + "% : brightness range is " + newRange);
             }
         } else {
             luxScaleRangeByBrightness.put(brightness, new Range(totalLuxScale, totalLuxScale));
@@ -112,7 +112,9 @@ public class LightTest {
             double oldTotalLuxScale = 0;
             for (int brightness = 1; brightness <= 100; brightness++) {
                 double newTotalLuxScale = getTotalLuxScale(brightness, warmthPercent);
-                assertTrue(newTotalLuxScale > oldTotalLuxScale);
+                if (newTotalLuxScale < oldTotalLuxScale) {
+                    fail("warmth= " + warmthPercent + ", brightness = " + brightness + "; brighntess dropped from " + oldTotalLuxScale + " to " + newTotalLuxScale);
+                }
                 oldTotalLuxScale = newTotalLuxScale;
             }
         }
@@ -147,8 +149,13 @@ public class LightTest {
                 light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
                 verify(nativeLight).setLedOutput(ledOutputCaptor.capture());
-                assertTrue(ledOutputCaptor.getValue().warm >= oldLedOutput.warm);
-                assertTrue(ledOutputCaptor.getValue().cold <= oldLedOutput.cold);
+                final String currentCase = "brightness = " + brightness + ", warmth = " + warmthPercent;
+                if (ledOutputCaptor.getValue().warm < oldLedOutput.warm) {
+                    fail(currentCase + "; warm " + oldLedOutput.warm + " ->  " + ledOutputCaptor.getValue().warm);
+                }
+                if ((ledOutputCaptor.getValue().cold > oldLedOutput.cold)) {
+                    fail(currentCase + "; cold " + oldLedOutput.cold + " ->  " + ledOutputCaptor.getValue().cold);
+                }
                 oldLedOutput = ledOutputCaptor.getValue();
             }
         }
@@ -156,7 +163,7 @@ public class LightTest {
 
     @Test
     public void setBrightnessAndWarmth_toColdestBrightness1_setsLedOutputToMinForWarmAndZeroForCold() {
-        for(int warmth = 0; warmth <= 26; warmth++) { // todo 50
+        for(int warmth = 0; warmth <= 49; warmth++) {
             Mockito.reset(nativeLight);
             light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
             verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(
@@ -166,7 +173,7 @@ public class LightTest {
 
     @Test
     public void setBrightnessAndWarmth_toWarmestBrightness1_setsLedOutputToMinForWarmAndZeroForCold() {
-        for(int warmth = 74; warmth <= 100; warmth++) { // todo 50
+        for(int warmth = 50; warmth <= 100; warmth++) {
             Mockito.reset(nativeLight);
             light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
             verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(

@@ -17,7 +17,11 @@ public class BrightnessAndWarmthToWarmAndColdLedOutputAdapter {
         final double coldBrightnessLux = desiredBrightnessLux - warmBrightnessLux;
         final int coldLedOutput = convertLuxToLedOutput(coldBrightnessLux);
 
-        return new WarmAndColdLedOutput(warmLedOutput, coldLedOutput);
+        if (warmLedOutput == 0 && coldLedOutput == 0)
+            return brightnessAndWarmth.warmth.value >= 50?
+                    new WarmAndColdLedOutput(ledOutputRange.getLower(), 0) :
+                    new WarmAndColdLedOutput(0, ledOutputRange.getLower());
+        else return new WarmAndColdLedOutput(warmLedOutput, coldLedOutput);
     }
 
     public BrightnessAndWarmth findBrightnessAndColdApproximationForWarmCold(WarmAndColdLedOutput warmCold) {
