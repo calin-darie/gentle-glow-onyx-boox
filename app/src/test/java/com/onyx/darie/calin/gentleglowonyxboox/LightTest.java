@@ -12,12 +12,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,71 +41,30 @@ public class LightTest {
         light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
         verify(nativeLight).setLedOutput(ledOutputCaptor.capture());
-        final double warmLuxScale = toLuxBrightnessScale(ledOutputCaptor.getValue().warm);
-        final double coldLuxScale = toLuxBrightnessScale(ledOutputCaptor.getValue().cold);
+        WarmAndColdLedOutput ledOutput = ledOutputCaptor.getValue();
+        double warmPercentLuxScale = getWarmPercentLuxScale(ledOutput);
+        assertEquals(warmthPercent, warmPercentLuxScale, 0.5);
+    }
+
+    private double getWarmPercentLuxScale(WarmAndColdLedOutput ledOutput) {
+        final double warmLuxScale = toLuxBrightnessScale(ledOutput.warm);
+        final double coldLuxScale = toLuxBrightnessScale(ledOutput.cold);
         double warmPercentLuxScale = 100 * warmLuxScale / (warmLuxScale + coldLuxScale);
-        if (Math.abs(warmPercentLuxScale - warmthPercent) > 0.49) {
-            System.out.println("warmth = " + warmthPercent + ", brightness = " + brightness);
-            System.out.println("warm percent in lux scale = " + warmPercentLuxScale);
-        }
-        assertEquals(warmthPercent, warmPercentLuxScale, 0.7);
+        return warmPercentLuxScale;
     }
 
-    @DataPoints("setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessConstant_brightnesses")
-    public static int[] setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessConstant_brightnesses() {
-        return IntStream.rangeClosed(7, 93).toArray();
+    @DataPoints("setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessWithinBoundsOfLowerAndHigherBrightnessNeighbours_brightnesses")
+    public static int[] setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessWithinBoundsOfLowerAndHigherBrightnessNeighbours_brightnesses() {
+        return IntStream.rangeClosed(1, 100).toArray();
     }
-    @DataPoints("setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessConstant_warmths")
-    public static int[] setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessConstant_warmths() {
+    @DataPoints("setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessWithinBoundsOfLowerAndHigherBrightnessNeighbours_warmths")
+    public static int[] setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessWithinBoundsOfLowerAndHigherBrightnessNeighbours_warmths() {
         return IntStream.rangeClosed(7, 93).toArray();
     }
 
-    static Map<Integer, Range<Double>> luxScaleRangeByBrightness = new HashMap<>();
-    @Theory
-    public void setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessConstant(
-            @FromDataPoints("setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessConstant_brightnesses") int brightness,
-            @FromDataPoints("setBrightnessAndWarmth_whenChangingWarmth_keepsBrightnessConstant_warmths") int warmthPercent
-    ) {
-        final double totalLuxScale = getTotalLuxScale(brightness, warmthPercent);
-
-        if (luxScaleRangeByBrightness.containsKey(brightness)) {
-            Range<Double> range = luxScaleRangeByBrightness.get(brightness);
-            Range<Double> newRange = getNewRange(totalLuxScale, range);
-            boolean isRangeWithinSevenPercentOfLower = (newRange.getUpper() - newRange.getLower()) / newRange.getLower() < 0.07;
-            if (!isRangeWithinSevenPercentOfLower) {
-                fail("brightness = " + brightness + ", warmth = " + warmthPercent + "% : brightness range is " + newRange);
-            }
-        } else {
-            luxScaleRangeByBrightness.put(brightness, new Range(totalLuxScale, totalLuxScale));
-        }
-    }
-
-    private Range<Double> getNewRange(double totalLuxScale, Range<Double> range) {
-        Range<Double> newRange;
-        if (totalLuxScale < range.getLower()) {
-            newRange = new Range(totalLuxScale, range.getUpper());
-        } else if (totalLuxScale > range.getUpper()) {
-            newRange = new Range(range.getLower(), totalLuxScale);
-        } else {
-            newRange = range;
-        }
-        return newRange;
-    }
-
     @Test
-    public void setBrightnessAndWarmth_lowWarmth_setsIncreasingBrightness() {
-        for (int warmthPercent = 0; warmthPercent <= 10; warmthPercent ++) {
-            double oldTotalLuxScale = 0;
-            for (int brightness = 1; brightness <= 100; brightness++) {
-                double newTotalLuxScale = getTotalLuxScale(brightness, warmthPercent);
-                assertTrue(newTotalLuxScale > oldTotalLuxScale);
-            }
-        }
-    }
-
-    @Test
-    public void setBrightnessAndWarmth_highWarmth_setsIncreasingBrightness() {
-        for (int warmthPercent = 90; warmthPercent <= 100; warmthPercent ++) {
+    public void setBrightnessAndWarmth_anyWarmth_setsIncreasingBrightness() {
+        for (int warmthPercent = 0; warmthPercent <= 100; warmthPercent ++) {
             double oldTotalLuxScale = 0;
             for (int brightness = 1; brightness <= 100; brightness++) {
                 double newTotalLuxScale = getTotalLuxScale(brightness, warmthPercent);
@@ -116,6 +72,26 @@ public class LightTest {
                     fail("warmth= " + warmthPercent + ", brightness = " + brightness + "; brighntess dropped from " + oldTotalLuxScale + " to " + newTotalLuxScale);
                 }
                 oldTotalLuxScale = newTotalLuxScale;
+            }
+        }
+    }
+
+    @Test
+    public void setBrightnessAndWarmth_anyBrightness_setsIncreasingWarmth() {
+        for (int brightness = 1; brightness <= 100; brightness++) {
+            double oldWarmthPercent = 0;
+            for (int warmthPercent = 0; warmthPercent <= 100; warmthPercent ++) {
+
+                Mockito.reset(nativeLight);
+                ArgumentCaptor<WarmAndColdLedOutput> ledOutputCaptor = ArgumentCaptor.forClass(WarmAndColdLedOutput.class);
+                light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
+                verify(nativeLight).setLedOutput(ledOutputCaptor.capture());
+
+                double warmthPercentLuxScale = getWarmPercentLuxScale(ledOutputCaptor.getValue());
+                if (warmthPercentLuxScale < oldWarmthPercent - 0.01) {
+                    fail("brightness = " + brightness + ", warmth= " + warmthPercent + "; warmth dropped from " + oldWarmthPercent + " to " + warmthPercentLuxScale);
+                }
+                oldWarmthPercent = warmthPercentLuxScale;
             }
         }
     }
@@ -135,30 +111,7 @@ public class LightTest {
 
     private double toLuxBrightnessScale(int ledOutput) {
         if (ledOutput == 0) return 0;
-        return Math.pow(Math.E, (double)ledOutput/34);
-    }
-
-    @Test
-    public void setBrightnessAndWarmth_increaseWarmth_setsIncreasingWarmOutputAndDecreasingColdOutput() {
-        for (int brightness = 1; brightness <= 100; brightness++) {
-            WarmAndColdLedOutput oldLedOutput = new WarmAndColdLedOutput(0, ledOutputRange.getUpper());
-            for (int warmthPercent = 0; warmthPercent <= 100; warmthPercent ++) {
-                Mockito.reset(nativeLight);
-                ArgumentCaptor<WarmAndColdLedOutput> ledOutputCaptor = ArgumentCaptor.forClass(WarmAndColdLedOutput.class);
-
-                light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
-
-                verify(nativeLight).setLedOutput(ledOutputCaptor.capture());
-                final String currentCase = "brightness = " + brightness + ", warmth = " + warmthPercent;
-                if (ledOutputCaptor.getValue().warm < oldLedOutput.warm) {
-                    fail(currentCase + "; warm " + oldLedOutput.warm + " ->  " + ledOutputCaptor.getValue().warm);
-                }
-                if ((ledOutputCaptor.getValue().cold > oldLedOutput.cold)) {
-                    fail(currentCase + "; cold " + oldLedOutput.cold + " ->  " + ledOutputCaptor.getValue().cold);
-                }
-                oldLedOutput = ledOutputCaptor.getValue();
-            }
-        }
+        return Math.pow(Math.E, (double)ledOutput/34)/17;
     }
 
     @Test
@@ -166,18 +119,28 @@ public class LightTest {
         for(int warmth = 0; warmth <= 49; warmth++) {
             Mockito.reset(nativeLight);
             light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
-            verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(
-                    0, ledOutputRange.getLower()));
+            try {
+                verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(
+                        0, ledOutputRange.getLower()));
+            } catch (Error e) {
+                System.out.println("failed for warmth = " + warmth);
+                throw e;
+            }
         }
     }
 
     @Test
     public void setBrightnessAndWarmth_toWarmestBrightness1_setsLedOutputToMinForWarmAndZeroForCold() {
-        for(int warmth = 50; warmth <= 100; warmth++) {
+        for(int warmth = 51; warmth <= 100; warmth++) {
             Mockito.reset(nativeLight);
             light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
-            verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(
-                    ledOutputRange.getLower(),0));
+            try {
+                verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(
+                        ledOutputRange.getLower(), 0));
+            } catch (Error e) {
+                System.out.println("failed for warmth = " + warmth);
+                throw e;
+            }
         }
     }
 
