@@ -11,17 +11,76 @@ public class BrightnessAndWarmthToWarmAndColdLedOutputAdapter {
     public WarmAndColdLedOutput toWarmCold (BrightnessAndWarmth brightnessAndWarmth) {
         final double desiredBrightnessLux = convertBrightnessSettingToLux(brightnessAndWarmth.brightness.value);
 
-        final double warmBrightnessLux = desiredBrightnessLux * brightnessAndWarmth.warmth.value / 100;
-        final int warmLedOutput = convertLuxToLedOutput(warmBrightnessLux);
+        final double desiredWarmBrightnessLux = desiredBrightnessLux * brightnessAndWarmth.warmth.value / 100;
+        final int warmLedOutput = convertLuxToLedOutput(desiredWarmBrightnessLux);
 
-        final double coldBrightnessLux = desiredBrightnessLux - warmBrightnessLux;
-        final int coldLedOutput = convertLuxToLedOutput(coldBrightnessLux);
+        final double desiredColdBrightnessLux = desiredBrightnessLux - desiredWarmBrightnessLux;
+        final int coldLedOutput = convertLuxToLedOutput(desiredColdBrightnessLux);
 
-        if (warmLedOutput == 0 && coldLedOutput == 0)
-            return brightnessAndWarmth.warmth.value >= 50?
-                    new WarmAndColdLedOutput(ledOutputRange.getLower(), 0) :
-                    new WarmAndColdLedOutput(0, ledOutputRange.getLower());
-        else return new WarmAndColdLedOutput(warmLedOutput, coldLedOutput);
+        WarmAndColdLedOutput proposedOutput = new WarmAndColdLedOutput(warmLedOutput, coldLedOutput);
+        WarmAndColdLedOutput correctedOutput = correctWarmAndColdLedOutput(brightnessAndWarmth, desiredBrightnessLux, proposedOutput);
+
+        return correctedOutput;
+    }
+
+    private WarmAndColdLedOutput correctWarmAndColdLedOutput(BrightnessAndWarmth brightnessAndWarmth, double desiredBrightnessLux, WarmAndColdLedOutput proposedOutput) {
+        if (brightnessAndWarmth.brightness.value == 1) {
+            return brightnessAndWarmth.warmth.value >= 50? new WarmAndColdLedOutput( ledOutputRange.getLower(), 0) : new WarmAndColdLedOutput(0, ledOutputRange.getLower());
+        }
+
+        double midwayToPreviousBrightnessIncrement = (desiredBrightnessLux + (brightnessAndWarmth.brightness.value == 1 ? 0 : convertBrightnessSettingToLux(brightnessAndWarmth.brightness.value - 1))) / 2;
+        double midwayToNextBrightnessIncrement = brightnessAndWarmth.brightness.value == 100 ? MAX_BRIGHTNESS_LUX : (desiredBrightnessLux + convertBrightnessSettingToLux(brightnessAndWarmth.brightness.value + 1)) / 2;
+        Range<Double> luxRange = new Range<>(midwayToPreviousBrightnessIncrement, midwayToNextBrightnessIncrement);
+
+        double bestBrightnessDiffOutsideRange = Double.MAX_VALUE;
+        WarmAndColdLedOutput bestCandidateOutsideRange = null;
+
+        double bestWarmthDiff = Double.MAX_VALUE;
+        double bestBrightnessDiff = Double.MAX_VALUE;
+        WarmAndColdLedOutput bestCandidate = null;
+        for (int deltaWarm = -1; deltaWarm <=1; deltaWarm ++)
+        for (int deltaCold = -1; deltaCold <=1; deltaCold ++) {
+            WarmAndColdLedOutput candidate = new WarmAndColdLedOutput(
+                    constrainLedOutput(proposedOutput.warm + deltaWarm),
+                    constrainLedOutput(proposedOutput.cold + deltaCold));
+
+            Double brightnessLux = getBrightnessLux(candidate);
+            double brightnessDiff = Math.abs(brightnessLux - desiredBrightnessLux);
+            if (!luxRange.containsInclusive(brightnessLux)) {
+                if (brightnessDiff < bestBrightnessDiffOutsideRange) {
+                    bestBrightnessDiffOutsideRange = brightnessDiff;
+                    bestCandidateOutsideRange = candidate;
+                }
+            }
+
+            double warmthPercentDiff = Math.abs(getWarmPercent(candidate) - brightnessAndWarmth.warmth.value);
+            if (warmthPercentDiff <= bestWarmthDiff) {
+                if (warmthPercentDiff < bestWarmthDiff) {
+                    bestBrightnessDiff = Double.MAX_VALUE;
+                }
+                if (brightnessDiff < bestBrightnessDiff) {
+                    if (warmthPercentDiff < bestWarmthDiff) {
+                        bestWarmthDiff = warmthPercentDiff;
+                    }
+                    bestBrightnessDiff = brightnessDiff;
+                    bestCandidate = candidate;
+                }
+            }
+        }
+
+        return bestCandidate == null? bestCandidateOutsideRange : bestCandidate;
+    }
+
+    private double getWarmPercent(WarmAndColdLedOutput candidate) {
+        double warmLux = convertLedOutputToLux(candidate.warm);
+        double coldLux = convertLedOutputToLux(candidate.cold);
+        return warmLux + coldLux == 0? 0 : 100 * warmLux / (warmLux + coldLux);
+    }
+
+    private double getBrightnessLux(WarmAndColdLedOutput candidate) {
+        double warmLux = convertLedOutputToLux(candidate.warm);
+        double coldLux = convertLedOutputToLux(candidate.cold);
+        return warmLux + coldLux;
     }
 
     public BrightnessAndWarmth findBrightnessAndColdApproximationForWarmCold(WarmAndColdLedOutput warmCold) {
@@ -42,9 +101,15 @@ public class BrightnessAndWarmthToWarmAndColdLedOutputAdapter {
 
     private int convertLuxToLedOutput(double brightnessLux) {
         if (brightnessLux <= 0.05) return 0;
+        int unconstrainedLedOutput = (int) Math.round(34 * Math.log(17 * brightnessLux));
+        return constrainLedOutput(unconstrainedLedOutput);
+    }
+
+    private int constrainLedOutput(int unconstrainedLedOutput) {
+        if (unconstrainedLedOutput <= 0) return 0;
         final int minNonZeroResult = ledOutputRange.getLower();
         int ledOutput =  Math.max(minNonZeroResult, Math.min(ledOutputRange.getUpper(),
-                (int) Math.round(34 * Math.log(17 * brightnessLux))));
+                unconstrainedLedOutput));
         return ledOutput;
     }
 
