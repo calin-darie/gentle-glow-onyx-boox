@@ -2,43 +2,46 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import android.content.Intent;
 
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
 //todo rename to BrightnessAndWarmthLightController?
 public class Light {
+
     public Observable<Boolean> isOn$() { return null; }
 
     public void turnOn() { nativeWarmColdLightController.turnOn(true, true); } // todo result?
 
     public void turnOff() { nativeWarmColdLightController.turnOff(); } // todo result?
 
-    private BehaviorSubject<BrightnessAndWarmth> brightnessAndWarmth = BehaviorSubject.create();
-    public Observable<BrightnessAndWarmth> brightnessAndWarmth$() { return brightnessAndWarmth; }
+    private BrightnessAndWarmth lastSetBrightnessAndWarmth;
+    public BrightnessAndWarmth getBrightnessAndWarmth() { return lastSetBrightnessAndWarmth; }
 
-    public Single<Result> setBrightnessAndWarmth (BrightnessAndWarmth brightnessAndWarmth) {
+    private final Observable<Boolean> isBrightnessAndWarmthExternallyChanged$;
+    public Observable<Boolean> isBrightnessAndWarmthExternallyChanged$() { return isBrightnessAndWarmthExternallyChanged$; }
+
+    private void setBrightnessAndWarmth (BrightnessAndWarmth brightnessAndWarmth) {
         final WarmAndColdLedOutput warmCold = adapter.toWarmAndColdLedOutput(brightnessAndWarmth);
         nativeWarmColdLightController.setLedOutput(warmCold);
-        return Single.just(Result.success()); // todo handle errors?
     }
 
-    public Single<Result> applyDeltaBrightness(int delta) {
-        final Result<BrightnessAndWarmth> brightnessAndWarmthResult = brightnessAndWarmth.getValue()
+    public Result applyDeltaBrightness(int delta) {
+        final Result<BrightnessAndWarmth> brightnessAndWarmthResult = lastSetBrightnessAndWarmth
                 .withDeltaBrightness(delta);
         if (brightnessAndWarmthResult.hasError()) {
-            return Single.just(brightnessAndWarmthResult);
+            return brightnessAndWarmthResult;
         }
-        return setBrightnessAndWarmth(brightnessAndWarmthResult.value);
+        setBrightnessAndWarmth(brightnessAndWarmthResult.value);
+        return Result.success();
     }
 
-    public Single<Result> applyDeltaWarmth(int delta) {
-        final Result<BrightnessAndWarmth> brightnessAndWarmthResult = brightnessAndWarmth.getValue()
+    public Result applyDeltaWarmth(int delta) {
+        final Result<BrightnessAndWarmth> brightnessAndWarmthResult = lastSetBrightnessAndWarmth
                 .withDeltaWarmth(delta);
         if (brightnessAndWarmthResult.hasError()) {
-            return Single.just(brightnessAndWarmthResult);
+            return brightnessAndWarmthResult;
         }
-        return setBrightnessAndWarmth(brightnessAndWarmthResult.value);
+        return Result.success();
     }
 
     ///////////// one time checks
@@ -49,18 +52,33 @@ public class Light {
     private final BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter;
 
     public Light(
+            LightCommandSource lightCommandSource,
             NativeWarmColdLightController nativeWarmColdLightController,
             BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter) {
         this.nativeWarmColdLightController = nativeWarmColdLightController;
+        Observable<WarmAndColdLedOutput> warmAndColdLedOutput$ = nativeWarmColdLightController.getWarmAndColdLedOutput$();
+        this.isBrightnessAndWarmthExternallyChanged$ = warmAndColdLedOutput$.map(warmAndColdLedOutput ->
+                adapter.toWarmAndColdLedOutput(lastSetBrightnessAndWarmth) == warmAndColdLedOutput);
         this.adapter = adapter;
+        subscribeSetBrightnessAndWarmthRequestHandler(lightCommandSource, warmAndColdLedOutput$);
     }
 
+    private void subscribeSetBrightnessAndWarmthRequestHandler(LightCommandSource lightCommandSource, Observable<WarmAndColdLedOutput> warmAndColdLedOutput$) {
+        lightCommandSource.getBrightnessAndWarmthChangeRequest$()
+                .onBackpressureLatest()
+                .concatMap(r -> {
+                    setBrightnessAndWarmth(r);
+                    return warmAndColdLedOutput$.take(1).toFlowable(BackpressureStrategy.LATEST);
+                })
+                .subscribe();
+    }
 
 
     ////////////// light configuration editor ///////////////
     // accesses Light: set to preview changes, read to update current config
     // 1. load state of MutuallyExclusiveChoice<>
     // 2. ask OnyxLight.areCurrentBrightnessAndWarmthEqualTo(savedConfiguration.brightnessAndWarmth)
+    // ///// or maybe init desired brightness and warmth and let Light emit an externalChange?
     // setCurrent(index) / setCurrent (LightConfiguration)
     // presets
     // replaceCurrentWith(preset)

@@ -1,5 +1,7 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
+import java.util.Objects;
+
 public class Result<T> {
     public final String error;
     public final T value;
@@ -18,6 +20,19 @@ public class Result<T> {
     private Result(T value) {
         this.error = null;
         this.value = value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Result)) return false;
+        Result<?> result = (Result<?>) o;
+        return Objects.equals(error, result.error) && Objects.equals(value, result.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(error, value);
     }
 }
 
