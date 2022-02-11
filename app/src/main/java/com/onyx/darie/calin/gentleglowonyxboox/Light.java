@@ -3,10 +3,12 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 import android.content.Intent;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
 
-//todo rename to BrightnessAndWarmthLightController?
 public class Light {
+
+    private final Observable<WarmAndColdLedOutput> warmAndColdLedOutput$;
 
     public Observable<Boolean> isOn$() { return null; }
 
@@ -16,8 +18,13 @@ public class Light {
 
     private void setBrightnessAndWarmth (BrightnessAndWarmth brightnessAndWarmth) {
         final WarmAndColdLedOutput warmCold = adapter.toWarmAndColdLedOutput(brightnessAndWarmth);
-        nativeWarmColdLightController.setLedOutput(warmCold);
+        setOutput(warmCold);
         lastSetBrightnessAndWarmth = brightnessAndWarmth;
+    }
+
+    private void setOutput(WarmAndColdLedOutput warmCold) {
+        nativeWarmColdLightController.setLedOutput(warmCold);
+        this.output = warmCold;
     }
 
     public Observable<BrightnessAndWarmthState> getBrightnessAndWarmthState$() {
@@ -40,6 +47,7 @@ public class Light {
         if (brightnessAndWarmthResult.hasError()) {
             return brightnessAndWarmthResult;
         }
+        setBrightnessAndWarmth(brightnessAndWarmthResult.value);
         return Result.success();
     }
 
@@ -52,31 +60,76 @@ public class Light {
 
     private NativeWarmColdLightController nativeWarmColdLightController;
     private final BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter;
+    private Storage<WarmAndColdLedOutput> externallySetLedOutputStorage;
+    private WarmAndColdLedOutput output;
 
     public Light(
-            LightCommandSource lightCommandSource,
             NativeWarmColdLightController nativeWarmColdLightController,
-            BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter) {
+            BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter,
+            Storage<WarmAndColdLedOutput> externallySetLedOutputStorage) {
         this.nativeWarmColdLightController = nativeWarmColdLightController;
-        Observable<WarmAndColdLedOutput> warmAndColdLedOutput$ = nativeWarmColdLightController.getWarmAndColdLedOutput$();
-        this.brightnessAndWarmthState$ = warmAndColdLedOutput$.map(warmAndColdLedOutput ->
-                adapter.toWarmAndColdLedOutput(lastSetBrightnessAndWarmth).equals(warmAndColdLedOutput)?
-                        new BrightnessAndWarmthState(false, lastSetBrightnessAndWarmth) :
-                        new BrightnessAndWarmthState(true, adapter.findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(warmAndColdLedOutput)));
+        warmAndColdLedOutput$ = nativeWarmColdLightController.getWarmAndColdLedOutput$()
+            .distinctUntilChanged();
+        this.brightnessAndWarmthState$ = warmAndColdLedOutput$.map(warmAndColdLedOutput -> {
+            boolean isExternal =
+                    !adapter.toWarmAndColdLedOutput(lastSetBrightnessAndWarmth).equals(warmAndColdLedOutput) ||
+                    !warmAndColdLedOutput.equals(output); // todo test or remove!
+            if (isExternal) {
+                output = warmAndColdLedOutput; // todo test!
+                saveExternallySetLedOutput(warmAndColdLedOutput);
+            }
+            return new BrightnessAndWarmthState(isExternal, isExternal?
+                    adapter.findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(warmAndColdLedOutput):
+                    lastSetBrightnessAndWarmth);
+        });
         this.adapter = adapter;
-        subscribeSetBrightnessAndWarmthRequestHandler(lightCommandSource, warmAndColdLedOutput$);
-        subscribeRestoreBrightnesAndWarmthRequestHandler(lightCommandSource, lightCommandSource.getBrightnessAndWarmthRestoreFromStorageRequest$());
+        this.externallySetLedOutputStorage = externallySetLedOutputStorage;
     }
 
-    private void subscribeRestoreBrightnesAndWarmthRequestHandler(LightCommandSource lightCommandSource, Observable<BrightnessAndWarmth> brightnessAndWarmthRestoreFromStorageRequest$) {
+    public void setCommandSource(LightCommandSource lightCommandSource) {
+        subscribeSetBrightnessAndWarmthRequestHandler(lightCommandSource, warmAndColdLedOutput$);
+        subscribeRestoreBrightnesAndWarmthRequestHandler(lightCommandSource.getBrightnessAndWarmthRestoreFromStorageRequest$());
+        subscribeRestoreExternalSetting(lightCommandSource.getRestoreExternalSettingRequest$());
+        subscribeApplyDeltaBrightness(lightCommandSource.getApplyDeltaBrightnessRequest$());
+        subscribeApplyDeltaWarmth(lightCommandSource.getApplyDeltaWarmthRequest$());
+    }
+
+    private void subscribeApplyDeltaWarmth(Observable<Integer> applyDeltaWarmthRequest$) {
+        applyDeltaWarmthRequest$.subscribe(delta -> {
+            applyDeltaWarmth(delta);
+        });
+    }
+
+    private void subscribeApplyDeltaBrightness(Observable<Integer> applyDeltaBrightnessRequest$) {
+        applyDeltaBrightnessRequest$.subscribe(delta -> {
+            applyDeltaBrightness(delta);
+        });
+    }
+
+    private void saveExternallySetLedOutput(WarmAndColdLedOutput warmAndColdLedOutput) {
+        externallySetLedOutputStorage.save(warmAndColdLedOutput);
+    }
+
+    private void subscribeRestoreExternalSetting(Observable restoreExternalSettingRequest$) {
+        restoreExternalSettingRequest$.subscribe(_ignore -> {
+            Result<WarmAndColdLedOutput> loadResult = externallySetLedOutputStorage.loadOrDefault(new WarmAndColdLedOutput(128, 128));
+            setOutput(loadResult.value);
+            lastSetBrightnessAndWarmth = adapter.findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(loadResult.value);
+        });
+    }
+
+    private void subscribeRestoreBrightnesAndWarmthRequestHandler(Observable<BrightnessAndWarmth> brightnessAndWarmthRestoreFromStorageRequest$) {
         brightnessAndWarmthRestoreFromStorageRequest$.subscribe(loaded -> lastSetBrightnessAndWarmth = loaded);
     }
 
     private void subscribeSetBrightnessAndWarmthRequestHandler(LightCommandSource lightCommandSource, Observable<WarmAndColdLedOutput> warmAndColdLedOutput$) {
         lightCommandSource.getBrightnessAndWarmthChangeRequest$()
                 .onBackpressureLatest()
-                .concatMap(r -> {
-                    setBrightnessAndWarmth(r);
+                .concatMap(brightnessAndWarmth -> {
+                    lastSetBrightnessAndWarmth = brightnessAndWarmth;
+                    WarmAndColdLedOutput output = adapter.toWarmAndColdLedOutput(brightnessAndWarmth);
+                    if (output.equals(this.output)) return Flowable.empty();
+                    setOutput(output);
                     return warmAndColdLedOutput$.take(1).toFlowable(BackpressureStrategy.LATEST);
                 })
                 .subscribe();

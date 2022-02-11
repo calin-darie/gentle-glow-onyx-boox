@@ -102,6 +102,14 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
         assertEquals(new WarmAndColdLedOutput(0, fixture.ledOutputRange.getUpper()), ledOutput);
     }
 
+    @Test
+    public void whenSettingSameWarmColdOutput_isNotBlocked() {
+        fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(1), new Warmth(99)));
+        fixture.setBrightnessAndWarmthAndAssertNoChange(new BrightnessAndWarmth(new Brightness(1), new Warmth(100)));
+
+        fixture.captureWarmAndColdLedOutputWithoutCompleting(new BrightnessAndWarmth(new Brightness(100), new Warmth(99)));
+    }
+
     private double setAndCaptureTotalLuxScale(int brightness, int warmthPercent) {
         WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 

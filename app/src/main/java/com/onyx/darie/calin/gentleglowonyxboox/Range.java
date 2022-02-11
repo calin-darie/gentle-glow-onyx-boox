@@ -5,7 +5,8 @@ public final class Range<T extends Comparable<? super T>> {
     private final T upper;
 
     public Range(T lower, T upper) {
-        if (lower.compareTo(upper) > 0) throw new Error("invalid range");
+        if (lower.compareTo(upper) > 0)
+            throw new Error("invalid range");
         this.lower = lower;
         this.upper = upper;
     }
