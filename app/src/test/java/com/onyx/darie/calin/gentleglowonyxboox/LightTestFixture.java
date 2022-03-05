@@ -144,7 +144,6 @@ public class LightTestFixture {
         OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter =
                 new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(ledOutputRange);
         light = new Light(nativeLight, adapter, externallySetLedOutputStorage);
-        light.setCommandSource();
         light.getBrightnessAndWarmthState$().subscribe(brightnessAndWarmthState -> this.brightnessAndWarmthState = brightnessAndWarmthState);
     }
 }

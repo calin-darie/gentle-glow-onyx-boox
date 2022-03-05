@@ -90,9 +90,10 @@ public class Light {
         });
         this.adapter = adapter;
         this.externallySetLedOutputStorage = externallySetLedOutputStorage;
+        setCommandSource();
     }
 
-    public void setCommandSource() {
+    private void setCommandSource() {
         subscribeSetBrightnessAndWarmthRequestHandler();
         subscribeRestoreBrightnesAndWarmthRequestHandler();
         subscribeRestoreExternalSetting();

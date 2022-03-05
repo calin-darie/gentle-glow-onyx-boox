@@ -3,11 +3,9 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -21,14 +19,8 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.android.flexbox.FlexboxLayout;
-import com.google.gson.Gson;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import butterknife.ButterKnife;
 import butterknife.BindView;
@@ -74,18 +66,16 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     MutuallyExclusiveChoiceGroup namedSettingsGroup = new MutuallyExclusiveChoiceGroup();
 
-    WarmColdToWarmthBrightnessAdapter adapter;
-    private NamedWarmthBrightnessOptions namedWarmthBrightnessOptions;
     private Light light;
-    private boolean slidingInProgress;
+
+    private LightConfigurationEditor lightConfigurationEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         light = ((GentleGlowApplication)getApplication()).getDependencies().getOnyxLight();
-
-        migrateSavedSettings();
+        lightConfigurationEditor = ((GentleGlowApplication)getApplication()).getDependencies().getOnyxLightConfigurationEditor();
 
         setContentView(R.layout.activity_front_light_warmth_brightness_dialog);
 
@@ -133,25 +123,11 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     private void bindControls() {
         Frontlight.ensureTurnedOn();
 
-        adapter = Frontlight.getWarmColdToWarmthBrightnessAdapter();
-
-        namedWarmthBrightnessOptions = getNamedWarmthBrightnessOptions();
-
-        light.setCommandSource();
-        light.restoreBrightnessAndWarmthRequest$.onNext(
-                new BrightnessAndWarmth(
-                        new Brightness(namedWarmthBrightnessOptions.getSelected().setting.brightness),
-                        new Warmth(namedWarmthBrightnessOptions.getSelected().setting.warmth)
-                )
-        );
-
         enableControls();
         final Switch light = findViewById(R.id.light_switch);
         light.setEnabled(true);
 
         bindLightSwitch();
-
-        initNamedWarmthBrightness();
 
         bindSliders();
 
@@ -162,6 +138,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         bindResetSpinner();
 
         listenForExternalLightChanges();
+
+        lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
     }
 
     private final static int GET_PERMISSIONS_REQUEST = 1;
@@ -202,15 +180,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             light.setChecked(lightSwitchState);
     }
 
-    private int getRadioButtonIdBySetting(NamedWarmthBrightnessSetting oldSetting) {
-        for (Integer key : namedSettingByRadioButtonId.keySet()) {
-            if (namedSettingByRadioButtonId.get(key).equals(oldSetting)) {
-                return key;
-            }
-        }
-        throw new Error("this should never happen");
-    }
-
     private void bindLightSwitch() {
         final Switch light = findViewById(R.id.light_switch);
         light.setChecked(Frontlight.isOn());
@@ -236,57 +205,28 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void bindResetSpinner() {
-
         final Context context = this;
 
         final ArrayAdapter<SelectItem> arrayAdapter = new ArrayAdapter<>(context, android.R.layout.select_dialog_item);
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
         alertDialog.setTitle(getText(R.string.replace_with_preset));
-        alertDialog.setSingleChoiceItems(arrayAdapter, -1, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int position) {
-                SelectItem item = (SelectItem)arrayAdapter.getItem(position);
+        alertDialog.setSingleChoiceItems(arrayAdapter, -1, (dialog, position) -> {
+            SelectItem item = arrayAdapter.getItem(position);
 
-                replaceNamedWarmthBrightness(item.item);
-                light.setBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(
-                        new Brightness(item.item.setting.brightness),
-                        new Warmth(item.item.setting.warmth)
-                ));
-                saveNamedSettings();
+            lightConfigurationEditor.replaceCurrentLightConfigurationRequest$.onNext(item.item);
 
-                dialog.dismiss();
-            }
+            dialog.dismiss();
         });
 
-        replaceWithPreset.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        replaceWithPreset.setOnClickListener(v -> {
+            final ArrayList<SelectItem> items = new ArrayList<>();
+            lightConfigurationEditor.getPresetsToReplaceCurrent().map(preset -> new SelectItem(preset));
 
-                final ArrayList<SelectItem> items = new ArrayList<>();
-                for (NamedWarmthBrightnessSetting preset : NamedWarmthBrightnessSetting.presets) {
-                    if (preset.isForOnyxCompatibility)
-                        continue;
+            arrayAdapter.clear();
+            arrayAdapter.addAll(items);
 
-                    if (preset.equals(namedWarmthBrightnessOptions.getSelected()))
-                        continue;
-
-                    items.add(new SelectItem(preset));
-                }
-                arrayAdapter.clear();
-                arrayAdapter.addAll(items);
-
-                alertDialog.show();
-            }
+            alertDialog.show();
         });
-    }
-
-    private NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptions() {
-        final NamedWarmthBrightnessSetting[] savedSettings = loadNamedSettings();
-        final int selectedIndex = loadSelectedIndex();
-        if (savedSettings.length == 0) {
-            return NamedWarmthBrightnessSetting.getPresetNamedSettings();
-        }
-        return NamedWarmthBrightnessSetting.getNamedSettings(savedSettings, selectedIndex);
     }
 
     private void bindName() {
@@ -300,303 +240,108 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                changeName(name.getText().toString());
-                
-                // todo move to binding of radiobuttons
-                RadioButton selectedRadio = findViewById(namedSettingsGroup.getCheckedRadioButtonId());
-                selectedRadio.setText(name.getText().toString());
+                lightConfigurationEditor.renameCurrentLightConfigurationRequest$.onNext(name.getText().toString());
             }
         });
-    }
-
-    private void changeName(String newName) {
-        replaceNamedWarmthBrightness(
-                new NamedWarmthBrightnessSetting(
-                        newName,
-                        namedWarmthBrightnessOptions.getSelected().setting,
-                        namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility)
-        );
-        saveNamedSettings();
     }
 
     private void bindSliders() {
         getApplication().registerActivityLifecycleCallbacks(new LifecycleAwareSubscription<>(this,light.getBrightnessAndWarmthState$(), brightnessAndWarmthState -> {
             BrightnessAndWarmth bw = brightnessAndWarmthState.brightnessAndWarmth;
             if (brightnessAndWarmthState.isExternalChange) {
-                namedWarmthBrightnessOptions.setSelectedIndex(namedWarmthBrightnessOptions.getAvailable().length - 1);
-
-                int newCheckedRadioButtonId = getRadioButtonIdBySetting(namedWarmthBrightnessOptions.getSelected());
-                RadioButton newCheckedRadioButton = (RadioButton) findViewById(newCheckedRadioButtonId);
-                newCheckedRadioButton.setChecked(true);
-                namedSettingsGroup.setCheckedRadioButtonNoEvent(newCheckedRadioButton);
-
-                replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
-                        namedWarmthBrightnessOptions.getSelected().name,
-                        new WarmthBrightnessSetting(bw.warmth.value, bw.brightness.value),
-                        namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
+                lightConfigurationEditor.stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
+                namedSettingsGroup.clearChoice();
                 disableControls(); // todo leave them enabled
-                saveSelectedIndex();
-            } else {
-                replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
-                        namedWarmthBrightnessOptions.getSelected().name,
-                        new WarmthBrightnessSetting(bw.warmth.value, bw.brightness.value),
-                        namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
-                if (!slidingInProgress) {
-                    saveNamedSettings();
-                }
+                // todo clear selection in editor?
             }
+            onBrightnessAndWarmthChanged(brightnessAndWarmthState.brightnessAndWarmth);
         }));
-        warmth.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (!fromUser) return;
                 light.setBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(
-                        new Brightness(namedWarmthBrightnessOptions.getSelected().setting.brightness),
-                        new Warmth(progress)));
+                        new Brightness(brightness.getProgress()),
+                        new Warmth(warmth.getProgress())));
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
-                slidingInProgress = true;
+                lightConfigurationEditor.stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
                 status.setText("");
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
-                slidingInProgress = false;
-                saveNamedSettings();
+                lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
             }
-        });
+        };
+        brightness.setOnSeekBarChangeListener(seekBarChangeListener);
+        warmth.setOnSeekBarChangeListener(seekBarChangeListener);
 
-        brightness.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (!fromUser) return;
-                light.setBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(
-                        new Brightness(progress),
-                        new Warmth(namedWarmthBrightnessOptions.getSelected().setting.warmth)));
-            }
+        decreaseBrightnessButton.setOnClickListener(v -> light.applyDeltaBrightnessRequest$.onNext(-1));
+        increaseBrightnessButton.setOnClickListener(v -> light.applyDeltaBrightnessRequest$.onNext(+1));
 
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                slidingInProgress = true;
-                status.setText("");
-            }
-
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                slidingInProgress = false;
-                saveNamedSettings();
-            }
-        });
-
-        decreaseBrightnessButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                light.applyDeltaBrightnessRequest$.onNext(-1);
-            }
-        });
-        increaseBrightnessButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                light.applyDeltaBrightnessRequest$.onNext(+1);
-            }
-        });
-
-        decreaseWarmthButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                light.applyDeltaWarmthRequest$.onNext(-1);
-            }
-        });
-        increaseWarmthButton.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                light.applyDeltaWarmthRequest$.onNext(+1);
-            }
-        });
+        decreaseWarmthButton.setOnClickListener(v -> light.applyDeltaWarmthRequest$.onNext(-1));
+        increaseWarmthButton.setOnClickListener(v -> light.applyDeltaWarmthRequest$.onNext(+1));
     }
 
-    private void initNamedWarmthBrightness() {
-        onWarmthBrightnessChanged();
+    private void onBrightnessAndWarmthChanged(BrightnessAndWarmth brightnessAndWarmth) {
+        updateValues(brightnessAndWarmth);
+        updateSliders(brightnessAndWarmth);
     }
 
-    private void replaceNamedWarmthBrightness(NamedWarmthBrightnessSetting namedWarmthBrightnessSetting) {
-        NamedWarmthBrightnessSetting oldSetting = namedWarmthBrightnessOptions.getSelected();
-
-        if (oldSetting.equals(namedWarmthBrightnessSetting)) {
-            onWarmthBrightnessChanged();
-            return;
-        }
-
-        namedWarmthBrightnessOptions.replaceAndSelect(
-                oldSetting,
-                namedWarmthBrightnessSetting);
-
-        namedSettingByRadioButtonId.remove(namedSettingsGroup.getCheckedRadioButtonId());
-        namedSettingByRadioButtonId.put(namedSettingsGroup.getCheckedRadioButtonId(), namedWarmthBrightnessOptions.getSelected());
-
-        onWarmthBrightnessChanged();
-    }
-    private void selectNamedWarmthBrightness(NamedWarmthBrightnessSetting namedWarmthBrightnessSetting) {
-        namedWarmthBrightnessOptions.select(namedWarmthBrightnessSetting);
-
-        if (namedWarmthBrightnessSetting.isForOnyxCompatibility) {
-            disableControls();
-            light.restoreExternallySetLedOutput$.onNext(0);
-        } else {
-            enableControls();
-            light.setBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(
-                    new Brightness(namedWarmthBrightnessSetting.setting.brightness),
-                    new Warmth(namedWarmthBrightnessSetting.setting.warmth)
-            ));
-        }
+    private void updateSliders(BrightnessAndWarmth brightnessAndWarmth) {
+        warmth.setProgress(brightnessAndWarmth.warmth.value);
+        brightness.setProgress(brightnessAndWarmth.brightness.value);
     }
 
-    private void onWarmthBrightnessChanged() {
-        updateValues();
-        updateSliders();
-        updateName();
+    private void updateValues(BrightnessAndWarmth brightnessAndWarmth) {
+        brightnessValue.setText(brightnessAndWarmth.brightness.value + " / 100");
+        warmthValue.setText(brightnessAndWarmth.warmth.value + " / 100");
     }
-
-    private void updateSliders() {
-        boolean canEdit = namedWarmthBrightnessOptions.getSelected().canEdit();
-        warmth.setEnabled(canEdit);
-        brightness.setEnabled(canEdit);
-        decreaseBrightnessButton.setEnabled(canEdit);
-        increaseBrightnessButton.setEnabled(canEdit);
-        decreaseWarmthButton.setEnabled(canEdit);
-        increaseWarmthButton.setEnabled(canEdit);
-        replaceWithPreset.setEnabled(canEdit);
-
-        warmth.setProgress(namedWarmthBrightnessOptions.getSelected().setting.warmth);
-        brightness.setProgress(namedWarmthBrightnessOptions.getSelected().setting.brightness);
-    }
-
-    Hashtable<Integer, NamedWarmthBrightnessSetting> namedSettingByRadioButtonId = new Hashtable<>();
 
     private void bindNamedSettingsRadioGroup() {
-        for (NamedWarmthBrightnessSetting namedSetting : namedWarmthBrightnessOptions.getAvailable()) {
-            final RadioButton radioButton = new RadioButton(this);
-            radioButton.setText(namedSetting.name);
-            if (namedSetting == namedWarmthBrightnessOptions.getSelected()) {
-                radioButton.setChecked(true);
-            }
-            radioButton.setId(View.generateViewId());
-            namedSettingByRadioButtonId.put(radioButton.getId(), namedSetting);
-            radioButton.setLayoutParams(new RadioGroup.LayoutParams(FlexboxLayout.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT, 1));
-
-            namedSettingsGroup.add(radioButton);
-            ((FlexboxLayout)findViewById(R.id.namedSettingsLayout)).addView(radioButton);
-        }
+        initRadioButtons();
         namedSettingsGroup.setOnChoiceChanged(() -> {
-            selectNamedWarmthBrightness(namedSettingByRadioButtonId.get(namedSettingsGroup.getCheckedRadioButtonId()));
-            saveSelectedIndex();
+            lightConfigurationEditor.chooseCurrentLightConfigurationRequest$.onNext(namedSettingsGroup.getChosenIndex());
+            lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
             return null;
         });
+        final LifecycleAwareSubscription<MutuallyExclusiveChoice<LightConfiguration>> subscription =
+                new LifecycleAwareSubscription<>(this,
+                        lightConfigurationEditor.getLightConfigurationChoices$(),
+                        lightConfigurationMutuallyExclusiveChoice -> {
+                            status.setText(getText(R.string.saved)); // todo move to own subscription, or rename the method?
+                            updateRadioButtons(lightConfigurationMutuallyExclusiveChoice);
+                        });
+        getApplication().registerActivityLifecycleCallbacks(subscription);
     }
 
-    private void updateName() {
-        name.setInputType(namedWarmthBrightnessOptions.getSelected().canEdit() ? InputType.TYPE_CLASS_TEXT : InputType.TYPE_NULL);
-        if (!name.getText().toString().equals(namedWarmthBrightnessOptions.getSelected().name)) {
-            name.setText(namedWarmthBrightnessOptions.getSelected().name);
-        }
-    }
-
-    File namedSettingsFile()  {
-        return new File(getFilesDir(), "namedSettings.json");
-    }
-
-    Gson json = new Gson();
-    private void migrateSavedSettings() {
-        NamedWarmthBrightnessSetting[] savedSettings = loadNamedSettings();
-        boolean changed = false;
-        for (int i = 0; i< savedSettings.length; i++) {
-            if (savedSettings[i].setting.brightness == 0) {
-                savedSettings[i] = NamedWarmthBrightnessSetting.presets[i];
-                changed = true;
+    private void updateRadioButtons(MutuallyExclusiveChoice<LightConfiguration> lightConfigurationMutuallyExclusiveChoice) {
+        final LightConfiguration[] choices = lightConfigurationMutuallyExclusiveChoice.choices;
+        for (int index = 0; index < choices.length; index++) {
+            final LightConfiguration choice = choices[index];
+            namedSettingsGroup.setTextForIndex(index, choice.name);
+            if (index == lightConfigurationMutuallyExclusiveChoice.selectedIndex) {
+                namedSettingsGroup.setChosenIndex(index);
             }
         }
-        if (changed) {
-            saveNamedSettings(savedSettings);
-        }
     }
 
-    private NamedWarmthBrightnessSetting[] loadNamedSettings() {
-        File namedSettingsFile = namedSettingsFile();
-        if (! namedSettingsFile.exists())
-            return new NamedWarmthBrightnessSetting[0];
-
-        byte[] bytes;
-        try {
-            bytes = Files.readAllBytes(namedSettingsFile.toPath());
-        } catch (IOException e) {
-            status.setText("Error reading presets. This should never happen.");
-            return new NamedWarmthBrightnessSetting[0];
+    private void initRadioButtons() {
+        for (LightConfiguration ignored : lightConfigurationEditor.getLightConfigurationChoice().choices) {
+            final RadioButton radioButton = new RadioButton(this);
+            radioButton.setId(View.generateViewId());
+            radioButton.setLayoutParams(new RadioGroup.LayoutParams(FlexboxLayout.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT, 1));
+            namedSettingsGroup.add(radioButton);
+            ((FlexboxLayout) findViewById(R.id.namedSettingsLayout)).addView(radioButton);
         }
-        String namedSettingsAsJson = new String(bytes);
-        return json.fromJson(namedSettingsAsJson, NamedWarmthBrightnessSetting[].class);
-    }
-
-    private void saveNamedSettings() {
-        NamedWarmthBrightnessSetting[] namedSettingsToSave = namedWarmthBrightnessOptions.getAvailable();
-
-        saveNamedSettings(namedSettingsToSave);
-
-        status.setText(getText(R.string.saved));
-    }
-
-    private void saveNamedSettings(NamedWarmthBrightnessSetting[] namedSettingsToSave) {
-        try {
-            writeFile(namedSettingsFile(), json.toJson(namedSettingsToSave));
-        }
-        catch (IOException e){
-            status.setText(getString(R.string.could_not_save, e.getMessage()));
-        }
-    }
-
-    File selectionFile()  {
-        return new File(getFilesDir(), "selectedIndex.txt");
-    }
-
-    private void saveSelectedIndex() {
-        try {
-            writeFile(selectionFile(), String.valueOf(namedWarmthBrightnessOptions.getSelectedIndex()));
-            status.setText(getText(R.string.saved));
-        }
-        catch (IOException e){
-            status.setText(getString(R.string.could_not_save, e.getMessage()));
-        }
-    }
-
-    private int loadSelectedIndex() {
-        File file = selectionFile();
-        if (! file.exists())
-            return 0;
-
-        byte[] bytes;
-        try {
-            bytes = Files.readAllBytes(file.toPath());
-        } catch (IOException e) {
-            status.setText("Error reading selection. This should never happen.");
-            return 0;
-        }
-        String selectedAsString = new String(bytes);
-        return Integer.parseInt(selectedAsString);
-    }
-
-    void writeFile(File file, String data) throws IOException {
-        try (FileOutputStream out = new FileOutputStream(file, false)) {
-            byte[] contents = data.getBytes();
-            out.write(contents);
-            out.flush();
-        }
-    }
-
-    private void updateValues() {
-        brightnessValue.setText(namedWarmthBrightnessOptions.getSelected().setting.brightness + " / 100");
-        warmthValue.setText(namedWarmthBrightnessOptions.getSelected().setting.warmth + " / 100");
+        updateRadioButtons(lightConfigurationEditor.getLightConfigurationChoice());
     }
 
 
     private class SelectItem {
-        private final NamedWarmthBrightnessSetting item;
+        private final LightConfiguration item;
 
-        private SelectItem(NamedWarmthBrightnessSetting item) {
+        private SelectItem(LightConfiguration item) {
             this.item = item;
         }
 
