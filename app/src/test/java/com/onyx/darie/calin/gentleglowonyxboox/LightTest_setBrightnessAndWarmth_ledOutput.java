@@ -32,15 +32,8 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
     ) {
         WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
-        double warmPercentLuxScale = getWarmPercentLuxScale(ledOutput);
+        double warmPercentLuxScale = fixture.getWarmthPercentLux(ledOutput);
         assertEquals(warmthPercent, warmPercentLuxScale, 0.5);
-    }
-
-    private double getWarmPercentLuxScale(WarmAndColdLedOutput ledOutput) {
-        final double warmLuxScale = toLuxBrightnessScale(ledOutput.warm);
-        final double coldLuxScale = toLuxBrightnessScale(ledOutput.cold);
-        double warmPercentLuxScale = 100 * warmLuxScale / (warmLuxScale + coldLuxScale);
-        return warmPercentLuxScale;
     }
 
     @Test
@@ -65,7 +58,7 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
 
                 WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
-                double warmthPercentLuxScale = getWarmPercentLuxScale(ledOutput);
+                double warmthPercentLuxScale = fixture.getWarmthPercentLux(ledOutput);
                 if (warmthPercentLuxScale < oldWarmthPercent - 0.01) {
                     fail("brightness = " + brightness + ", warmth= " + warmthPercent + "; warmth dropped from " + oldWarmthPercent + " to " + warmthPercentLuxScale);
                 }
@@ -113,15 +106,8 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
     private double setAndCaptureTotalLuxScale(int brightness, int warmthPercent) {
         WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
-        final double warmLuxScale = toLuxBrightnessScale(ledOutput.warm);
-        final double coldLuxScale = toLuxBrightnessScale(ledOutput.cold);
-        final double totalLuxScale = warmLuxScale + coldLuxScale;
+        double totalLuxScale = fixture.getTotalLux(ledOutput);
         return totalLuxScale;
-    }
-
-    private double toLuxBrightnessScale(int ledOutput) {
-        if (ledOutput == 0) return 0;
-        return Math.pow(Math.E, (double)ledOutput/34)/17;
     }
 
     LightTestFixture fixture;

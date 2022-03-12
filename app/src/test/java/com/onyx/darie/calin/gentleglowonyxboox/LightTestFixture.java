@@ -86,6 +86,25 @@ public class LightTestFixture {
         verify(nativeLight, never()).setLedOutput(any());
     }
 
+    public double toLuxBrightnessScale(int ledOutput) {
+        if (ledOutput == 0) return 0;
+        return Math.pow(Math.E, (double)ledOutput/34)/17;
+    }
+
+    public double getTotalLux(WarmAndColdLedOutput ledOutput) {
+        final double warmLuxScale = toLuxBrightnessScale(ledOutput.warm);
+        final double coldLuxScale = toLuxBrightnessScale(ledOutput.cold);
+
+        return warmLuxScale + coldLuxScale;
+    }
+
+    public double getWarmthPercentLux(WarmAndColdLedOutput ledOutput) {
+        final double warmLuxScale = toLuxBrightnessScale(ledOutput.warm);
+        final double coldLuxScale = toLuxBrightnessScale(ledOutput.cold);
+        double warmPercentLuxScale = 100 * warmLuxScale / (warmLuxScale + coldLuxScale);
+        return warmPercentLuxScale;
+    }
+
     @Mock
     private NativeWarmColdLightController nativeLight;
     private Storage<WarmAndColdLedOutput> externallySetLedOutputStorage = new Storage<WarmAndColdLedOutput>(null, null) {

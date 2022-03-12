@@ -97,17 +97,34 @@ public class LightTest_getBrightnessAndWarmthState {
     }
 
     @Test
-    public void whenExternalChange_anyBrightnessAndWarmthIsApproximatedBackToItself() {
-        for (int brightness = 1; brightness <= 100; brightness ++)
-        for (int warmth = 0; warmth <= 100; warmth ++) {
-            BrightnessAndWarmth brightnessAndWarmth = new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmth));
-            WarmAndColdLedOutput output = fixture.setBrightnessAndWarmth(brightnessAndWarmth);
-            WarmAndColdLedOutput differentOutput = output.cold == 100? new WarmAndColdLedOutput(100, 0) : new WarmAndColdLedOutput(100, 100);
-            fixture.simulateOnyxSliderChange(differentOutput);
-
+    public void whenExternalChangeThenIncreaseBrightnessOrIncreaseWarmth_brightnessOrWarmthDoNotDecrease() {
+        BrightnessAndWarmth brightnessAndWarmth = new BrightnessAndWarmth(new Brightness(100), new Warmth(100));
+        fixture.setBrightnessAndWarmth(brightnessAndWarmth);
+        int failCount = 0;
+        for (int warm = fixture.ledOutputRange.getLower(); warm <= fixture.ledOutputRange.getUpper(); warm ++)
+        for (int cold = fixture.ledOutputRange.getLower(); cold <= fixture.ledOutputRange.getUpper(); cold ++) {
+            WarmAndColdLedOutput output = new WarmAndColdLedOutput(warm, cold);
             fixture.simulateOnyxSliderChange(output);
 
-            assertEquals(brightnessAndWarmth, fixture.getBrightnessAndWarmthState().brightnessAndWarmth);
+            Result<BrightnessAndWarmth> brightnessIncrease = brightnessAndWarmth.withDeltaBrightness(+1);
+            if (!brightnessIncrease.hasError()) {
+                WarmAndColdLedOutput higherBrightnessOutput = fixture.setBrightnessAndWarmth(brightnessIncrease.value);
+                if(fixture.getTotalLux(higherBrightnessOutput) < fixture.getTotalLux(output)) {
+                    failCount++;
+                    System.out.println(output + " brightness");
+                }
+            }
+            Result<BrightnessAndWarmth> warmthIncrease = brightnessAndWarmth.withDeltaWarmth(+1);
+            if (!warmthIncrease.hasError()) {
+                WarmAndColdLedOutput higherWarmthOutput = fixture.setBrightnessAndWarmth(warmthIncrease.value);
+                if (fixture.getWarmthPercentLux(higherWarmthOutput) < fixture.getWarmthPercentLux(output))
+                failCount++;
+                System.out.println(output + " warmth");
+            }
+        }
+
+        if(failCount > 0) {
+            fail(failCount + " failures.");
         }
     }
 
