@@ -16,7 +16,7 @@ class Dependencies {
             onyxLight = new Light(
                     nativeWarmColdLightController,
                     new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(nativeWarmColdLightController.getWarmAndColdLedOutputRange()),
-                    new Storage<WarmAndColdLedOutput>(context.getFilesDir(), "onyxSlider.json")
+                    new FileStorage<WarmAndColdLedOutput>(context.getFilesDir(), "onyxSlider.json")
             );
         }
         return onyxLight;
@@ -26,7 +26,7 @@ class Dependencies {
         if (onyxLightConfigurationEditor == null) {
             onyxLightConfigurationEditor = new LightConfigurationEditor(
                     getOnyxLight(),
-                    new Storage<MutuallyExclusiveChoice<LightConfiguration>>(context.getFilesDir(), "lightConfigurations.json")
+                    new FileStorage<LightConfigurationChoice>(context.getFilesDir(), "lightConfigurations.json")
             );
         }
         return onyxLightConfigurationEditor;
