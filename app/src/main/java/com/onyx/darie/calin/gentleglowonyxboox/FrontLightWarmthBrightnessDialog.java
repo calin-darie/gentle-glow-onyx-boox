@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -20,7 +21,7 @@ import android.widget.TextView;
 
 import com.google.android.flexbox.FlexboxLayout;
 
-import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -64,7 +65,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     @Bind(R.id.permissions_button)
     Button goToPermissions;
 
-    MutuallyExclusiveChoiceGroup namedSettingsGroup = new MutuallyExclusiveChoiceGroup();
+    MutuallyExclusiveChoiceGroup lightConfigurations = new MutuallyExclusiveChoiceGroup();
 
     private Light light;
 
@@ -86,7 +87,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             final Switch light = findViewById(R.id.light_switch);
             light.setEnabled(false);
             status.setText(getText(R.string.device_not_supported));
-             return;
+            return;
         }
 
         if (Frontlight.hasPermissions()) {
@@ -131,15 +132,11 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         bindSliders();
 
-        bindName();
-
-        bindNamedSettingsRadioGroup();
+        bindLightConfigurations();
 
         bindResetSpinner();
 
         listenForExternalLightChanges();
-
-        lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
     }
 
     private final static int GET_PERMISSIONS_REQUEST = 1;
@@ -208,6 +205,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         final Context context = this;
 
         final ArrayAdapter<SelectItem> arrayAdapter = new ArrayAdapter<>(context, android.R.layout.select_dialog_item);
+
         final AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
         alertDialog.setTitle(getText(R.string.replace_with_preset));
         alertDialog.setSingleChoiceItems(arrayAdapter, -1, (dialog, position) -> {
@@ -219,17 +217,14 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         });
 
         replaceWithPreset.setOnClickListener(v -> {
-            final ArrayList<SelectItem> items = new ArrayList<>();
-            lightConfigurationEditor.getPresetsToReplaceCurrent().map(preset -> new SelectItem(preset));
-
             arrayAdapter.clear();
-            arrayAdapter.addAll(items);
+            arrayAdapter.addAll(lightConfigurationEditor.getPresetsToReplaceCurrent().map(preset -> new SelectItem(preset)).collect(Collectors.toList()));
 
             alertDialog.show();
         });
     }
 
-    private void bindName() {
+    private void bindNameViewToEditor() {
         name.addTextChangedListener(new TextWatcher(){
 
             @Override
@@ -250,9 +245,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             BrightnessAndWarmth bw = brightnessAndWarmthState.brightnessAndWarmth;
             if (brightnessAndWarmthState.isExternalChange) {
                 lightConfigurationEditor.stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
-                namedSettingsGroup.clearChoice();
-                disableControls(); // todo leave them enabled
-                // todo clear selection in editor?
+                lightConfigurations.clearChoice();
             }
             onBrightnessAndWarmthChanged(brightnessAndWarmthState.brightnessAndWarmth);
         }));
@@ -298,19 +291,36 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         warmthValue.setText(brightnessAndWarmth.warmth.value + " / 100");
     }
 
-    private void bindNamedSettingsRadioGroup() {
-        initRadioButtons();
-        namedSettingsGroup.setOnChoiceChanged(() -> {
-            lightConfigurationEditor.chooseCurrentLightConfigurationRequest$.onNext(namedSettingsGroup.getChosenIndex());
-            lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
-            return null;
-        });
+    private void bindLightConfigurations() {
+        bindNameViewToEditor();
         final LifecycleAwareSubscription<MutuallyExclusiveChoice<LightConfiguration>> subscription =
                 new LifecycleAwareSubscription<>(this,
                         lightConfigurationEditor.getLightConfigurationChoices$(),
-                        lightConfigurationMutuallyExclusiveChoice -> {
-                            status.setText(getText(R.string.saved)); // todo move to own subscription, or rename the method?
-                            updateRadioButtons(lightConfigurationMutuallyExclusiveChoice);
+                        new Consumer<MutuallyExclusiveChoice<LightConfiguration>>() {
+                            boolean isFirstTime = true;
+                            @Override
+                            public void accept(MutuallyExclusiveChoice<LightConfiguration> lightConfigurationChoice) {
+                                if (!name.isFocused()) {
+                                    name.setText(lightConfigurationChoice.getSelected().name);
+                                }
+                                if (!isFirstTime) {
+                                    FrontLightWarmthBrightnessDialog.this.updateRadioButtons(lightConfigurationChoice);
+                                    status.setText(FrontLightWarmthBrightnessDialog.this.getText(R.string.saved)); // todo move to own subscription, or rename the method?
+                                    return;
+                                }
+                                isFirstTime = false;
+                                FrontLightWarmthBrightnessDialog.this.initRadioButtons();
+                                lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
+
+                                lightConfigurations.setOnChoiceChanged(() -> {
+                                    name.clearFocus();
+                                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.hideSoftInputFromWindow(name.getWindowToken(), 0);
+                                    lightConfigurationEditor.chooseCurrentLightConfigurationRequest$.onNext(lightConfigurations.getChosenIndex());
+                                    lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
+                                    return null;
+                                });
+                            }
                         });
         getApplication().registerActivityLifecycleCallbacks(subscription);
     }
@@ -319,19 +329,17 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         final LightConfiguration[] choices = lightConfigurationMutuallyExclusiveChoice.choices;
         for (int index = 0; index < choices.length; index++) {
             final LightConfiguration choice = choices[index];
-            namedSettingsGroup.setTextForIndex(index, choice.name);
-            if (index == lightConfigurationMutuallyExclusiveChoice.selectedIndex) {
-                namedSettingsGroup.setChosenIndex(index);
-            }
+            lightConfigurations.setTextForIndex(index, choice.name);
         }
+        lightConfigurations.setChosenIndex(lightConfigurationMutuallyExclusiveChoice.selectedIndex);
     }
 
     private void initRadioButtons() {
-        for (LightConfiguration ignored : lightConfigurationEditor.getLightConfigurationChoice().choices) {
+        for (int index = 0; index < LightConfiguration.getPresets().length; index++) {
             final RadioButton radioButton = new RadioButton(this);
             radioButton.setId(View.generateViewId());
             radioButton.setLayoutParams(new RadioGroup.LayoutParams(FlexboxLayout.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT, 1));
-            namedSettingsGroup.add(radioButton);
+            lightConfigurations.add(radioButton);
             ((FlexboxLayout) findViewById(R.id.namedSettingsLayout)).addView(radioButton);
         }
         updateRadioButtons(lightConfigurationEditor.getLightConfigurationChoice());

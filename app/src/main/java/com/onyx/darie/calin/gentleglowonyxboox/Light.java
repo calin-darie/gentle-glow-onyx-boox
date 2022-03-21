@@ -76,18 +76,20 @@ public class Light {
         this.nativeWarmColdLightController = nativeWarmColdLightController;
         warmAndColdLedOutput$ = nativeWarmColdLightController.getWarmAndColdLedOutput$()
             .distinctUntilChanged();
-        this.brightnessAndWarmthState$ = warmAndColdLedOutput$.map(warmAndColdLedOutput -> {
-            boolean isExternal =
-                    !adapter.toWarmAndColdLedOutput(lastSetBrightnessAndWarmth).equals(warmAndColdLedOutput) ||
-                    !warmAndColdLedOutput.equals(output); // todo test or remove!
-            if (isExternal) {
-                output = warmAndColdLedOutput; // todo test!
-                saveExternallySetLedOutput(warmAndColdLedOutput);
-            }
-            return new BrightnessAndWarmthState(isExternal, isExternal?
-                    adapter.findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(warmAndColdLedOutput):
-                    lastSetBrightnessAndWarmth);
-        });
+        this.brightnessAndWarmthState$ = Observable.merge(
+                restoreBrightnessAndWarmthRequest$.map(brightnessAndWarmth -> new BrightnessAndWarmthState(false, brightnessAndWarmth)),
+                warmAndColdLedOutput$.map(warmAndColdLedOutput -> {
+                    boolean isExternal =
+                            !adapter.toWarmAndColdLedOutput(lastSetBrightnessAndWarmth).equals(warmAndColdLedOutput) ||
+                            !warmAndColdLedOutput.equals(output); // todo test or remove!
+                    if (isExternal) {
+                        output = warmAndColdLedOutput; // todo test!
+                        saveExternallySetLedOutput(warmAndColdLedOutput);
+                    }
+                    return new BrightnessAndWarmthState(isExternal, isExternal?
+                            adapter.findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(warmAndColdLedOutput):
+                            lastSetBrightnessAndWarmth);
+                }));
         this.adapter = adapter;
         this.externallySetLedOutputStorage = externallySetLedOutputStorage;
         setCommandSource();
@@ -141,24 +143,6 @@ public class Light {
                 })
                 .subscribe();
     }
-
-
-
-    ////////////// light configuration editor ///////////////
-    // accesses Light: set to preview changes, read to update current config
-    // 1. load state of MutuallyExclusiveChoice<>
-    // 2. ask OnyxLight.areCurrentBrightnessAndWarmthEqualTo(savedConfiguration.brightnessAndWarmth)
-    // ///// or maybe init desired brightness and warmth and let Light emit an externalChange?
-    // setCurrent(index) / setCurrent (LightConfiguration)
-    // presets
-    // replaceCurrentWith(preset)
-    // renameCurrent(string name)
-    //
-    // boolean isCurrentConfigurationEditedOnBrightnessAndWarmthChanges()
-    // ! simply don't update current if light changes while can't edit
-    // todo migrateSavedSettings()
-
-
     // todo schedule
     // Intent.ACTION_SCREEN_ON
 }

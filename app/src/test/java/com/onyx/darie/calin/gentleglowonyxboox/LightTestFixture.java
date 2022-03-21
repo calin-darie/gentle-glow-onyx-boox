@@ -4,8 +4,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
 import static org.mockito.Mockito.any;
@@ -43,11 +41,15 @@ public class LightTestFixture {
         verify(nativeLight, never()).setLedOutput(any());
     }
 
+    public void captureLedOutputAndComplete() {
+        captureChangedLedOutput();
+        reset(nativeLight);
+        warmAndColdLedOutput$.onNext(ledOutput);
+    }
+
     //todo review this
     public WarmAndColdLedOutput completeAndCaptureNewLedOutput(WarmAndColdLedOutput ledOutput) {
-        reset(nativeLight);
-
-        warmAndColdLedOutput$.onNext(ledOutput);
+        captureLedOutputAndComplete();
 
         return captureChangedLedOutput();
     }
@@ -107,53 +109,15 @@ public class LightTestFixture {
 
     @Mock
     private NativeWarmColdLightController nativeLight;
-    private Storage<WarmAndColdLedOutput> externallySetLedOutputStorage = new Storage<WarmAndColdLedOutput>(null, null) {
-        private WarmAndColdLedOutput data;
-        @Override
-        public Result save(WarmAndColdLedOutput data) {
-            this.data = data;
-            return Result.success();
-        }
-
-        @Override
-        public Result<WarmAndColdLedOutput> loadOrDefault(WarmAndColdLedOutput defaultValue) {
-            return Result.success(this.data != null? data : defaultValue);
-        }
-    };
+    private Storage<WarmAndColdLedOutput> externallySetLedOutputStorage = new FakeStorage<WarmAndColdLedOutput>();
 
     private PublishSubject<WarmAndColdLedOutput> warmAndColdLedOutput$ =
             PublishSubject.create();
-    private LightCommandSource commandSource = new LightCommandSource() {
-        @Override
-        public Flowable<BrightnessAndWarmth> getBrightnessAndWarmthChangeRequest$() {
-            return null;
-        }
-
-        @Override
-        public Observable<Integer> getApplyDeltaBrightnessRequest$() {
-            return null;
-        }
-
-        @Override
-        public Observable<Integer> getApplyDeltaWarmthRequest$() {
-            return null;
-        }
-
-        @Override
-        public Observable getRestoreExternalSettingRequest$() {
-            return null;
-        }
-
-        @Override
-        public Observable<BrightnessAndWarmth> getBrightnessAndWarmthRestoreFromStorageRequest$() {
-            return light.restoreBrightnessAndWarmthRequest$;
-        }
-    };
 
     Range<Integer> ledOutputRange = new Range<>(5, 255);
     private BrightnessAndWarmthState brightnessAndWarmthState;
     private WarmAndColdLedOutput ledOutput;
-    private final Light light;
+    public final Light light;
 
     public LightTestFixture() {
         MockitoAnnotations.openMocks(this);
