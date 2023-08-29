@@ -1,6 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.onyx.darie.calin.gentleglowonyxboox">
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions"/>
@@ -45,7 +44,8 @@
         <activity
             android:name="com.onyx.darie.calin.gentleglowonyxboox.FrontLightWarmthBrightnessDialog"
             android:theme="@style/Theme_Dialog"
-            android:excludeFromRecents="true">
+            android:excludeFromRecents="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES"/>
@@ -57,7 +57,8 @@
             android:name="com.onyx.darie.calin.gentleglowonyxboox.QuickSettingsTile"
             android:icon="@drawable/ic_light_on"
             android:label="@string/tile_name"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
             <intent-filter>
                 <action
                     android:name="android.service.quicksettings.action.QS_TILE"/>

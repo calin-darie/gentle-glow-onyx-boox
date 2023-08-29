@@ -75,7 +75,7 @@ public class Frontlight {
                 .take(1)
                 .subscribe(new Consumer<WarmColdSetting>() {
             @Override
-            public void accept(WarmColdSetting _) {
+            public void accept(WarmColdSetting _ignore) {
                 isChangePending = false;
                 if (nextWarmCold != null) {
                     setWarmCold(nextWarmCold);

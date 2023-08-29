@@ -1,24 +1,18 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "29.0.2"
+    compileSdkVersion 33
+    buildToolsVersion "33.0.2"
     defaultConfig {
         applicationId "com.onyx.darie.calin.gentleglowonyxboox"
         minSdkVersion 28
-        targetSdkVersion 30
-        versionCode 303
-        versionName "3.3"
+        targetSdkVersion 33
+        versionCode 304
+        versionName "3.4"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
-        javaCompileOptions {
-            annotationProcessorOptions {
-                includeCompileClasspath = true
-            }
-        }
-
         ndk {
-            abiFilters 'armeabi-v7a','arm64-v8a'
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
     }
     buildTypes {
@@ -29,17 +23,20 @@ android {
         }
     }
 
-    lintOptions {
-        abortOnError false
+    packagingOptions {
+        jniLibs {
+            pickFirsts += ['lib/*/libc++_shared.so']
+        }
     }
 
-    packagingOptions {
-        pickFirst 'lib/*/libc++_shared.so'
-    }
 
     compileOptions {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
+    }
+    namespace 'com.onyx.darie.calin.gentleglowonyxboox'
+    lint {
+        abortOnError false
     }
 }
 
@@ -50,13 +47,14 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 
-    implementation('com.onyx.android.sdk:onyxsdk-device:1.2.0')
+    implementation('com.onyx.android.sdk:onyxsdk-device:1.2.5')
 
-    implementation 'com.jakewharton:butterknife:7.0.1'
+    implementation 'com.jakewharton:butterknife:10.2.3'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
 
     implementation 'com.google.code.gson:gson:2.8.6'
 
-    implementation 'com.google.android:flexbox:2.0.1'
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
     implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
     implementation "io.reactivex.rxjava3:rxandroid:3.0.0"

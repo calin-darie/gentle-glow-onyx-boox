@@ -32,46 +32,46 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.concurrent.Callable;
 
-import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.BindView;
 import io.reactivex.rxjava3.functions.Consumer;
 
 public class FrontLightWarmthBrightnessDialog extends Activity {
 
-    @Bind(R.id.status_textview)
+    @BindView(R.id.status_textview)
     TextView status;
 
-    @Bind(R.id.brightness_slider)
+    @BindView(R.id.brightness_slider)
     SeekBar brightness;
 
-    @Bind(R.id.warmth_slider)
+    @BindView(R.id.warmth_slider)
     SeekBar warmth;
 
-    @Bind(R.id.warmth_value_label)
+    @BindView(R.id.warmth_value_label)
     TextView warmthValue;
 
-    @Bind(R.id.brightness_value_label)
+    @BindView(R.id.brightness_value_label)
     TextView brightnessValue;
 
-    @Bind(R.id.decrease_brightness_by_1)
+    @BindView(R.id.decrease_brightness_by_1)
     Button decreaseBrightnessButton;
 
-    @Bind(R.id.increase_brightness_by_1)
+    @BindView(R.id.increase_brightness_by_1)
     Button increaseBrightnessButton;
 
-    @Bind(R.id.decrease_warmth_by_1)
+    @BindView(R.id.decrease_warmth_by_1)
     Button decreaseWarmthButton;
 
-    @Bind(R.id.increase_warmth_by_1)
+    @BindView(R.id.increase_warmth_by_1)
     Button increaseWarmthButton;
 
-    @Bind(R.id.name_edit)
+    @BindView(R.id.name_edit)
     EditText name;
 
-    @Bind(R.id.replace_with_preset_button)
+    @BindView(R.id.replace_with_preset_button)
     Button replaceWithPreset;
 
-    @Bind(R.id.permissions_button)
+    @BindView(R.id.permissions_button)
     Button goToPermissions;
 
     MutuallyExclusiveChoiceGroup namedSettingsGroup = new MutuallyExclusiveChoiceGroup();
