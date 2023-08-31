@@ -4,6 +4,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
@@ -26,7 +27,7 @@ public class LightTestFixture {
         reset(nativeLight);
         ArgumentCaptor<WarmAndColdLedOutput> ledOutputCaptor = ArgumentCaptor.forClass(WarmAndColdLedOutput.class);
 
-        light.setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
+        setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
 
         verify(nativeLight, atLeast(0)).setLedOutput(ledOutputCaptor.capture());
 
@@ -39,7 +40,7 @@ public class LightTestFixture {
 
     public void setBrightnessAndWarmthAndAssertNoChange(BrightnessAndWarmth brightnessAndWarmth) {
         reset(nativeLight);
-        light.setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
+        setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
         verify(nativeLight, never()).setLedOutput(any());
     }
 
@@ -68,12 +69,12 @@ public class LightTestFixture {
     }
 
     public void setSavedBrightnessAndWarmth(BrightnessAndWarmth value) {
-        light.restoreBrightnessAndWarmthRequest$.onNext(value);
+        brightnessAndWarmthRestoreFromStorageRequest$.onNext(value);
     }
 
     public void restoreExternallySetLedOutput() {
         resetLedOutputMocks();
-        light.restoreExternallySetLedOutput$.onNext(0);
+        restoreExternallySetLedOutput$.onNext(0);
         captureChangedLedOutput();
         warmAndColdLedOutput$.onNext(ledOutput);
     }
@@ -101,40 +102,47 @@ public class LightTestFixture {
             return Result.success(this.data != null? data : defaultValue);
         }
     };
+    private PublishSubject<BrightnessAndWarmth> setBrightnessAndWarmthRequest$ =
+            PublishSubject.create();
+    private PublishSubject restoreExternallySetLedOutput$ =
+            PublishSubject.create();
+    private final PublishSubject<BrightnessAndWarmth> brightnessAndWarmthRestoreFromStorageRequest$ =
+            PublishSubject.create();
+    private PublishSubject applyDeltaBrightness$ = PublishSubject.create();
+    private PublishSubject applyDeltaWarmth$ = PublishSubject.create();
 
     private PublishSubject<WarmAndColdLedOutput> warmAndColdLedOutput$ =
             PublishSubject.create();
     private LightCommandSource commandSource = new LightCommandSource() {
         @Override
         public Flowable<BrightnessAndWarmth> getBrightnessAndWarmthChangeRequest$() {
-            return null;
+            return setBrightnessAndWarmthRequest$.toFlowable(BackpressureStrategy.BUFFER);
         }
 
         @Override
         public Observable<Integer> getApplyDeltaBrightnessRequest$() {
-            return null;
+            return applyDeltaBrightness$;
         }
 
         @Override
         public Observable<Integer> getApplyDeltaWarmthRequest$() {
-            return null;
+            return applyDeltaWarmth$;
         }
 
         @Override
         public Observable getRestoreExternalSettingRequest$() {
-            return null;
+            return restoreExternallySetLedOutput$;
         }
 
         @Override
         public Observable<BrightnessAndWarmth> getBrightnessAndWarmthRestoreFromStorageRequest$() {
-            return light.restoreBrightnessAndWarmthRequest$;
+            return brightnessAndWarmthRestoreFromStorageRequest$;
         }
     };
 
     Range<Integer> ledOutputRange = new Range<>(5, 255);
     private BrightnessAndWarmthState brightnessAndWarmthState;
     private WarmAndColdLedOutput ledOutput;
-    private final Light light;
 
     public LightTestFixture() {
         MockitoAnnotations.openMocks(this);
@@ -143,8 +151,8 @@ public class LightTestFixture {
                 .thenReturn(warmAndColdLedOutput$);
         OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter =
                 new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(ledOutputRange);
-        light = new Light(nativeLight, adapter, externallySetLedOutputStorage);
-        light.setCommandSource();
+        Light light = new Light(nativeLight, adapter, externallySetLedOutputStorage);
+        light.setCommandSource(commandSource);
         light.getBrightnessAndWarmthState$().subscribe(brightnessAndWarmthState -> this.brightnessAndWarmthState = brightnessAndWarmthState);
     }
 }
