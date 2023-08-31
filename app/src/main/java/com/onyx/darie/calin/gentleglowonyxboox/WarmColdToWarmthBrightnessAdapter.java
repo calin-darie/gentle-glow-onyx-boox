@@ -1,16 +1,16 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
-/** to be replaced by {@link OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter} **/
+/** to be replaced by {@link BrightnessAndWarmthToWarmAndColdLedOutputAdapter} **/
 @Deprecated
 public class WarmColdToWarmthBrightnessAdapter {
     private final BrightnessAndWarmthToWarmAndColdLedOutputAdapter newAdapter;
 
     public WarmColdToWarmthBrightnessAdapter(Integer[] warmValues, Integer[] coldValues) {
-        newAdapter = new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(new Range<>(coldValues[1], coldValues[coldValues.length - 1]));
+        newAdapter = new BrightnessAndWarmthToWarmAndColdLedOutputAdapter(new Range<>(coldValues[1], coldValues[coldValues.length - 1]));
     }
 
     public WarmColdSetting convertWarmthBrightnessToWarmCold (WarmthBrightnessSetting warmthBrightness) {
-        final WarmAndColdLedOutput result = newAdapter.toWarmAndColdLedOutput(new BrightnessAndWarmth(new Brightness(warmthBrightness.brightness), new Warmth(warmthBrightness.warmth)));
+        final WarmAndColdLedOutput result = newAdapter.toWarmCold(new BrightnessAndWarmth(new Brightness(warmthBrightness.brightness), new Warmth(warmthBrightness.warmth)));
 
         return new WarmColdSetting(result.warm, result.cold);
     }

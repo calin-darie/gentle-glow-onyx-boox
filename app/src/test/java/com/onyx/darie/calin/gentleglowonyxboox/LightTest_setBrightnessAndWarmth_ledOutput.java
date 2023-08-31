@@ -154,16 +154,18 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
     @Mock
     private NativeWarmColdLightController nativeLight;
 
+    private OnyxBrightnessAndWarmthLightController brightnessAndWarmthLightController;
+
     private Light light;
 
-    Range<Integer> ledOutputRange = new Range<>(5, 255);
+    Range<Integer> ledOutputRange = new Range<>(5, 255);; // todo isolate onyx specific
 
     @Before
     public void beforeEach() {
         MockitoAnnotations.openMocks(this);
-        OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter =
-                new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(ledOutputRange);
-        light = new Light(nativeLight, adapter);
+        when(nativeLight.getWarmAndColdLedOutputRange())
+                .thenReturn(ledOutputRange);
+        brightnessAndWarmthLightController = new OnyxBrightnessAndWarmthLightController(nativeLight);
+        light = new Light(brightnessAndWarmthLightController);
     }
 }
-
