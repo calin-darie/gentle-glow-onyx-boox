@@ -1,6 +1,14 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
-public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements BrightnessAndWarmthToWarmAndColdLedOutputAdapter {    @Override
+public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements BrightnessAndWarmthToWarmAndColdLedOutputAdapter {
+    private final int MAX_BRIGHTNESS_LUX = 112;
+    private Range<Integer> ledOutputRange;
+
+    public OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(Range<Integer> ledOutputRange) {
+        this.ledOutputRange = ledOutputRange;
+    }
+
+    @Override
     public WarmAndColdLedOutput toWarmAndColdLedOutput(BrightnessAndWarmth brightnessAndWarmth) {
         final double desiredBrightnessLux = convertBrightnessSettingToLux(brightnessAndWarmth.brightness.value);
 
@@ -78,41 +86,20 @@ public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements Bri
 
     @Override
     public BrightnessAndWarmth findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(WarmAndColdLedOutput warmCold) {
-        if (brightnessAndWarmthByWarmAndCold == null)
-            brightnessAndWarmthByWarmAndCold = getBrightnessAndWarmthByWarmAndCold();
+        final double warmBrightnessLux = convertLedOutputToLux(warmCold.warm);
+        final double coldBrightnessLux = convertLedOutputToLux(warmCold.cold);
 
-        return brightnessAndWarmthByWarmAndCold[warmCold.warm][warmCold.cold];
+        final double brightnessLux = warmBrightnessLux + coldBrightnessLux;
+
+        if (brightnessLux == 0)
+            return new BrightnessAndWarmth(new Brightness(0), new Warmth(50));
+
+        final int warmthPercent = (int)Math.round(Math.min(100, warmBrightnessLux * 100 / brightnessLux));
+        final int brightnessSetting = convertLuxToBrightnessSetting(brightnessLux);
+
+        return new BrightnessAndWarmth(new Brightness(brightnessSetting), new Warmth(warmthPercent));
     }
 
-    private BrightnessAndWarmth[][] getBrightnessAndWarmthByWarmAndCold() {
-        BrightnessAndWarmth[][] brightnessAndWarmthByWarmAndCold = new BrightnessAndWarmth[ledOutputRange.getUpper() + 1][ledOutputRange.getUpper() + 1];
-
-        brightnessAndWarmthByWarmAndCold[0][0] = new BrightnessAndWarmth(new Brightness(0), new Warmth(50));
-
-        for (int warm = 0; warm <= 255; warm++)
-            for (int cold = 0; cold <= 255; cold++){
-                if (brightnessAndWarmthByWarmAndCold[warm][cold] != null) {continue;}
-                BrightnessAndWarmth firstApproximation = findFirstApproximationOfBrightnessAndWarmthForWarmAndColdLedOutput(new WarmAndColdLedOutput(warm, cold));
-                brightnessAndWarmthByWarmAndCold[warm][cold] = firstApproximation.brightness.value == 0? firstApproximation.withDeltaBrightness(+1).value: firstApproximation;
-            }
-
-        for (int brightness = 100; brightness >= 1; brightness--)
-            for (int warmth = 0; warmth <= 100; warmth++) {
-                BrightnessAndWarmth brightnessAndWarmth = new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmth));
-                WarmAndColdLedOutput output = toWarmAndColdLedOutput(brightnessAndWarmth);
-                brightnessAndWarmthByWarmAndCold[output.warm][output.cold] = brightnessAndWarmth;
-            }
-
-        return brightnessAndWarmthByWarmAndCold;
-    }
-
-    public OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(Range<Integer> ledOutputRange) {
-        this.ledOutputRange = ledOutputRange;
-    }
-
-    private final int MAX_BRIGHTNESS_LUX = 112;
-    private Range<Integer> ledOutputRange;
-    private BrightnessAndWarmth[][] brightnessAndWarmthByWarmAndCold;
 
     private int convertLuxToLedOutput(double brightnessLux) {
         if (brightnessLux <= 0.05) return 0;
@@ -148,27 +135,12 @@ public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements Bri
         if (lux == 0)
             return 0;
 
-        if (lux <= convertBrightnessSettingToLux(5)) {
+        if (lux <= 0.5) {
             return (int)Math.round(0.90797 + 0.214277 * Math.sqrt(Math.max(0, 974 * lux - 66)));
         }
 
         final double MAX_BRIGHTNESS_PERCENT = 100;
-        return (int)Math.round(Math.max(5, Math.min(MAX_BRIGHTNESS_PERCENT, Math.round(18.6916 * Math.log(2 * lux)))));
-    }
-
-    private BrightnessAndWarmth findFirstApproximationOfBrightnessAndWarmthForWarmAndColdLedOutput(WarmAndColdLedOutput warmCold) {
-        final double warmBrightnessLux = convertLedOutputToLux(warmCold.warm);
-        final double coldBrightnessLux = convertLedOutputToLux(warmCold.cold);
-
-        final double brightnessLux = warmBrightnessLux + coldBrightnessLux;
-
-        if (brightnessLux == 0)
-            return new BrightnessAndWarmth(new Brightness(0), new Warmth(50));
-
-        final int warmthPercent = (int)Math.round(Math.min(100, warmBrightnessLux * 100 / brightnessLux));
-        final int brightnessSetting = convertLuxToBrightnessSetting(brightnessLux);
-
-        return new BrightnessAndWarmth(new Brightness(brightnessSetting), new Warmth(warmthPercent));
+        return (int)Math.round(Math.max(1, Math.min(MAX_BRIGHTNESS_PERCENT, Math.round(18.6916 * Math.log(2 * lux)))));
     }
 }
 
