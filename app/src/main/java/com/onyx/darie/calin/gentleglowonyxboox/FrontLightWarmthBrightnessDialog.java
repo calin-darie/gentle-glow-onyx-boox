@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,14 +30,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.concurrent.Callable;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import io.reactivex.rxjava3.core.BackpressureStrategy;
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.functions.Consumer;
-import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class FrontLightWarmthBrightnessDialog extends Activity {
 
@@ -80,18 +78,10 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     WarmColdToWarmthBrightnessAdapter adapter;
     private NamedWarmthBrightnessOptions namedWarmthBrightnessOptions;
-    private Light light;
-    private PublishSubject<BrightnessAndWarmth> brightnessAndWarmthChangeRequest$ = PublishSubject.create();
-    private final PublishSubject restoreExternallySetLedOutputRequest$ = PublishSubject.create();
-    private final PublishSubject applyDeltaBrightnessRequest$ = PublishSubject.create();
-    private final PublishSubject applyDeltaWarmthRequest$ = PublishSubject.create();
-    private boolean slidingInProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        light = ((GentleGlowApplication)getApplication()).getDependencies().getOnyxLight();
 
         migrateSavedSettings();
 
@@ -99,10 +89,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         ButterKnife.bind(this);
 
-        if (!light.isDeviceSupported()) {
+        if (!Frontlight.hasDualFrontlight()) {
             disableControls();
-            final Switch light = findViewById(R.id.light_switch);
-            light.setEnabled(false);
             status.setText(getText(R.string.device_not_supported));
              return;
         }
@@ -111,8 +99,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             bindControls();
         } else {
             disableControls();
-            final Switch light = findViewById(R.id.light_switch);
-            light.setEnabled(false);
             status.setText(R.string.GentleGlowNeedsPermission);
             goToPermissions.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -128,6 +114,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         brightness.setEnabled(false);
         warmth.setEnabled(false);
         name.setEnabled(false);
+        final Switch light = findViewById(R.id.light_switch);
+        light.setEnabled(false);
         replaceWithPreset.setVisibility(View.GONE);
     }
 
@@ -135,6 +123,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         brightness.setEnabled(true);
         warmth.setEnabled(true);
         name.setEnabled(true);
+        final Switch light = findViewById(R.id.light_switch);
+        light.setEnabled(true);
         replaceWithPreset.setVisibility(View.VISIBLE);
     }
 
@@ -143,40 +133,15 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         adapter = Frontlight.getWarmColdToWarmthBrightnessAdapter();
 
-        namedWarmthBrightnessOptions = getNamedWarmthBrightnessOptions();
+        final WarmColdSetting initialWarmColdSetting = Frontlight.getWarmCold();
 
-        light.setCommandSource(new LightCommandSource() {
-            @Override
-            public Flowable<BrightnessAndWarmth> getBrightnessAndWarmthChangeRequest$() {
-                return brightnessAndWarmthChangeRequest$.toFlowable(BackpressureStrategy.LATEST); // todo accept observable and move transformation to Light.java?
-            }
+        namedWarmthBrightnessOptions = getNamedWarmthBrightnessOptions(initialWarmColdSetting);
 
-            @Override
-            public Observable<Integer> getApplyDeltaBrightnessRequest$() {
-                return applyDeltaBrightnessRequest$;
-            }
-
-            @Override
-            public Observable<Integer> getApplyDeltaWarmthRequest$() {
-                return applyDeltaWarmthRequest$;
-            }
-
-
-            @Override
-            public Observable getRestoreExternalSettingRequest$() {
-                return restoreExternallySetLedOutputRequest$;
-            }
-
-            @Override
-            public Observable<BrightnessAndWarmth> getBrightnessAndWarmthRestoreFromStorageRequest$() {
-                WarmthBrightnessSetting setting = namedWarmthBrightnessOptions.getSelected().setting;
-                return Observable.just(new BrightnessAndWarmth(new Brightness(setting.brightness), new Warmth(setting.warmth)));
-            }
-        });
+        if (namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility) {
+            saveOnyxSliderWarmCold(initialWarmColdSetting);
+        }
 
         enableControls();
-        final Switch light = findViewById(R.id.light_switch);
-        light.setEnabled(true);
 
         bindLightSwitch();
 
@@ -201,7 +166,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == GET_PERMISSIONS_REQUEST) {
             if (Frontlight.hasPermissions()) {
                 goToPermissions.setVisibility(View.GONE);
@@ -212,6 +176,18 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void listenForExternalLightChanges() {
+        Consumer<WarmColdSetting> checkForExternalWarmthBrightnessChange = new Consumer<WarmColdSetting>() {
+            @Override
+            public void accept(WarmColdSetting warmColdSetting) {
+                checkForWarmthOrBrightnessChange(warmColdSetting);
+            }
+        };
+        final LifecycleAwareSubscription<WarmColdSetting> subscription =
+                new LifecycleAwareSubscription<>(this,
+                        Frontlight.getWarmColdExternalChange$(),
+                        checkForExternalWarmthBrightnessChange);
+        getApplication().registerActivityLifecycleCallbacks(subscription);
+
         Consumer<Boolean> checkForLightSwitchChange = new Consumer<Boolean>() {
             @Override
             public void accept(Boolean lightSwitchState) {
@@ -231,6 +207,43 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             light.setChecked(lightSwitchState);
     }
 
+    private void checkForWarmthOrBrightnessChange(WarmColdSetting warmColdSetting) {
+        final NamedWarmthBrightnessOptions newOptions = getNamedWarmthBrightnessOptions(warmColdSetting, namedWarmthBrightnessOptions.getAvailable(), namedWarmthBrightnessOptions.getSelectedIndex());
+        final int oldIndex = namedWarmthBrightnessOptions.getSelectedIndex();
+        final boolean indexChanged = oldIndex != newOptions.getSelectedIndex();
+        final NamedWarmthBrightnessSetting oldSetting = namedWarmthBrightnessOptions.getAvailable()[newOptions.getSelectedIndex()];
+        final boolean warmthBrightnessChanged = !newOptions.getSelected().equals(oldSetting);
+
+        if (!warmthBrightnessChanged && !indexChanged)
+            return;
+
+        final int newCheckedRadioButtonId = indexChanged?
+                getRadioButtonIdBySetting(oldSetting):
+                namedSettingsGroup.getCheckedRadioButtonId();
+
+        namedWarmthBrightnessOptions = newOptions;
+
+        namedSettingByRadioButtonId.remove(newCheckedRadioButtonId);
+        namedSettingByRadioButtonId.put(newCheckedRadioButtonId, newOptions.getSelected());
+
+        if (indexChanged) {
+            ((RadioButton)findViewById(namedSettingsGroup.getCheckedRadioButtonId())).setChecked(false);
+            ((RadioButton) findViewById(newCheckedRadioButtonId)).setChecked(true);
+            ((RadioButton) findViewById(newCheckedRadioButtonId)).callOnClick();
+            saveSelectedIndex();
+        }
+
+        if (warmthBrightnessChanged) {
+            updateValues();
+            updateSliders();
+            saveNamedSettings();
+        }
+
+        if (newOptions.getSelected().isForOnyxCompatibility) {
+            saveOnyxSliderWarmCold(warmColdSetting);
+        }
+    }
+
     private int getRadioButtonIdBySetting(NamedWarmthBrightnessSetting oldSetting) {
         for (Integer key : namedSettingByRadioButtonId.keySet()) {
             if (namedSettingByRadioButtonId.get(key).equals(oldSetting)) {
@@ -248,6 +261,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
                     Frontlight.ensureTurnedOn();
+                    checkForWarmthOrBrightnessChange(Frontlight.getWarmCold());
                     findViewById(R.id.namedSettingsLayout).setVisibility(View.VISIBLE);
                     findViewById(R.id.named_settings_editor).setVisibility(View.VISIBLE);
                     ((View)replaceWithPreset.getParent()).setVisibility(View.VISIBLE);
@@ -277,10 +291,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                 SelectItem item = (SelectItem)arrayAdapter.getItem(position);
 
                 replaceNamedWarmthBrightness(item.item);
-                brightnessAndWarmthChangeRequest$.onNext(new BrightnessAndWarmth(
-                        new Brightness(item.item.setting.brightness),
-                        new Warmth(item.item.setting.warmth)
-                ));
                 saveNamedSettings();
 
                 dialog.dismiss();
@@ -309,13 +319,23 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         });
     }
 
-    private NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptions() {
+    private NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptions(WarmColdSetting initialWarmColdSetting) {
         final NamedWarmthBrightnessSetting[] savedSettings = loadNamedSettings();
         final int selectedIndex = loadSelectedIndex();
         if (savedSettings.length == 0) {
-            return NamedWarmthBrightnessSetting.getPresetNamedSettings();
+            return NamedWarmthBrightnessSetting.getPresetNamedSettings(adapter.findWarmthBrightnessApproximationForWarmCold(initialWarmColdSetting));
         }
-        return NamedWarmthBrightnessSetting.getNamedSettings(savedSettings, selectedIndex);
+        return getNamedWarmthBrightnessOptions(initialWarmColdSetting, savedSettings, selectedIndex);
+    }
+
+    private NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptions(WarmColdSetting initialWarmColdSetting, NamedWarmthBrightnessSetting[] savedSettings, int selectedIndex) {
+        final NamedWarmthBrightnessSetting savedWarmthBrightness = savedSettings[selectedIndex];
+        final WarmColdSetting savedWarmCold = adapter.convertWarmthBrightnessToWarmCold(savedWarmthBrightness.setting);
+        final boolean isSavedWarmColdStillCurrent = initialWarmColdSetting.equals(savedWarmCold);
+
+        return  isSavedWarmColdStillCurrent?
+                NamedWarmthBrightnessSetting.getNamedSettings(savedSettings, selectedIndex):
+                NamedWarmthBrightnessSetting.getNamedSettingsWithOnyxSliderSelected(savedSettings, adapter.findWarmthBrightnessApproximationForWarmCold(initialWarmColdSetting));
     }
 
     private void bindName() {
@@ -349,66 +369,36 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void bindSliders() {
-        getApplication().registerActivityLifecycleCallbacks(new LifecycleAwareSubscription<>(this,light.getBrightnessAndWarmthState$(), brightnessAndWarmthState -> {
-            BrightnessAndWarmth bw = brightnessAndWarmthState.brightnessAndWarmth;
-            if (brightnessAndWarmthState.isExternalChange) {
-                namedWarmthBrightnessOptions.setSelectedIndex(namedWarmthBrightnessOptions.getAvailable().length - 1);
-
-                int newCheckedRadioButtonId = getRadioButtonIdBySetting(namedWarmthBrightnessOptions.getSelected());
-                RadioButton newCheckedRadioButton = (RadioButton) findViewById(newCheckedRadioButtonId);
-                newCheckedRadioButton.setChecked(true);
-                namedSettingsGroup.setCheckedRadioButtonNoEvent(newCheckedRadioButton);
-
-                replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
-                        namedWarmthBrightnessOptions.getSelected().name,
-                        new WarmthBrightnessSetting(bw.warmth.value, bw.brightness.value),
-                        namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
-                disableControls(); // todo leave them enabled
-                saveSelectedIndex();
-            } else {
-                replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
-                        namedWarmthBrightnessOptions.getSelected().name,
-                        new WarmthBrightnessSetting(bw.warmth.value, bw.brightness.value),
-                        namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
-                if (!slidingInProgress) {
-                    saveNamedSettings();
-                }
-            }
-        }));
         warmth.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (!fromUser) return;
-                brightnessAndWarmthChangeRequest$.onNext(new BrightnessAndWarmth(
-                        new Brightness(namedWarmthBrightnessOptions.getSelected().setting.brightness),
-                        new Warmth(progress)));
+                replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                        namedWarmthBrightnessOptions.getSelected().name,
+                        new WarmthBrightnessSetting(progress, namedWarmthBrightnessOptions.getSelected().setting.brightness),
+                        namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
-                slidingInProgress = true;
                 status.setText("");
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
-                slidingInProgress = false;
                 saveNamedSettings();
             }
         });
 
         brightness.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (!fromUser) return;
-                brightnessAndWarmthChangeRequest$.onNext(new BrightnessAndWarmth(
-                        new Brightness(progress),
-                        new Warmth(namedWarmthBrightnessOptions.getSelected().setting.warmth)));
+                replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                        namedWarmthBrightnessOptions.getSelected().name,
+                        new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth, progress == 0? 1: progress),
+                        namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
-                slidingInProgress = true;
                 status.setText("");
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
-                slidingInProgress = false;
                 saveNamedSettings();
             }
         });
@@ -416,26 +406,26 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         decreaseBrightnessButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                applyDeltaBrightnessRequest$.onNext(-1);
+                decreaseBrightness();
             }
         });
         increaseBrightnessButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                applyDeltaBrightnessRequest$.onNext(+1);
+                increaseBrightness();
             }
         });
 
         decreaseWarmthButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                applyDeltaWarmthRequest$.onNext(-1);
+                decreaseWarmth();
             }
         });
         increaseWarmthButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                applyDeltaWarmthRequest$.onNext(+1);
+                increaseWarmth();
             }
         });
     }
@@ -447,10 +437,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     private void replaceNamedWarmthBrightness(NamedWarmthBrightnessSetting namedWarmthBrightnessSetting) {
         NamedWarmthBrightnessSetting oldSetting = namedWarmthBrightnessOptions.getSelected();
 
-        if (oldSetting.equals(namedWarmthBrightnessSetting)) {
-            onWarmthBrightnessChanged();
+        if (oldSetting.equals(namedWarmthBrightnessSetting))
             return;
-        }
 
         namedWarmthBrightnessOptions.replaceAndSelect(
                 oldSetting,
@@ -464,22 +452,14 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     private void selectNamedWarmthBrightness(NamedWarmthBrightnessSetting namedWarmthBrightnessSetting) {
         namedWarmthBrightnessOptions.select(namedWarmthBrightnessSetting);
 
-        if (namedWarmthBrightnessSetting.isForOnyxCompatibility) {
-            disableControls();
-            restoreExternallySetLedOutputRequest$.onNext(0);
-        } else {
-            enableControls();
-            brightnessAndWarmthChangeRequest$.onNext(new BrightnessAndWarmth(
-                    new Brightness(namedWarmthBrightnessSetting.setting.brightness),
-                    new Warmth(namedWarmthBrightnessSetting.setting.warmth)
-            ));
-        }
+        onWarmthBrightnessChanged();
     }
 
     private void onWarmthBrightnessChanged() {
         updateValues();
         updateSliders();
         updateName();
+        updateFrontLight();
     }
 
     private void updateSliders() {
@@ -512,10 +492,13 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             namedSettingsGroup.add(radioButton);
             ((FlexboxLayout)findViewById(R.id.namedSettingsLayout)).addView(radioButton);
         }
-        namedSettingsGroup.setOnChoiceChanged(() -> {
-            selectNamedWarmthBrightness(namedSettingByRadioButtonId.get(namedSettingsGroup.getCheckedRadioButtonId()));
-            saveSelectedIndex();
-            return null;
+        namedSettingsGroup.setOnChoiceChanged(new Callable() {
+            @Override
+            public Object call() {
+                selectNamedWarmthBrightness(namedSettingByRadioButtonId.get(namedSettingsGroup.getCheckedRadioButtonId()));
+                saveSelectedIndex();
+                return null;
+            }
         });
     }
 
@@ -524,6 +507,13 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         if (!name.getText().toString().equals(namedWarmthBrightnessOptions.getSelected().name)) {
             name.setText(namedWarmthBrightnessOptions.getSelected().name);
         }
+    }
+
+    private void updateFrontLight() {
+        WarmColdSetting warmCold = namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility?
+                loadOnyxSliderWarmCold() :
+                adapter.convertWarmthBrightnessToWarmCold(namedWarmthBrightnessOptions.getSelected().setting);
+        Frontlight.setWarmCold(warmCold);
     }
 
     File namedSettingsFile()  {
@@ -608,6 +598,34 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         return Integer.parseInt(selectedAsString);
     }
 
+    File onyxSliderFile()  {
+        return new File(getFilesDir(), "onyxSlider.json");
+    }
+    private void saveOnyxSliderWarmCold (WarmColdSetting onyxSliderWarmCold) {
+        try {
+            writeFile(onyxSliderFile(), json.toJson(onyxSliderWarmCold));
+        }
+        catch (IOException e){
+            Log.e("autosave", "could not save onyx slider");
+        }
+    }
+
+    private WarmColdSetting loadOnyxSliderWarmCold() {
+        File namedSettingsFile = onyxSliderFile();
+        if (! namedSettingsFile.exists())
+            return adapter.convertWarmthBrightnessToWarmCold(NamedWarmthBrightnessSetting.onyxSliderPreset().setting);
+
+        byte[] bytes;
+        try {
+            bytes = Files.readAllBytes(namedSettingsFile.toPath());
+        } catch (IOException e) {
+            Log.e("load", "Error reading presets. This should never happen.");
+            return adapter.convertWarmthBrightnessToWarmCold(NamedWarmthBrightnessSetting.onyxSliderPreset().setting);
+        }
+        String settingAsJson = new String(bytes);
+        return json.fromJson(settingAsJson, WarmColdSetting.class);
+    }
+
     void writeFile(File file, String data) throws IOException {
         try (FileOutputStream out = new FileOutputStream(file, false)) {
             byte[] contents = data.getBytes();
@@ -621,6 +639,43 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         warmthValue.setText(namedWarmthBrightnessOptions.getSelected().setting.warmth + " / 100");
     }
 
+    public void decreaseBrightness() {
+        if (namedWarmthBrightnessOptions.getSelected().setting.brightness > 1) {
+            replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                    namedWarmthBrightnessOptions.getSelected().name,
+                    new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth, namedWarmthBrightnessOptions.getSelected().setting.brightness - 1),
+                    namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
+            saveNamedSettings();
+        }
+    }
+    public void increaseBrightness() {
+        if (namedWarmthBrightnessOptions.getSelected().setting.brightness < 100) {
+            replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                    namedWarmthBrightnessOptions.getSelected().name,
+                    new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth, namedWarmthBrightnessOptions.getSelected().setting.brightness + 1),
+                    namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
+            saveNamedSettings();
+        }
+    }
+
+    public void decreaseWarmth() {
+        if (namedWarmthBrightnessOptions.getSelected().setting.warmth > 0) {
+            replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                    namedWarmthBrightnessOptions.getSelected().name,
+                    new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth -1, namedWarmthBrightnessOptions.getSelected().setting.brightness) ,
+                    namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
+            saveNamedSettings();
+        }
+    }
+    public void increaseWarmth() {
+        if (namedWarmthBrightnessOptions.getSelected().setting.warmth < 100) {
+            replaceNamedWarmthBrightness(new NamedWarmthBrightnessSetting(
+                    namedWarmthBrightnessOptions.getSelected().name,
+                    new WarmthBrightnessSetting(namedWarmthBrightnessOptions.getSelected().setting.warmth + 1, namedWarmthBrightnessOptions.getSelected().setting.brightness) ,
+                    namedWarmthBrightnessOptions.getSelected().isForOnyxCompatibility));
+            saveNamedSettings();
+        }
+    }
 
     private class SelectItem {
         private final NamedWarmthBrightnessSetting item;

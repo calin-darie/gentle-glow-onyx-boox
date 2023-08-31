@@ -1,7 +1,7 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
+import android.view.View;
 import android.widget.RadioButton;
-
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
@@ -14,23 +14,22 @@ public class MutuallyExclusiveChoiceGroup {
         if (radioButton.isChecked()) {
             checkedRadioButtonId = radioButton.getId();
         }
-        radioButton.setOnClickListener(v -> {
-            setCheckedRadioButtonNoEvent(radioButton);
-            if (onChoiceChanged != null) {
-                try {
-                    Object _ = onChoiceChanged.call();
-                } catch (Exception e) {
+        radioButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkedRadioButtonId = radioButton.getId();
+                if (onChoiceChanged != null) {
+                    try {
+                        Object _ = onChoiceChanged.call();
+                    } catch (Exception e) {
+                    }
+                }
+                for (RadioButton otherButton : buttons) {
+                    if (otherButton == radioButton) continue;
+                    otherButton.setChecked(false);
                 }
             }
         });
-    }
-
-    public void setCheckedRadioButtonNoEvent(RadioButton radioButton) {
-        checkedRadioButtonId = radioButton.getId();
-        for (RadioButton otherButton : buttons) {
-            if (otherButton == radioButton) continue;
-            otherButton.setChecked(false);
-        }
     }
 
     int checkedRadioButtonId = -1;

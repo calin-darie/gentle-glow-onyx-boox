@@ -18,10 +18,6 @@ public class NamedWarmthBrightnessSetting {
         this.isForOnyxCompatibility = isForOnyxCompatibility;
     }
 
-    public static NamedWarmthBrightnessOptions getPresetNamedSettings() {
-        return new NamedWarmthBrightnessOptions(Arrays.copyOf(presets, presets.length), 3);
-    }
-
     public static NamedWarmthBrightnessOptions getPresetNamedSettings(WarmthBrightnessSetting onyxSliderApproximationAsWarmthBrightness) {
         return getNamedWarmthBrightnessOptionsWithOnyxSliderSelected(Arrays.copyOf(presets, presets.length), onyxSliderApproximationAsWarmthBrightness);
     }
