@@ -7,17 +7,11 @@ import org.junit.experimental.theories.FromDataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 // todo https://github.com/junit-team/junit4/wiki/Continuous-testing
 @RunWith(Theories.class)
@@ -36,12 +30,8 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
             @FromDataPoints("canLinkWarmAndColdInNonEqualProportion_warmths") int warmthPercent,
             @FromDataPoints("canLinkWarmAndColdInNonEqualProportion_brightnesses") int brightness
     ) {
-        ArgumentCaptor<WarmAndColdLedOutput> ledOutputCaptor = ArgumentCaptor.forClass(WarmAndColdLedOutput.class);
+        WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
-        light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
-
-        verify(nativeLight).setLedOutput(ledOutputCaptor.capture());
-        WarmAndColdLedOutput ledOutput = ledOutputCaptor.getValue();
         double warmPercentLuxScale = getWarmPercentLuxScale(ledOutput);
         assertEquals(warmthPercent, warmPercentLuxScale, 0.5);
     }
@@ -73,12 +63,9 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
             double oldWarmthPercent = 0;
             for (int warmthPercent = 0; warmthPercent <= 100; warmthPercent ++) {
 
-                Mockito.reset(nativeLight);
-                ArgumentCaptor<WarmAndColdLedOutput> ledOutputCaptor = ArgumentCaptor.forClass(WarmAndColdLedOutput.class);
-                light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
-                verify(nativeLight).setLedOutput(ledOutputCaptor.capture());
+                WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
-                double warmthPercentLuxScale = getWarmPercentLuxScale(ledOutputCaptor.getValue());
+                double warmthPercentLuxScale = getWarmPercentLuxScale(ledOutput);
                 if (warmthPercentLuxScale < oldWarmthPercent - 0.01) {
                     fail("brightness = " + brightness + ", warmth= " + warmthPercent + "; warmth dropped from " + oldWarmthPercent + " to " + warmthPercentLuxScale);
                 }
@@ -90,58 +77,36 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
     @Test
     public void setToColdestBrightness1_setsLedOutputToMinForWarmAndZeroForCold() {
         for(int warmth = 0; warmth <= 49; warmth++) {
-            Mockito.reset(nativeLight);
-            light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
-            try {
-                verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(
-                        0, ledOutputRange.getLower()));
-            } catch (Error e) {
-                System.out.println("failed for warmth = " + warmth);
-                throw e;
-            }
+            WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
+            assertEquals(new WarmAndColdLedOutput(0, fixture.ledOutputRange.getLower()), ledOutput);
         }
     }
 
     @Test
     public void setToWarmestBrightness1_setsLedOutputToMinForWarmAndZeroForCold() {
         for(int warmth = 51; warmth <= 100; warmth++) {
-            Mockito.reset(nativeLight);
-            light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
-            try {
-                verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(
-                        ledOutputRange.getLower(), 0));
-            } catch (Error e) {
-                System.out.println("failed for warmth = " + warmth);
-                throw e;
-            }
+            WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
+            assertEquals(new WarmAndColdLedOutput(fixture.ledOutputRange.getLower(), 0), ledOutput);
         }
     }
 
     @Test
     public void setToWarmestAndBrightest_setsLedOutputToMaxWarmAndZeroCold() {
-        light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(100), new Warmth(100)));
-
-        verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(
-                ledOutputRange.getUpper(), 0));
+        WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(100), new Warmth(100)));
+        assertEquals(new WarmAndColdLedOutput(fixture.ledOutputRange.getUpper(), 0), ledOutput);
     }
 
     @Test
     public void setToColdestAndBrightest_setsLedOutputToZeroWarmAndMaxCold() {
-        light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(100), new Warmth(0)));
-
-        verify(nativeLight).setLedOutput(new WarmAndColdLedOutput(
-                0, ledOutputRange.getUpper()));
+        WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(100), new Warmth(0)));
+        assertEquals(new WarmAndColdLedOutput(0, fixture.ledOutputRange.getUpper()), ledOutput);
     }
 
     private double setAndCaptureTotalLuxScale(int brightness, int warmthPercent) {
-        Mockito.reset(nativeLight);
-        ArgumentCaptor<WarmAndColdLedOutput> ledOutputCaptor = ArgumentCaptor.forClass(WarmAndColdLedOutput.class);
+        WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
-        light.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
-
-        verify(nativeLight).setLedOutput(ledOutputCaptor.capture());
-        final double warmLuxScale = toLuxBrightnessScale(ledOutputCaptor.getValue().warm);
-        final double coldLuxScale = toLuxBrightnessScale(ledOutputCaptor.getValue().cold);
+        final double warmLuxScale = toLuxBrightnessScale(ledOutput.warm);
+        final double coldLuxScale = toLuxBrightnessScale(ledOutput.cold);
         final double totalLuxScale = warmLuxScale + coldLuxScale;
         return totalLuxScale;
     }
@@ -151,19 +116,11 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
         return Math.pow(Math.E, (double)ledOutput/34)/17;
     }
 
-    @Mock
-    private NativeWarmColdLightController nativeLight;
-
-    private Light light;
-
-    Range<Integer> ledOutputRange = new Range<>(5, 255);
+    LightTestFixture fixture;
 
     @Before
     public void beforeEach() {
-        MockitoAnnotations.openMocks(this);
-        OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter =
-                new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(ledOutputRange);
-        light = new Light(nativeLight, adapter);
+        fixture = new LightTestFixture();
     }
 }
 
