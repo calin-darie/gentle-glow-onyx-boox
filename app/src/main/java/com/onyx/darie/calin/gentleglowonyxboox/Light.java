@@ -5,10 +5,16 @@ import android.content.Intent;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class Light {
 
     private final Observable<WarmAndColdLedOutput> warmAndColdLedOutput$;
+    public final PublishSubject<BrightnessAndWarmth> setBrightnessAndWarmthRequest$ = PublishSubject.create();
+    public final PublishSubject<Object> restoreExternallySetLedOutput$ = PublishSubject.create();
+    public final PublishSubject<Integer> applyDeltaBrightnessRequest$ = PublishSubject.create();
+    public final PublishSubject<Integer> applyDeltaWarmthRequest$ = PublishSubject.create();
+    public final PublishSubject<BrightnessAndWarmth> restoreBrightnessAndWarmthRequest$ = PublishSubject.create();
 
     public Observable<Boolean> isOn$() { return null; }
 
@@ -86,21 +92,21 @@ public class Light {
         this.externallySetLedOutputStorage = externallySetLedOutputStorage;
     }
 
-    public void setCommandSource(LightCommandSource lightCommandSource) {
-        subscribeSetBrightnessAndWarmthRequestHandler(lightCommandSource, warmAndColdLedOutput$);
-        subscribeRestoreBrightnesAndWarmthRequestHandler(lightCommandSource.getBrightnessAndWarmthRestoreFromStorageRequest$());
-        subscribeRestoreExternalSetting(lightCommandSource.getRestoreExternalSettingRequest$());
-        subscribeApplyDeltaBrightness(lightCommandSource.getApplyDeltaBrightnessRequest$());
-        subscribeApplyDeltaWarmth(lightCommandSource.getApplyDeltaWarmthRequest$());
+    public void setCommandSource() {
+        subscribeSetBrightnessAndWarmthRequestHandler();
+        subscribeRestoreBrightnesAndWarmthRequestHandler();
+        subscribeRestoreExternalSetting();
+        subscribeApplyDeltaBrightness();
+        subscribeApplyDeltaWarmth();
     }
 
-    private void subscribeApplyDeltaWarmth(Observable<Integer> applyDeltaWarmthRequest$) {
+    private void subscribeApplyDeltaWarmth() {
         applyDeltaWarmthRequest$.subscribe(delta -> {
             applyDeltaWarmth(delta);
         });
     }
 
-    private void subscribeApplyDeltaBrightness(Observable<Integer> applyDeltaBrightnessRequest$) {
+    private void subscribeApplyDeltaBrightness() {
         applyDeltaBrightnessRequest$.subscribe(delta -> {
             applyDeltaBrightness(delta);
         });
@@ -110,21 +116,21 @@ public class Light {
         externallySetLedOutputStorage.save(warmAndColdLedOutput);
     }
 
-    private void subscribeRestoreExternalSetting(Observable restoreExternalSettingRequest$) {
-        restoreExternalSettingRequest$.subscribe(_ignore -> {
+    private void subscribeRestoreExternalSetting() {
+        restoreExternallySetLedOutput$.subscribe(_ignore -> {
             Result<WarmAndColdLedOutput> loadResult = externallySetLedOutputStorage.loadOrDefault(new WarmAndColdLedOutput(128, 128));
             setOutput(loadResult.value);
             lastSetBrightnessAndWarmth = adapter.findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(loadResult.value);
         });
     }
 
-    private void subscribeRestoreBrightnesAndWarmthRequestHandler(Observable<BrightnessAndWarmth> brightnessAndWarmthRestoreFromStorageRequest$) {
-        brightnessAndWarmthRestoreFromStorageRequest$.subscribe(loaded -> lastSetBrightnessAndWarmth = loaded);
+    private void subscribeRestoreBrightnesAndWarmthRequestHandler() {
+        restoreBrightnessAndWarmthRequest$.subscribe(loaded -> lastSetBrightnessAndWarmth = loaded);
     }
 
-    private void subscribeSetBrightnessAndWarmthRequestHandler(LightCommandSource lightCommandSource, Observable<WarmAndColdLedOutput> warmAndColdLedOutput$) {
-        lightCommandSource.getBrightnessAndWarmthChangeRequest$()
-                .onBackpressureLatest()
+    private void subscribeSetBrightnessAndWarmthRequestHandler() {
+        setBrightnessAndWarmthRequest$
+                .toFlowable(BackpressureStrategy.LATEST)
                 .concatMap(brightnessAndWarmth -> {
                     lastSetBrightnessAndWarmth = brightnessAndWarmth;
                     WarmAndColdLedOutput output = adapter.toWarmAndColdLedOutput(brightnessAndWarmth);

@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -30,7 +29,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.concurrent.Callable;
 
 import butterknife.ButterKnife;
 import butterknife.BindView;
@@ -79,10 +77,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     WarmColdToWarmthBrightnessAdapter adapter;
     private NamedWarmthBrightnessOptions namedWarmthBrightnessOptions;
     private Light light;
-    private PublishSubject<BrightnessAndWarmth> brightnessAndWarmthChangeRequest$ = PublishSubject.create();
-    private final PublishSubject restoreExternallySetLedOutputRequest$ = PublishSubject.create();
-    private final PublishSubject applyDeltaBrightnessRequest$ = PublishSubject.create();
-    private final PublishSubject applyDeltaWarmthRequest$ = PublishSubject.create();
     private boolean slidingInProgress;
 
     @Override
@@ -143,34 +137,13 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         namedWarmthBrightnessOptions = getNamedWarmthBrightnessOptions();
 
-        light.setCommandSource(new LightCommandSource() {
-            @Override
-            public Flowable<BrightnessAndWarmth> getBrightnessAndWarmthChangeRequest$() {
-                return brightnessAndWarmthChangeRequest$.toFlowable(BackpressureStrategy.LATEST); // todo accept observable and move transformation to Light.java?
-            }
-
-            @Override
-            public Observable<Integer> getApplyDeltaBrightnessRequest$() {
-                return applyDeltaBrightnessRequest$;
-            }
-
-            @Override
-            public Observable<Integer> getApplyDeltaWarmthRequest$() {
-                return applyDeltaWarmthRequest$;
-            }
-
-
-            @Override
-            public Observable getRestoreExternalSettingRequest$() {
-                return restoreExternallySetLedOutputRequest$;
-            }
-
-            @Override
-            public Observable<BrightnessAndWarmth> getBrightnessAndWarmthRestoreFromStorageRequest$() {
-                WarmthBrightnessSetting setting = namedWarmthBrightnessOptions.getSelected().setting;
-                return Observable.just(new BrightnessAndWarmth(new Brightness(setting.brightness), new Warmth(setting.warmth)));
-            }
-        });
+        light.setCommandSource();
+        light.restoreBrightnessAndWarmthRequest$.onNext(
+                new BrightnessAndWarmth(
+                        new Brightness(namedWarmthBrightnessOptions.getSelected().setting.brightness),
+                        new Warmth(namedWarmthBrightnessOptions.getSelected().setting.warmth)
+                )
+        );
 
         enableControls();
         final Switch light = findViewById(R.id.light_switch);
@@ -275,7 +248,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                 SelectItem item = (SelectItem)arrayAdapter.getItem(position);
 
                 replaceNamedWarmthBrightness(item.item);
-                brightnessAndWarmthChangeRequest$.onNext(new BrightnessAndWarmth(
+                light.setBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(
                         new Brightness(item.item.setting.brightness),
                         new Warmth(item.item.setting.warmth)
                 ));
@@ -313,17 +286,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         if (savedSettings.length == 0) {
             return NamedWarmthBrightnessSetting.getPresetNamedSettings();
         }
-        return getNamedWarmthBrightnessOptions(initialWarmColdSetting, savedSettings, selectedIndex);
-    }
-
-    private NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptions(WarmColdSetting initialWarmColdSetting, NamedWarmthBrightnessSetting[] savedSettings, int selectedIndex) {
-        final NamedWarmthBrightnessSetting savedWarmthBrightness = savedSettings[selectedIndex];
-        final WarmColdSetting savedWarmCold = adapter.convertWarmthBrightnessToWarmCold(savedWarmthBrightness.setting);
-        final boolean isSavedWarmColdStillCurrent = initialWarmColdSetting.equals(savedWarmCold);
-
-        return  isSavedWarmColdStillCurrent?
-                NamedWarmthBrightnessSetting.getNamedSettings(savedSettings, selectedIndex):
-                NamedWarmthBrightnessSetting.getNamedSettingsWithOnyxSliderSelected(savedSettings, adapter.findWarmthBrightnessApproximationForWarmCold(initialWarmColdSetting));
+        return NamedWarmthBrightnessSetting.getNamedSettings(savedSettings, selectedIndex);
     }
 
     private void bindName() {
@@ -386,7 +349,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         warmth.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (!fromUser) return;
-                brightnessAndWarmthChangeRequest$.onNext(new BrightnessAndWarmth(
+                light.setBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(
                         new Brightness(namedWarmthBrightnessOptions.getSelected().setting.brightness),
                         new Warmth(progress)));
             }
@@ -405,7 +368,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         brightness.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (!fromUser) return;
-                brightnessAndWarmthChangeRequest$.onNext(new BrightnessAndWarmth(
+                light.setBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(
                         new Brightness(progress),
                         new Warmth(namedWarmthBrightnessOptions.getSelected().setting.warmth)));
             }
@@ -424,26 +387,26 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         decreaseBrightnessButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                applyDeltaBrightnessRequest$.onNext(-1);
+                light.applyDeltaBrightnessRequest$.onNext(-1);
             }
         });
         increaseBrightnessButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                applyDeltaBrightnessRequest$.onNext(+1);
+                light.applyDeltaBrightnessRequest$.onNext(+1);
             }
         });
 
         decreaseWarmthButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                applyDeltaWarmthRequest$.onNext(-1);
+                light.applyDeltaWarmthRequest$.onNext(-1);
             }
         });
         increaseWarmthButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                applyDeltaWarmthRequest$.onNext(+1);
+                light.applyDeltaWarmthRequest$.onNext(+1);
             }
         });
     }
@@ -474,10 +437,10 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         if (namedWarmthBrightnessSetting.isForOnyxCompatibility) {
             disableControls();
-            restoreExternallySetLedOutputRequest$.onNext(0);
+            light.restoreExternallySetLedOutput$.onNext(0);
         } else {
             enableControls();
-            brightnessAndWarmthChangeRequest$.onNext(new BrightnessAndWarmth(
+            light.setBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(
                     new Brightness(namedWarmthBrightnessSetting.setting.brightness),
                     new Warmth(namedWarmthBrightnessSetting.setting.warmth)
             ));
