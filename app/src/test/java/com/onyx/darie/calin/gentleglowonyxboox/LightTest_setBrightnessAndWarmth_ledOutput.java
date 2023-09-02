@@ -30,7 +30,7 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
             @FromDataPoints("canLinkWarmAndColdInNonEqualProportion_warmths") int warmthPercent,
             @FromDataPoints("canLinkWarmAndColdInNonEqualProportion_brightnesses") int brightness
     ) {
-        WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
+        WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
         double warmPercentLuxScale = getWarmPercentLuxScale(ledOutput);
         assertEquals(warmthPercent, warmPercentLuxScale, 0.5);
@@ -63,7 +63,7 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
             double oldWarmthPercent = 0;
             for (int warmthPercent = 0; warmthPercent <= 100; warmthPercent ++) {
 
-                WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
+                WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
                 double warmthPercentLuxScale = getWarmPercentLuxScale(ledOutput);
                 if (warmthPercentLuxScale < oldWarmthPercent - 0.01) {
@@ -77,7 +77,7 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
     @Test
     public void setToColdestBrightness1_setsLedOutputToMinForWarmAndZeroForCold() {
         for(int warmth = 0; warmth <= 49; warmth++) {
-            WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
+            WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
             assertEquals(new WarmAndColdLedOutput(0, fixture.ledOutputRange.getLower()), ledOutput);
         }
     }
@@ -85,25 +85,25 @@ public class LightTest_setBrightnessAndWarmth_ledOutput {
     @Test
     public void setToWarmestBrightness1_setsLedOutputToMinForWarmAndZeroForCold() {
         for(int warmth = 51; warmth <= 100; warmth++) {
-            WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
+            WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(1), new Warmth(warmth)));
             assertEquals(new WarmAndColdLedOutput(fixture.ledOutputRange.getLower(), 0), ledOutput);
         }
     }
 
     @Test
     public void setToWarmestAndBrightest_setsLedOutputToMaxWarmAndZeroCold() {
-        WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(100), new Warmth(100)));
+        WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(100), new Warmth(100)));
         assertEquals(new WarmAndColdLedOutput(fixture.ledOutputRange.getUpper(), 0), ledOutput);
     }
 
     @Test
     public void setToColdestAndBrightest_setsLedOutputToZeroWarmAndMaxCold() {
-        WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(100), new Warmth(0)));
+        WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(100), new Warmth(0)));
         assertEquals(new WarmAndColdLedOutput(0, fixture.ledOutputRange.getUpper()), ledOutput);
     }
 
     private double setAndCaptureTotalLuxScale(int brightness, int warmthPercent) {
-        WarmAndColdLedOutput ledOutput = fixture.captureWarmAndColdOutput(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
+        WarmAndColdLedOutput ledOutput = fixture.setBrightnessAndWarmth(new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmthPercent)));
 
         final double warmLuxScale = toLuxBrightnessScale(ledOutput.warm);
         final double coldLuxScale = toLuxBrightnessScale(ledOutput.cold);
