@@ -29,11 +29,15 @@ public class MutuallyExclusiveChoiceGroup {
 
 
     public void setChosenIndex(int index) {
+        uncheckLightConfigurationRadioButton();
+        chosenIndex = index; // todo check?
+        getCheckedButton().setChecked(true);
+    }
+
+    private void uncheckLightConfigurationRadioButton() {
         if (getChosenIndex() != NoChoice) {
             getCheckedButton().setChecked(false);
         }
-        chosenIndex = index; // todo check?
-        getCheckedButton().setChecked(true);
     }
 
     public Integer getChosenIndex() {
@@ -45,7 +49,7 @@ public class MutuallyExclusiveChoiceGroup {
     }
 
     public void clearChoice() {
-        getCheckedButton().setChecked(false);
+        uncheckLightConfigurationRadioButton();
         chosenIndex = NoChoice;
     }
 
