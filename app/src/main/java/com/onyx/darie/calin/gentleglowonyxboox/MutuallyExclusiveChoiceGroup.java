@@ -18,7 +18,7 @@ public class MutuallyExclusiveChoiceGroup {
             setCheckedRadioButtonNoEvent(radioButton);
             if (onChoiceChanged != null) {
                 try {
-                    Object _ = onChoiceChanged.call();
+                    Object _ignore = onChoiceChanged.call();
                 } catch (Exception e) {
                 }
             }
