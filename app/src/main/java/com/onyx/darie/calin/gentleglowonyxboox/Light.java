@@ -6,23 +6,21 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
+//todo rename to BrightnessAndWarmthLightController?
 public class Light {
-    public Observable<Boolean> isOn$() { return brightnessAndWarmthLightController.isOn$(); }
+    public Observable<Boolean> isOn$() { return null; }
 
-    public void turnOn() { brightnessAndWarmthLightController.turnOn(); } // todo result?
+    public void turnOn() { nativeWarmColdLightController.turnOn(true, true); } // todo result?
 
-    public void turnOff() { brightnessAndWarmthLightController.turnOff(); } // todo result?
+    public void turnOff() { nativeWarmColdLightController.turnOff(); } // todo result?
 
     private BehaviorSubject<BrightnessAndWarmth> brightnessAndWarmth = BehaviorSubject.create();
     public Observable<BrightnessAndWarmth> brightnessAndWarmth$() { return brightnessAndWarmth; }
 
     public Single<Result> setBrightnessAndWarmth (BrightnessAndWarmth brightnessAndWarmth) {
-        Single<Result> setResult = brightnessAndWarmthLightController
-                .setBrightnessAndWarmth(brightnessAndWarmth);
-
-        return setResult.doOnSuccess(result -> {
-            this.brightnessAndWarmth.onNext(brightnessAndWarmth); // todo handle error
-        });
+        final WarmAndColdLedOutput warmCold = adapter.toWarmAndColdLedOutput(brightnessAndWarmth);
+        nativeWarmColdLightController.setLedOutput(warmCold);
+        return Single.just(Result.success()); // todo handle errors?
     }
 
     public Single<Result> applyDeltaBrightness(int delta) {
@@ -44,14 +42,20 @@ public class Light {
     }
 
     ///////////// one time checks
-    public boolean isDeviceSupported() { return brightnessAndWarmthLightController.hasDualFrontlight(); }
-    public Intent[] missingPermissionIntents() { return brightnessAndWarmthLightController.getMissingPermissionIntents(); }
+    public boolean isDeviceSupported() { return nativeWarmColdLightController.isDeviceSupported(); }
+    public Intent[] missingPermissionIntents() { return new Intent[0]; }
 
-    public Light(BrightnessAndWarmthLightController brightnessAndWarmthLightController) {
-        this.brightnessAndWarmthLightController = brightnessAndWarmthLightController;
+    private NativeWarmColdLightController nativeWarmColdLightController;
+    private final BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter;
+
+    public Light(
+            NativeWarmColdLightController nativeWarmColdLightController,
+            BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter) {
+        this.nativeWarmColdLightController = nativeWarmColdLightController;
+        this.adapter = adapter;
     }
 
-    private final BrightnessAndWarmthLightController brightnessAndWarmthLightController;
+
 
     ////////////// light configuration editor ///////////////
     // accesses Light: set to preview changes, read to update current config
