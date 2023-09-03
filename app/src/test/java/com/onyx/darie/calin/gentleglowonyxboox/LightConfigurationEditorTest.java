@@ -5,10 +5,10 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class LightConfigurationEditorTest {
+
     @Test
     public void whenSubscribingToConfigurationChanges_restoresBrightnessAndWarmth() {
         fixture.configurationEditor.getLightConfigurationChoices$().subscribe();
-        fixture.lightTestFixture.captureLedOutputAndComplete();
 
         BrightnessAndWarmthState state = fixture.lightTestFixture.getBrightnessAndWarmthState();
         assertEquals(LightConfiguration.getPresets()[0].brightnessAndWarmth, state.brightnessAndWarmth);
@@ -17,7 +17,6 @@ public class LightConfigurationEditorTest {
     @Test
     public void whenSelectedConfigurationChanges_lightEmitsBrightnessAndWarmth() {
         fixture.configurationEditor.getLightConfigurationChoices$().subscribe();
-        fixture.lightTestFixture.captureLedOutputAndComplete();
         int indexToSelect = 1;
         fixture.configurationEditor.chooseCurrentLightConfigurationRequest$.onNext(indexToSelect);
         fixture.lightTestFixture.captureLedOutputAndComplete();
