@@ -47,11 +47,9 @@ public class LightTestFixture {
         warmAndColdLedOutput$.onNext(ledOutput);
     }
 
-    //todo review this
-    public WarmAndColdLedOutput completeAndCaptureNewLedOutput(WarmAndColdLedOutput ledOutput) {
-        captureLedOutputAndComplete();
-
-        return captureChangedLedOutput();
+    public void complete(WarmAndColdLedOutput ledOutput) {
+        reset(nativeLight);
+        warmAndColdLedOutput$.onNext(ledOutput);
     }
 
     public WarmAndColdLedOutput captureChangedLedOutput() {

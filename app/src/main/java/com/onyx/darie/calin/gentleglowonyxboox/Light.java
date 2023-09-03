@@ -79,9 +79,9 @@ public class Light {
         this.brightnessAndWarmthState$ = Observable.merge(
                 restoreBrightnessAndWarmthRequest$.map(brightnessAndWarmth -> new BrightnessAndWarmthState(false, brightnessAndWarmth)),
                 warmAndColdLedOutput$.map(warmAndColdLedOutput -> {
-                    boolean isExternal =
-                            !adapter.toWarmAndColdLedOutput(lastSetBrightnessAndWarmth).equals(warmAndColdLedOutput) ||
-                            !warmAndColdLedOutput.equals(output); // todo test or remove!
+                    boolean isExternal = !
+                            adapter.toWarmAndColdLedOutput(lastSetBrightnessAndWarmth)
+                            .equals(warmAndColdLedOutput);
                     if (isExternal) {
                         output = warmAndColdLedOutput; // todo test!
                         saveExternallySetLedOutput(warmAndColdLedOutput);
@@ -134,13 +134,13 @@ public class Light {
     private void subscribeSetBrightnessAndWarmthRequestHandler() {
         setBrightnessAndWarmthRequest$
                 .toFlowable(BackpressureStrategy.LATEST)
-                .concatMap(brightnessAndWarmth -> {
+                .concatMapEager(brightnessAndWarmth -> {
                     lastSetBrightnessAndWarmth = brightnessAndWarmth;
                     WarmAndColdLedOutput output = adapter.toWarmAndColdLedOutput(brightnessAndWarmth);
                     if (output.equals(this.output)) return Flowable.empty();
                     setOutput(output);
-                    return warmAndColdLedOutput$.take(1).toFlowable(BackpressureStrategy.LATEST);
-                })
+                    return warmAndColdLedOutput$.take(1).toFlowable(BackpressureStrategy.MISSING);
+                }, 1, 1)
                 .subscribe();
     }
     // todo schedule

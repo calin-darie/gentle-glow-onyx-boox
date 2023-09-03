@@ -3,8 +3,8 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 
 public class LightTest_setBrightnessAndWarmth_backpressure {
     @Test
@@ -15,17 +15,19 @@ public class LightTest_setBrightnessAndWarmth_backpressure {
 
     @Test
     public void secondAndThirdCallBeforeFirstOneCompletes_whenFirstCallCompletes_secondCallThrottledOutAndThirdCallAffectsLedOutput() {
-        fixture.setBrightnessAndWarmthAndAssertNoChange(new BrightnessAndWarmth(new Brightness(50), new Warmth(100)));
+        fixture.setBrightnessAndWarmthAndAssertNoChange(new BrightnessAndWarmth(new Brightness(50), new Warmth(50)));
         fixture.setBrightnessAndWarmthAndAssertNoChange(new BrightnessAndWarmth(new Brightness(100), new Warmth(100)));
-        ledOutput3 = fixture.completeAndCaptureNewLedOutput(ledOutput1);
-        assertNotEquals(ledOutput3.cold, ledOutput3.warm);
+        fixture.complete(ledOutput1);
+        ledOutput3 = fixture.captureChangedLedOutput();
+        assertEquals(new WarmAndColdLedOutput(fixture.ledOutputRange.getUpper(), 0), ledOutput3);
     }
 
     @Test
     public void secondAndThirdCallBeforeFirstOneCompletes_whenFirstCallCompletes_externalChangeNotReported() {
         fixture.setBrightnessAndWarmthAndAssertNoChange(new BrightnessAndWarmth(new Brightness(50), new Warmth(100)));
         fixture.setBrightnessAndWarmthAndAssertNoChange(new BrightnessAndWarmth(new Brightness(100), new Warmth(100)));
-        ledOutput3 = fixture.completeAndCaptureNewLedOutput(ledOutput1);
+        fixture.complete(ledOutput1);
+        ledOutput3 = fixture.captureChangedLedOutput();
         assertFalse(fixture.getBrightnessAndWarmthState().isExternalChange);
     }
 
