@@ -5,6 +5,8 @@ import android.net.Uri;
 
 import com.onyx.android.sdk.api.device.FrontLightController;
 
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.rxjava3.core.Observable;
 
 public class OnyxWarmColdLightController implements NativeWarmColdLightController{
@@ -30,8 +32,13 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
 
     @Override
     public Result setLedOutput(WarmAndColdLedOutput output) {
+        desiredLedOutput = output;
         boolean success = FrontLightController.setWarmLightDeviceValue(context, output.warm) &&
                           FrontLightController.setColdLightDeviceValue(context, output.cold);
+        ledOutputRaw$.take(2)
+                .takeWhile(futureOutput -> futureOutput.equals(output))
+                .timeout(1, TimeUnit.SECONDS)
+                .doOnComplete(() -> desiredLedOutput = null);
         return success? Result.success() : Result.error("could not change light");
     }
 
@@ -41,7 +48,7 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
     }
 
     private void initLedOutputObservable() {
-        ledOutput$ =
+        ledOutputRaw$ =
                 ContentObserverSubscriber
                         .create(
                                 context.getContentResolver(),
@@ -55,6 +62,7 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
                                 )
                         )
                         .share();
+        ledOutput$ =  ledOutputRaw$.filter(output -> desiredLedOutput == null || desiredLedOutput.equals(output));
     }
 
     @Override
@@ -75,4 +83,6 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
 
     private final Context context;
     private Observable<WarmAndColdLedOutput> ledOutput$;
+    private Observable<WarmAndColdLedOutput> ledOutputRaw$;
+    private WarmAndColdLedOutput desiredLedOutput;
 }
