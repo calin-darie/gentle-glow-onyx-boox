@@ -23,12 +23,6 @@ public class Light {
 
     public void turnOff() { nativeWarmColdLightController.turnOff(); } // todo result?
 
-    private void setBrightnessAndWarmth (BrightnessAndWarmth brightnessAndWarmth) {
-        final WarmAndColdLedOutput warmCold = adapter.toWarmAndColdLedOutput(brightnessAndWarmth);
-        setOutput(warmCold);
-        lastSetBrightnessAndWarmth = brightnessAndWarmth;
-    }
-
     private Single<Result> setOutput(WarmAndColdLedOutput warmCold) {
         Single<Result> result = nativeWarmColdLightController.setLedOutput(warmCold);
         this.output = warmCold;
@@ -39,23 +33,23 @@ public class Light {
         return brightnessAndWarmthState$;
     }
 
-    public Result applyDeltaBrightness(int delta) {
+    private Result applyDeltaBrightness(int delta) {
         final Result<BrightnessAndWarmth> brightnessAndWarmthResult = lastSetBrightnessAndWarmth
                 .withDeltaBrightness(delta);
         if (brightnessAndWarmthResult.hasError()) {
             return brightnessAndWarmthResult;
         }
-        setBrightnessAndWarmth(brightnessAndWarmthResult.value);
+        setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmthResult.value);
         return Result.success();
     }
 
-    public Result applyDeltaWarmth(int delta) {
+    private Result applyDeltaWarmth(int delta) {
         final Result<BrightnessAndWarmth> brightnessAndWarmthResult = lastSetBrightnessAndWarmth
                 .withDeltaWarmth(delta);
         if (brightnessAndWarmthResult.hasError()) {
             return brightnessAndWarmthResult;
         }
-        setBrightnessAndWarmth(brightnessAndWarmthResult.value);
+        setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmthResult.value);
         return Result.success();
     }
 
