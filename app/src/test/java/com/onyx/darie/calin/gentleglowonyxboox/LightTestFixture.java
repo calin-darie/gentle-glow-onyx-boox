@@ -105,6 +105,7 @@ public class LightTestFixture {
     public LightTestFixture() {
         MockitoAnnotations.openMocks(this);
 
+        resetLedOutputMocks();
         when(nativeLight.getWarmAndColdLedOutput$())
                 .thenReturn(warmAndColdLedOutput$);
         OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter =

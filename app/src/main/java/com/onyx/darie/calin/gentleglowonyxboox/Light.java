@@ -65,6 +65,7 @@ public class Light {
 
     private BrightnessAndWarmth lastSetBrightnessAndWarmth;
     private final Observable<BrightnessAndWarmthState> brightnessAndWarmthState$;
+    private final Flowable<BrightnessAndWarmth> setBrightnessAndWarmthResponse$;
 
     private NativeWarmColdLightController nativeWarmColdLightController;
     private final BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter;
@@ -78,8 +79,10 @@ public class Light {
         this.nativeWarmColdLightController = nativeWarmColdLightController;
         warmAndColdLedOutput$ = nativeWarmColdLightController.getWarmAndColdLedOutput$()
             .distinctUntilChanged();
+        setBrightnessAndWarmthResponse$ = getSetBrightnessAndWarmthResponse$();
         this.brightnessAndWarmthState$ = Observable.merge(
                 restoreBrightnessAndWarmthRequest$.map(brightnessAndWarmth -> new BrightnessAndWarmthState(false, brightnessAndWarmth)),
+                setBrightnessAndWarmthResponse$.toObservable().map(brightnessAndWarmth -> new BrightnessAndWarmthState(false, brightnessAndWarmth)),
                 warmAndColdLedOutput$.map(warmAndColdLedOutput -> {
                     boolean isExternal = !
                             adapter.toWarmAndColdLedOutput(lastSetBrightnessAndWarmth)
@@ -91,7 +94,9 @@ public class Light {
                     return new BrightnessAndWarmthState(isExternal, isExternal?
                             adapter.findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(warmAndColdLedOutput):
                             lastSetBrightnessAndWarmth);
-                }));
+                }))
+                .distinctUntilChanged()
+        ;
         this.adapter = adapter;
         this.externallySetLedOutputStorage = externallySetLedOutputStorage;
         setCommandSource();
@@ -133,17 +138,21 @@ public class Light {
         restoreBrightnessAndWarmthRequest$.subscribe(loaded -> lastSetBrightnessAndWarmth = loaded);
     }
 
-    private void subscribeSetBrightnessAndWarmthRequestHandler() {
-        setBrightnessAndWarmthRequest$
+    private Flowable<BrightnessAndWarmth> getSetBrightnessAndWarmthResponse$() {
+        return setBrightnessAndWarmthRequest$
                 .toFlowable(BackpressureStrategy.LATEST)
                 .concatMapEager(brightnessAndWarmth -> {
+                    BrightnessAndWarmth oldBrightnessAndWarmth = lastSetBrightnessAndWarmth;
                     lastSetBrightnessAndWarmth = brightnessAndWarmth;
                     WarmAndColdLedOutput output = adapter.toWarmAndColdLedOutput(brightnessAndWarmth);
-                    if (output.equals(this.output)) return Flowable.empty();
-                    return setOutput(output).toFlowable();
+                    if (output.equals(this.output)) return Flowable.just(brightnessAndWarmth);
+                    return setOutput(output).map(result -> result.hasError()? oldBrightnessAndWarmth : brightnessAndWarmth).toFlowable();
                 }, 1, 1)
-                .subscribe();
+                .share();
     }
-    // todo schedule
+    private void subscribeSetBrightnessAndWarmthRequestHandler() {
+        setBrightnessAndWarmthResponse$.subscribe();
+    }
+
     // Intent.ACTION_SCREEN_ON
 }

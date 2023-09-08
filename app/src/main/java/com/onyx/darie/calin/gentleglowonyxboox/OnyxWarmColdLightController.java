@@ -33,10 +33,18 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
 
     @Override
     public Single<Result> setLedOutput(WarmAndColdLedOutput output) {
+        WarmAndColdLedOutput currentLedOutput = getCurrentWarmAndColdLedOutput();
         desiredLedOutput = output;
+        if (currentLedOutput.equals(output)) {
+            return Single.just(Result.success());
+        }
+
         boolean success = FrontLightController.setWarmLightDeviceValue(context, output.warm) &&
                           FrontLightController.setColdLightDeviceValue(context, output.cold);
-        return ledOutputRaw$//.take(2)
+        if (!success) {
+            return Single.just(Result.error("driver said no"));
+        }
+        return ledOutputRaw$
                 .takeWhile(futureOutput -> !futureOutput.equals(output))
                 .timeout(1, TimeUnit.SECONDS)
                 .doOnComplete(() -> desiredLedOutput = null)
@@ -59,10 +67,7 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
                                         Uri.parse("content://settings/system/screen_cold_brightness"),
                                         Uri.parse("content://settings/system/screen_warm_brightness"),
                                 },
-                                uri -> new WarmAndColdLedOutput(
-                                        FrontLightController.isWarmLightOn(context)? FrontLightController.getWarmLightConfigValue(context): 0,
-                                        FrontLightController.isColdLightOn(context)? FrontLightController.getColdLightConfigValue(context): 0
-                                )
+                                uri -> getCurrentWarmAndColdLedOutput()
                         )
                         .share();
         ledOutput$ =  ledOutputRaw$.filter(output -> desiredLedOutput == null || desiredLedOutput.equals(output));
@@ -82,6 +87,13 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
     public OnyxWarmColdLightController(Context context) {
         this.context = context;
         initLedOutputObservable();
+    }
+
+    private WarmAndColdLedOutput getCurrentWarmAndColdLedOutput () {
+        return new WarmAndColdLedOutput(
+                FrontLightController.isWarmLightOn(context)? FrontLightController.getWarmLightConfigValue(context): 0,
+                FrontLightController.isColdLightOn(context)? FrontLightController.getColdLightConfigValue(context): 0
+        );
     }
 
     private final Context context;
