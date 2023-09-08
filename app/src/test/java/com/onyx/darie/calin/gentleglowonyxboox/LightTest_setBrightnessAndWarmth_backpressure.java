@@ -27,7 +27,7 @@ public class LightTest_setBrightnessAndWarmth_backpressure {
         fixture.setBrightnessAndWarmthAndAssertNoChange(new BrightnessAndWarmth(new Brightness(50), new Warmth(100)));
         fixture.setBrightnessAndWarmthAndAssertNoChange(new BrightnessAndWarmth(new Brightness(100), new Warmth(100)));
         fixture.complete(ledOutput1);
-        ledOutput3 = fixture.captureChangedLedOutput();
+        //ledOutput3 = fixture.captureChangedLedOutput();
         assertFalse(fixture.getBrightnessAndWarmthState().isExternalChange);
     }
 

@@ -8,6 +8,7 @@ import com.onyx.android.sdk.api.device.FrontLightController;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 
 public class OnyxWarmColdLightController implements NativeWarmColdLightController{
     @Override
@@ -31,15 +32,17 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
     }
 
     @Override
-    public Result setLedOutput(WarmAndColdLedOutput output) {
+    public Single<Result> setLedOutput(WarmAndColdLedOutput output) {
         desiredLedOutput = output;
         boolean success = FrontLightController.setWarmLightDeviceValue(context, output.warm) &&
                           FrontLightController.setColdLightDeviceValue(context, output.cold);
-        ledOutputRaw$.take(2)
-                .takeWhile(futureOutput -> futureOutput.equals(output))
+        return ledOutputRaw$//.take(2)
+                .takeWhile(futureOutput -> !futureOutput.equals(output))
                 .timeout(1, TimeUnit.SECONDS)
-                .doOnComplete(() -> desiredLedOutput = null);
-        return success? Result.success() : Result.error("could not change light");
+                .doOnComplete(() -> desiredLedOutput = null)
+                .map(any -> Result.error("light not changed"))
+                .concatWith(Single.just(Result.success()))
+                .lastOrError();
     }
 
     @Override

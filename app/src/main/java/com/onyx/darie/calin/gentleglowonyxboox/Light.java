@@ -5,6 +5,7 @@ import android.content.Intent;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class Light {
@@ -28,9 +29,10 @@ public class Light {
         lastSetBrightnessAndWarmth = brightnessAndWarmth;
     }
 
-    private void setOutput(WarmAndColdLedOutput warmCold) {
-        nativeWarmColdLightController.setLedOutput(warmCold);
+    private Single<Result> setOutput(WarmAndColdLedOutput warmCold) {
+        Single<Result> result = nativeWarmColdLightController.setLedOutput(warmCold);
         this.output = warmCold;
+        return result;
     }
 
     public Observable<BrightnessAndWarmthState> getBrightnessAndWarmthState$() {
@@ -138,8 +140,7 @@ public class Light {
                     lastSetBrightnessAndWarmth = brightnessAndWarmth;
                     WarmAndColdLedOutput output = adapter.toWarmAndColdLedOutput(brightnessAndWarmth);
                     if (output.equals(this.output)) return Flowable.empty();
-                    setOutput(output);
-                    return warmAndColdLedOutput$.take(1).toFlowable(BackpressureStrategy.MISSING);
+                    return setOutput(output).toFlowable();
                 }, 1, 1)
                 .subscribe();
     }

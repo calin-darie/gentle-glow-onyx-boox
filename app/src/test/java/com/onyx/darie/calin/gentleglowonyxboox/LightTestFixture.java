@@ -14,14 +14,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class LightTestFixture {
+
     public WarmAndColdLedOutput setBrightnessAndWarmth(BrightnessAndWarmth brightnessAndWarmth) {
         captureWarmAndColdLedOutputWithoutCompleting(brightnessAndWarmth);
-        warmAndColdLedOutput$.onNext(ledOutput);
+        complete(ledOutput);
         return ledOutput;
     }
 
     public WarmAndColdLedOutput captureWarmAndColdLedOutputWithoutCompleting(BrightnessAndWarmth brightnessAndWarmth) {
-        reset(nativeLight);
+        resetLedOutputMocks();
         ArgumentCaptor<WarmAndColdLedOutput> ledOutputCaptor = ArgumentCaptor.forClass(WarmAndColdLedOutput.class);
 
         light.setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
@@ -36,20 +37,21 @@ public class LightTestFixture {
     }
 
     public void setBrightnessAndWarmthAndAssertNoChange(BrightnessAndWarmth brightnessAndWarmth) {
-        reset(nativeLight);
+        resetLedOutputMocks();
         light.setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
         verify(nativeLight, never()).setLedOutput(any());
     }
 
     public void captureLedOutputAndComplete() {
         captureChangedLedOutput();
-        reset(nativeLight);
-        warmAndColdLedOutput$.onNext(ledOutput);
+        resetLedOutputMocks();
+        complete(ledOutput);
     }
 
     public void complete(WarmAndColdLedOutput ledOutput) {
-        reset(nativeLight);
+        resetLedOutputMocks();
         warmAndColdLedOutput$.onNext(ledOutput);
+        setLedOutputResult$.onNext(Result.success());
     }
 
     public WarmAndColdLedOutput captureChangedLedOutput() {
@@ -80,6 +82,7 @@ public class LightTestFixture {
 
     public void resetLedOutputMocks() {
         reset(nativeLight);
+        when(nativeLight.setLedOutput(any())).thenReturn(setLedOutputResult$.firstOrError());
     }
 
     public void assertNoChange() {
@@ -92,6 +95,7 @@ public class LightTestFixture {
 
     private PublishSubject<WarmAndColdLedOutput> warmAndColdLedOutput$ =
             PublishSubject.create();
+    private PublishSubject<Result> setLedOutputResult$ = PublishSubject.create();
 
     Range<Integer> ledOutputRange = new Range<>(5, 255);
     private BrightnessAndWarmthState brightnessAndWarmthState;
