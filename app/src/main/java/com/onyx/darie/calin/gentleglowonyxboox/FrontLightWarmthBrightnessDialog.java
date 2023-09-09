@@ -130,9 +130,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         bindLightSwitch();
 
-        bindSliders();
-
         bindLightConfigurations();
+
+        bindSliders();
 
         bindResetSpinner();
 

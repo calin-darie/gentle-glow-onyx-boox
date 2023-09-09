@@ -2,10 +2,12 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import android.content.Intent;
 
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class Light {
@@ -15,7 +17,7 @@ public class Light {
     public final PublishSubject<Object> restoreExternallySetLedOutput$ = PublishSubject.create();
     public final PublishSubject<Integer> applyDeltaBrightnessRequest$ = PublishSubject.create();
     public final PublishSubject<Integer> applyDeltaWarmthRequest$ = PublishSubject.create();
-    public final PublishSubject<BrightnessAndWarmth> restoreBrightnessAndWarmthRequest$ = PublishSubject.create();
+    public final BehaviorSubject<BrightnessAndWarmth> restoreBrightnessAndWarmthRequest$ = BehaviorSubject.create();
 
     public Observable<Boolean> isOn$() { return nativeWarmColdLightController.isOn$(); }
 
@@ -30,7 +32,14 @@ public class Light {
     }
 
     public Observable<BrightnessAndWarmthState> getBrightnessAndWarmthState$() {
-        return brightnessAndWarmthState$;
+        return brightnessAndWarmthState$.startWith(Observable.defer(() -> {
+            BrightnessAndWarmthState latest = getLatestState();
+            return latest != null? Observable.just(latest): Observable.empty();
+                }));
+    }
+
+    private BrightnessAndWarmthState getLatestState() {
+        return latestState;
     }
 
     private Result applyDeltaBrightness(int delta) {
@@ -65,7 +74,8 @@ public class Light {
     private final BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter;
     private Storage<WarmAndColdLedOutput> externallySetLedOutputStorage;
     private WarmAndColdLedOutput output;
-
+    private  final Observable<BrightnessAndWarmth> brightnessAndWarmthRestored$;
+     private BrightnessAndWarmthState latestState;
     public Light(
             NativeWarmColdLightController nativeWarmColdLightController,
             BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter,
@@ -74,6 +84,8 @@ public class Light {
         warmAndColdLedOutput$ = nativeWarmColdLightController.getWarmAndColdLedOutput$()
             .distinctUntilChanged();
         setBrightnessAndWarmthResponse$ = getSetBrightnessAndWarmthResponse$();
+
+        brightnessAndWarmthRestored$ = setupRestoreBrightnesAndWarmthRequestHandler();
         this.brightnessAndWarmthState$ = Observable.merge(
                 restoreBrightnessAndWarmthRequest$.map(brightnessAndWarmth -> new BrightnessAndWarmthState(false, brightnessAndWarmth)),
                 setBrightnessAndWarmthResponse$.toObservable().map(brightnessAndWarmth -> new BrightnessAndWarmthState(false, brightnessAndWarmth)),
@@ -89,7 +101,12 @@ public class Light {
                             adapter.findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(warmAndColdLedOutput):
                             lastSetBrightnessAndWarmth);
                 }))
+                .startWith(brightnessAndWarmthRestored$
+                        .map(brightnessAndWarmth -> new BrightnessAndWarmthState(false, brightnessAndWarmth))
+                        .firstOrError())
+                .doOnNext(bw -> latestState = bw)
                 .distinctUntilChanged()
+                .share()
         ;
         this.adapter = adapter;
         this.externallySetLedOutputStorage = externallySetLedOutputStorage;
@@ -98,7 +115,7 @@ public class Light {
 
     private void setCommandSource() {
         subscribeSetBrightnessAndWarmthRequestHandler();
-        subscribeRestoreBrightnesAndWarmthRequestHandler();
+        setupRestoreBrightnesAndWarmthRequestHandler();
         subscribeRestoreExternalSetting();
         subscribeApplyDeltaBrightness();
         subscribeApplyDeltaWarmth();
@@ -128,8 +145,9 @@ public class Light {
         });
     }
 
-    private void subscribeRestoreBrightnesAndWarmthRequestHandler() {
-        restoreBrightnessAndWarmthRequest$.subscribe(loaded -> lastSetBrightnessAndWarmth = loaded);
+    private @NonNull Observable<BrightnessAndWarmth> setupRestoreBrightnesAndWarmthRequestHandler() {
+        return restoreBrightnessAndWarmthRequest$
+                .doOnNext(loaded -> lastSetBrightnessAndWarmth = loaded);
     }
 
     private Flowable<BrightnessAndWarmth> getSetBrightnessAndWarmthResponse$() {

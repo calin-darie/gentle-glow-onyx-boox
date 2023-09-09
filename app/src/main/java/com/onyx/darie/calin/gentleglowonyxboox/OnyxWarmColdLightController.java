@@ -69,7 +69,8 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
 
     @Override
     public Observable<WarmAndColdLedOutput> getWarmAndColdLedOutput$() {
-        return ledOutput$;
+        return ledOutput$.startWith(Observable.defer(() ->
+                Observable.just(getCurrentWarmAndColdLedOutput())));
     }
 
     @Override
@@ -91,7 +92,9 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
                         )
                 )
                 .share();
-        ledOutput$ =  ledOutputRaw$.filter(output -> desiredLedOutput == null || desiredLedOutput.equals(output));
+        ledOutput$ =  ledOutputRaw$
+                .filter(output -> desiredLedOutput == null || desiredLedOutput.equals(output))
+                .share();
     }
 
     @Override
