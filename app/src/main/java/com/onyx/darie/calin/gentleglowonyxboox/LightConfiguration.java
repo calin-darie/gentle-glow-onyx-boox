@@ -16,47 +16,12 @@ public class LightConfiguration {
         return Arrays.copyOf(presets, presets.length);
     }
 
-    public static NamedWarmthBrightnessOptions getNamedSettings(
-            NamedWarmthBrightnessSetting[] savedNamedWarmthBrightnessSettings,
-            int savedSelectedIndex) {
-        return new NamedWarmthBrightnessOptions(savedNamedWarmthBrightnessSettings, savedSelectedIndex);
-    }
-
-    public static NamedWarmthBrightnessOptions getNamedSettingsWithOnyxSliderSelected(
-            NamedWarmthBrightnessSetting[] savedNamedWarmthBrightnessSettings,
-            WarmthBrightnessSetting onyxSliderApproximationAsWarmthBrightness) {
-        return getNamedWarmthBrightnessOptionsWithOnyxSliderSelected(savedNamedWarmthBrightnessSettings, onyxSliderApproximationAsWarmthBrightness);
-    }
-
     public LightConfiguration cloneAndRename(String name) {
         return new LightConfiguration(name, brightnessAndWarmth);
     }
 
     public LightConfiguration cloneWithBrightnessAndWarmth(BrightnessAndWarmth brightnessAndWarmth) {
         return new LightConfiguration(name, brightnessAndWarmth);
-    }
-
-    private static NamedWarmthBrightnessOptions getNamedWarmthBrightnessOptionsWithOnyxSliderSelected(
-            NamedWarmthBrightnessSetting[] savedNamedSettings,
-            WarmthBrightnessSetting onyxSliderApproximationAsWarmthBrightness) {
-        final NamedWarmthBrightnessSetting[] availableNamedSettings = Arrays.copyOf(savedNamedSettings, savedNamedSettings.length);
-        final int indexOfOnyxCompatibilityPreset = getIndexOfOnyxCompatibilityPreset(availableNamedSettings);
-        final NamedWarmthBrightnessSetting onyxCompatibilityPreset = availableNamedSettings[indexOfOnyxCompatibilityPreset];
-        NamedWarmthBrightnessSetting selectedWarmthBrightness = new NamedWarmthBrightnessSetting(
-                onyxCompatibilityPreset.name,
-                onyxSliderApproximationAsWarmthBrightness,
-                true);
-        availableNamedSettings[indexOfOnyxCompatibilityPreset] = selectedWarmthBrightness;
-
-        return new NamedWarmthBrightnessOptions(availableNamedSettings, indexOfOnyxCompatibilityPreset);
-    }
-
-    private static int getIndexOfOnyxCompatibilityPreset(NamedWarmthBrightnessSetting[] availableNamedSettings) {
-        for (int index = 0; index < availableNamedSettings.length; index++) {
-            if (availableNamedSettings[index].isForOnyxCompatibility)
-                return index;
-        }
-        throw new ArrayIndexOutOfBoundsException("onyx compatibility setting is missing!");
     }
 
     private static final LightConfiguration[] presets = new LightConfiguration[] {
