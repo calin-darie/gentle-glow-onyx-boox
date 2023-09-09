@@ -122,7 +122,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void bindControls() {
-        Frontlight.ensureTurnedOn();
+        light.turnOn();
 
         enableControls();
         final Switch light = findViewById(R.id.light_switch);
@@ -166,7 +166,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         };
         final LifecycleAwareSubscription<Boolean> switchSubscription =
                 new LifecycleAwareSubscription<>(this,
-                        Frontlight.getLightSwitchState$(),
+                        this.light.isOn$(),
                         checkForLightSwitchChange);
         getApplication().registerActivityLifecycleCallbacks(switchSubscription);
     }
@@ -178,19 +178,18 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void bindLightSwitch() {
-        final Switch light = findViewById(R.id.light_switch);
-        light.setChecked(Frontlight.isOn());
-        light.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        final Switch lightSwitch = findViewById(R.id.light_switch);
+        lightSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
-                    Frontlight.ensureTurnedOn();
+                    light.turnOn();
                     findViewById(R.id.namedSettingsLayout).setVisibility(View.VISIBLE);
                     findViewById(R.id.named_settings_editor).setVisibility(View.VISIBLE);
                     ((View)replaceWithPreset.getParent()).setVisibility(View.VISIBLE);
                     status.setText("");
                 } else {
-                    Frontlight.turnOff();
+                    light.turnOff();
                     findViewById(R.id.namedSettingsLayout).setVisibility(View.INVISIBLE);
                     findViewById(R.id.named_settings_editor).setVisibility(View.INVISIBLE);
                     ((View)replaceWithPreset.getParent()).setVisibility(View.GONE);
@@ -242,7 +241,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     private void bindSliders() {
         getApplication().registerActivityLifecycleCallbacks(new LifecycleAwareSubscription<>(this,light.getBrightnessAndWarmthState$(), brightnessAndWarmthState -> {
-            BrightnessAndWarmth bw = brightnessAndWarmthState.brightnessAndWarmth;
             if (brightnessAndWarmthState.isExternalChange) {
                 lightConfigurationEditor.stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
                 lightConfigurations.clearChoice();

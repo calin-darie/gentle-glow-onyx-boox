@@ -7,8 +7,10 @@ import com.onyx.android.sdk.api.device.FrontLightController;
 
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.functions.Function;
 
 public class OnyxWarmColdLightController implements NativeWarmColdLightController{
     @Override
@@ -21,6 +23,18 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
             success &= FrontLightController.openColdLight();
         }
         return success? Result.success() : Result.error("could not turn on the light");
+    }
+
+    @Override
+    public Result turnOn() {
+        WarmAndColdLedOutput outputAfterWeTurnOn = getCurrentWarmAndColdLedOutput();
+        if (outputAfterWeTurnOn.warm == 0 && outputAfterWeTurnOn.cold == 0)
+            turnOn(true, true);
+        else if (outputAfterWeTurnOn.warm == 0)
+            turnOn(false, true);
+        else
+            turnOn(true, false);
+        return Result.success();
     }
 
     @Override
@@ -58,6 +72,11 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
         return ledOutput$;
     }
 
+    @Override
+    public Observable<Boolean> isOn$() {
+        return isOn$.startWith(Single.just(isOn()));
+    }
+
     private void initLedOutputObservable() {
         ledOutputRaw$ =
                 ContentObserverSubscriber
@@ -84,9 +103,43 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
         return FrontLightController.hasCTMBrightness(context);
     }
 
+    @Override
+    public void toggleOnOff() {
+        if (isOn())
+            turnOff();
+        else {
+            turnOn();
+        }
+    }
+
     public OnyxWarmColdLightController(Context context) {
         this.context = context;
         initLedOutputObservable();
+        initIsOnObservable();
+    }
+
+    private void initIsOnObservable() {
+        isOn$ = ContentObserverSubscriber
+                .create(
+                        context.getContentResolver(),
+                        new Uri[]{
+                                Uri.parse("content://settings/system/cold_brightness_state_key"),
+                                Uri.parse("content://settings/system/warm_brightness_state_key"),
+                        },
+                        new Function<Uri, Boolean>() {
+                            @Override
+                            public Boolean apply(@NonNull Uri uri) {
+                                return isOn();
+                            }
+                        }
+                )
+                //.replay(1);
+                .share();
+    }
+
+    private boolean isOn() {
+        return FrontLightController.isColdLightOn(context) ||
+               FrontLightController.isWarmLightOn(context);
     }
 
     private WarmAndColdLedOutput getCurrentWarmAndColdLedOutput () {
@@ -97,6 +150,7 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
     }
 
     private final Context context;
+    private Observable<Boolean> isOn$;
     private Observable<WarmAndColdLedOutput> ledOutput$;
     private Observable<WarmAndColdLedOutput> ledOutputRaw$;
     private WarmAndColdLedOutput desiredLedOutput;

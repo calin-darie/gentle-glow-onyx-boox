@@ -9,12 +9,14 @@ import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Consumer;
 
 public class QuickSettingsTile extends TileService {
-    private Disposable externalChangeSubscription;
+    private Disposable isOnSubscription;
+    private Light light;
 
     @Override
     public void onStartListening() {
-        updateTile(Frontlight.isOn());
-        externalChangeSubscription = Frontlight.getLightSwitchState$()
+        light = ((GentleGlowApplication)getApplication()).getDependencies().getOnyxLight();
+        // todo check first time
+        isOnSubscription = light.isOn$()
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Boolean>() {
                     @Override
@@ -26,7 +28,7 @@ public class QuickSettingsTile extends TileService {
 
     @Override
     public void onStopListening() {
-        externalChangeSubscription.dispose();
+        isOnSubscription.dispose();
     }
 
     private void updateTile(boolean isLightOn) {
@@ -48,13 +50,6 @@ public class QuickSettingsTile extends TileService {
 
     @Override
     public void onClick() {
-        if (!Frontlight.isOn()) {
-            Frontlight.turnOn();
-            updateTile(true);
-        }
-        else {
-            Frontlight.turnOff();
-            updateTile(false);
-        }
+        light.toggleOnOff();
      }
 }

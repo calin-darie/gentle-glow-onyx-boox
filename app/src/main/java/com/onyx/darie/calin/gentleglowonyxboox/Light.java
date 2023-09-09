@@ -17,9 +17,9 @@ public class Light {
     public final PublishSubject<Integer> applyDeltaWarmthRequest$ = PublishSubject.create();
     public final PublishSubject<BrightnessAndWarmth> restoreBrightnessAndWarmthRequest$ = PublishSubject.create();
 
-    public Observable<Boolean> isOn$() { return null; }
+    public Observable<Boolean> isOn$() { return nativeWarmColdLightController.isOn$(); }
 
-    public void turnOn() { nativeWarmColdLightController.turnOn(true, true); } // todo result?
+    public void turnOn() { nativeWarmColdLightController.turnOn(); } // todo result?
 
     public void turnOff() { nativeWarmColdLightController.turnOff(); } // todo result?
 
@@ -146,6 +146,10 @@ public class Light {
     }
     private void subscribeSetBrightnessAndWarmthRequestHandler() {
         setBrightnessAndWarmthResponse$.subscribe();
+    }
+
+    public void toggleOnOff() {
+        nativeWarmColdLightController.toggleOnOff();
     }
 
     // Intent.ACTION_SCREEN_ON

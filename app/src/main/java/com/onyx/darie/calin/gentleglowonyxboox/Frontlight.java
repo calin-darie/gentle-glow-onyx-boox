@@ -20,32 +20,6 @@ public class Frontlight {
     @SuppressLint("StaticFieldLeak") // because we're storing the application context
     private static Context applicationContext;
 
-    public static void turnOn() {
-        WarmColdSetting warmColdSetting = latestSetWarmColdSetting != null ?
-                latestSetWarmColdSetting :
-                getWarmCold();
-        if (warmColdSetting.warm == 0 && warmColdSetting.cold == 0) {
-            FrontLightController.openWarmLight();
-            FrontLightController.openColdLight();
-        }
-        if (warmColdSetting.warm != 0) {
-            FrontLightController.openWarmLight();
-        }
-        if (warmColdSetting.cold != 0) {
-            FrontLightController.openColdLight();
-        }
-    }
-
-    public static boolean isOn() {
-        return FrontLightController.isColdLightOn(applicationContext) ||
-                FrontLightController.isWarmLightOn((applicationContext));
-    }
-
-    public static void turnOff() {
-        FrontLightController.closeWarmLight();
-        FrontLightController.closeColdLight();
-    }
-
     @Deprecated
     public static WarmColdSetting getWarmCold() {
         return new WarmColdSetting(
@@ -110,17 +84,6 @@ public class Frontlight {
         );
     }
 
-    public static void ensureTurnedOn() {
-        if (!isOn()) {
-            turnOn();
-        }
-    }
-
-    private static Observable<Boolean> lightSwitchState$;
-    public static Observable<Boolean> getLightSwitchState$() {
-        return lightSwitchState$;
-    }
-
     private static Observable<WarmColdSetting> warmColdSetting$;
     public static Observable<WarmColdSetting> getWarmColdExternalChange$() {
         return warmColdSetting$
@@ -150,22 +113,6 @@ public class Frontlight {
                                 @Override
                                 public WarmColdSetting apply(@NonNull Uri uri) {
                                     return Frontlight.getWarmCold();
-                                }
-                            }
-                        )
-                        .share();
-        lightSwitchState$ =
-                ContentObserverSubscriber
-                        .create(
-                            context.getContentResolver(),
-                            new Uri[]{
-                                    Uri.parse("content://settings/system/cold_brightness_state_key"),
-                                    Uri.parse("content://settings/system/warm_brightness_state_key"),
-                            },
-                            new Function<Uri, Boolean>() {
-                                @Override
-                                public Boolean apply(@NonNull Uri uri) {
-                                    return Frontlight.isOn();
                                 }
                             }
                         )
