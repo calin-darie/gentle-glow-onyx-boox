@@ -78,7 +78,8 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
     }
 
     private void initLedOutputObservable() {
-        ledOutputRaw$ =
+        ledOutputRaw$ = Observable.merge(
+                isOn$.map(isOn -> getCurrentWarmAndColdLedOutput()),
                 ContentObserverSubscriber
                         .create(
                                 context.getContentResolver(),
@@ -88,7 +89,8 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
                                 },
                                 uri -> getCurrentWarmAndColdLedOutput()
                         )
-                        .share();
+                )
+                .share();
         ledOutput$ =  ledOutputRaw$.filter(output -> desiredLedOutput == null || desiredLedOutput.equals(output));
     }
 
@@ -114,8 +116,8 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
 
     public OnyxWarmColdLightController(Context context) {
         this.context = context;
-        initLedOutputObservable();
         initIsOnObservable();
+        initLedOutputObservable();
     }
 
     private void initIsOnObservable() {
@@ -133,7 +135,6 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
                             }
                         }
                 )
-                //.replay(1);
                 .share();
     }
 
