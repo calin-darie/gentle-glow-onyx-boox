@@ -60,11 +60,11 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
         }
         return ledOutputRaw$
                 .takeWhile(futureOutput -> !futureOutput.equals(output))
-                .timeout(1, TimeUnit.SECONDS)
+                .timeout(3, TimeUnit.SECONDS)
                 .doOnComplete(() -> desiredLedOutput = null)
                 .map(any -> Result.error("light not changed"))
                 .concatWith(Single.just(Result.success()))
-                .lastOrError();
+                .lastOrError().onErrorReturnItem(Result.error("light not changed"));
     }
 
     @Override
