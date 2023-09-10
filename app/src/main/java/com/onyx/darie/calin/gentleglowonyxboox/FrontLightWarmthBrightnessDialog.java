@@ -76,7 +76,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         super.onCreate(savedInstanceState);
 
         light = ((GentleGlowApplication)getApplication()).getDependencies().getOnyxLight();
-        lightConfigurationEditor = ((GentleGlowApplication)getApplication()).getDependencies().getOnyxLightConfigurationEditor();
+        lightConfigurationEditor = ((GentleGlowApplication)getApplication()).getDependencies().getLightConfigurationEditor();
 
         setContentView(R.layout.activity_front_light_warmth_brightness_dialog);
 

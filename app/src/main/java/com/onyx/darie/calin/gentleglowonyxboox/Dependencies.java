@@ -22,7 +22,7 @@ class Dependencies {
         return onyxLight;
     }
 
-    public LightConfigurationEditor getOnyxLightConfigurationEditor() {
+    public LightConfigurationEditor getLightConfigurationEditor() {
         if (onyxLightConfigurationEditor == null) {
             onyxLightConfigurationEditor = new LightConfigurationEditor(
                     getOnyxLight(),
