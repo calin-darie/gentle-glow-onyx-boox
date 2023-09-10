@@ -28,5 +28,21 @@ public class LightConfigurationEditorTest {
     @Before
     public void beforeEach() { fixture= new LightConfigurationEditorTestFixture(); }
 
+    @Test
+    public void whenResumingAfterExternalChange_lightEmitsBrightnessAndWarmth() {
+        fixture.configurationEditor.getLightConfigurationChoices$().subscribe();
+        MutuallyExclusiveChoice<LightConfiguration> oldConfiguration =
+                fixture.configurationEditor.getLightConfigurationChoice();
+
+        fixture.lightTestFixture.simulateOnyxSliderChange(new WarmAndColdLedOutput(255, 255));
+
+        fixture.configurationEditor.chooseCurrentLightConfigurationRequest$.onNext(
+                oldConfiguration.selectedIndex);
+        fixture.lightTestFixture.captureLedOutputAndComplete();
+
+        BrightnessAndWarmthState state = fixture.lightTestFixture.getBrightnessAndWarmthState();
+        assertEquals(oldConfiguration.getSelected().brightnessAndWarmth, state.brightnessAndWarmth);
+    }
+
     LightConfigurationEditorTestFixture fixture;
 }

@@ -89,7 +89,6 @@ public class LightConfigurationEditor {
 
     private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> subscribeChooseCurrentLightConfiguration() {
         return chooseCurrentLightConfigurationRequest$
-                .filter(index -> index != getLightConfigurationChoice().selectedIndex)
                 .map(index -> getLightConfigurationChoice().cloneAndSelect(index))
                 .doAfterNext(configuration ->
                         light.setBrightnessAndWarmthRequest$.onNext(
