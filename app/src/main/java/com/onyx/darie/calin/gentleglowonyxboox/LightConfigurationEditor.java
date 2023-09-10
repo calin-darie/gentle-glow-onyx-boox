@@ -37,10 +37,10 @@ public class LightConfigurationEditor {
         subscribeStartStopCurrentConfigurationBindingToBrightnessAndWarmth();
         this.configurationChoice$ = Observable.defer(() -> Observable
                 .merge(
-                        subscribeBrightnessAndWarmthBinding(),
-                        subscribeChooseCurrentLightConfiguration(),
-                        subscribeRenameCurrentLightConfiguration(),
-                        subscribeReplaceCurrentLightConfiguration()
+                        setupBrightnessAndWarmthBinding(),
+                        setupChooseCurrentLightConfiguration(),
+                        setupRenameCurrentLightConfiguration(),
+                        setupReplaceCurrentLightConfiguration()
                 )
                 .startWithItem(restoreState())
                 .doOnNext(configuration -> setConfiguration(configuration))
@@ -62,7 +62,7 @@ public class LightConfigurationEditor {
     }
 
     private BrightnessAndWarmth latestBrightnessAndWarmth;
-    private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> subscribeBrightnessAndWarmthBinding() {
+    private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> setupBrightnessAndWarmthBinding() {
         return Observable.merge(
                 light.getBrightnessAndWarmthState$()
                         .filter(s -> !s.isExternalChange)
@@ -79,7 +79,7 @@ public class LightConfigurationEditor {
                                 getLightConfigurationChoice().getSelected().cloneWithBrightnessAndWarmth(brightnessAndWarmth)));
     }
 
-    private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> subscribeReplaceCurrentLightConfiguration() {
+    private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> setupReplaceCurrentLightConfiguration() {
         return replaceCurrentLightConfigurationRequest$
                 .map(configuration -> getLightConfigurationChoice().cloneAndReplaceSelected(configuration))
                 .doAfterNext(configuration ->
@@ -87,7 +87,7 @@ public class LightConfigurationEditor {
                                 configuration.getSelected().brightnessAndWarmth));
     }
 
-    private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> subscribeChooseCurrentLightConfiguration() {
+    private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> setupChooseCurrentLightConfiguration() {
         return chooseCurrentLightConfigurationRequest$
                 .map(index -> getLightConfigurationChoice().cloneAndSelect(index))
                 .doAfterNext(configuration ->
@@ -95,7 +95,7 @@ public class LightConfigurationEditor {
                                 configuration.getSelected().brightnessAndWarmth));
     }
 
-    private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> subscribeRenameCurrentLightConfiguration() {
+    private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> setupRenameCurrentLightConfiguration() {
         return renameCurrentLightConfigurationRequest$
                 .filter(name -> !ObjectsCompat.equals(name, getLightConfigurationChoice().getSelected().name))
                 .map(name ->
