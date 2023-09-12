@@ -7,12 +7,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
@@ -23,8 +27,8 @@ import com.google.android.flexbox.FlexboxLayout;
 
 import java.util.stream.Collectors;
 
-import butterknife.ButterKnife;
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import io.reactivex.rxjava3.functions.Consumer;
 
 public class FrontLightWarmthBrightnessDialog extends Activity {
@@ -64,6 +68,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     @BindView(R.id.permissions_button)
     Button goToPermissions;
+
+    @BindView(R.id.open_profiles_more_menu_button)
+    ImageButton openProfilesMoreMenu;
 
     MutuallyExclusiveChoiceGroup lightConfigurations = new MutuallyExclusiveChoiceGroup();
 
@@ -291,6 +298,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     private void bindLightConfigurations() {
         bindNameViewToEditor();
+
+        final Context context = this;
         final LifecycleAwareSubscription<MutuallyExclusiveChoice<LightConfiguration>> subscription =
                 new LifecycleAwareSubscription<>(this,
                         lightConfigurationEditor.getLightConfigurationChoices$(),
@@ -318,6 +327,22 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                                     lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
                                     return null;
                                 });
+                                openProfilesMoreMenu.setOnClickListener(view -> {
+                                    PopupMenu popup = new PopupMenu(context, view);
+                                    popup.setGravity(Gravity.END);
+                                    popup.setOnMenuItemClickListener(item -> {
+                                        switch (item.getItemId()) {
+                                            case R.id.restore_onyx_sliders:
+                                                light.restoreExternallySetLedOutput$.onNext(0);
+                                                return true;
+                                            default:
+                                                return false;
+                                        }
+                                    });
+                                    MenuInflater inflater = popup.getMenuInflater();
+                                    inflater.inflate(R.menu.profiles_more, popup.getMenu());
+                                    popup.show();
+                                });
                             }
                         });
         getApplication().registerActivityLifecycleCallbacks(subscription);
@@ -336,7 +361,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         for (int index = 0; index < LightConfiguration.getPresets().length; index++) {
             final RadioButton radioButton = new RadioButton(this);
             radioButton.setId(View.generateViewId());
-            radioButton.setLayoutParams(new RadioGroup.LayoutParams(FlexboxLayout.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT, 1));
+            RadioGroup.LayoutParams layout = new RadioGroup.LayoutParams(FlexboxLayout.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT, 1);
+            layout.setMargins(-10, 16, 10,  16);
+            radioButton.setLayoutParams(layout);
             lightConfigurations.add(radioButton);
             ((FlexboxLayout) findViewById(R.id.namedSettingsLayout)).addView(radioButton);
         }
