@@ -31,7 +31,9 @@ public class LightConfigurationEditor {
         return configurationChoice$;
     }
 
-    public LightConfigurationEditor(Light light, Storage<LightConfigurationChoice> storage) {
+    public LightConfigurationEditor(
+            Light light,
+            Storage<LightConfigurationChoice> storage) {
         this.light = light;
         this.storage = storage;
         subscribeStartStopCurrentConfigurationBindingToBrightnessAndWarmth();
@@ -116,69 +118,4 @@ public class LightConfigurationEditor {
     private Observable<MutuallyExclusiveChoice<LightConfiguration>> configurationChoice$;
     private boolean isCurrentLightConfigurationBoundToBrightnessAndWarmth;
 }
-// todo
-// restore onyx slider UI
-// migrateSavedSettings()
-// todo test
-// emit & handle first light
-// bind config to trackbar`
-// bind config to +/-
-// save on release track bar
-// circular events
-// fix reset
 
-//    File namedSettingsFile()  {
-//        return new File(getFilesDir(), "namedSettings.json");
-//    }
-//
-//    Gson json = new Gson();
-//    private void migrateSavedSettings() { // todo
-//        NamedWarmthBrightnessSetting[] savedSettings = loadNamedSettings();
-//        boolean changed = false;
-//        for (int i = 0; i< savedSettings.length; i++) {
-//            if (savedSettings[i].setting.brightness == 0) {
-//                savedSettings[i] = NamedWarmthBrightnessSetting.presets[i];
-//                changed = true;
-//            }
-//        }
-//        if (changed) {
-//            saveNamedSettings(savedSettings);
-//        }
-//    }
-
-//    private NamedWarmthBrightnessSetting[] loadNamedSettings() {
-//        File namedSettingsFile = namedSettingsFile();
-//        if (! namedSettingsFile.exists())
-//            return new NamedWarmthBrightnessSetting[0];
-//
-//        byte[] bytes;
-//        try {
-//            bytes = Files.readAllBytes(namedSettingsFile.toPath());
-//        } catch (IOException e) {
-//            status.setText("Error reading presets. This should never happen.");
-//            return new NamedWarmthBrightnessSetting[0];
-//        }
-//        String namedSettingsAsJson = new String(bytes);
-//        return json.fromJson(namedSettingsAsJson, NamedWarmthBrightnessSetting[].class);
-//    }
-//
-//
-//    File selectionFile()  {
-//        return new File(getFilesDir(), "selectedIndex.txt");
-//    }
-//
-//    private int loadSelectedIndex() {
-//        File file = selectionFile();
-//        if (! file.exists())
-//            return 0;
-//
-//        byte[] bytes;
-//        try {
-//            bytes = Files.readAllBytes(file.toPath());
-//        } catch (IOException e) {
-//            status.setText("Error reading selection. This should never happen.");
-//            return 0;
-//        }
-//        String selectedAsString = new String(bytes);
-//        return Integer.parseInt(selectedAsString);
-//    }

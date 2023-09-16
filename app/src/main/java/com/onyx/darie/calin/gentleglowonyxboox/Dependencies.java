@@ -26,7 +26,8 @@ class Dependencies {
         if (onyxLightConfigurationEditor == null) {
             onyxLightConfigurationEditor = new LightConfigurationEditor(
                     getOnyxLight(),
-                    new FileStorage<LightConfigurationChoice>(context.getFilesDir(), "lightConfigurations.json")
+                    new LightConfigurationMigrationStorage(context.getFilesDir())
+                    //new FileStorage<LightConfigurationChoice>(context.getFilesDir(), "lightConfigurations.json")
             );
         }
         return onyxLightConfigurationEditor;
