@@ -2,6 +2,9 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class LightConfigurationMigrationStorage implements Storage<LightConfigurationChoice>{
     public LightConfigurationMigrationStorage(File directory) {
@@ -22,16 +25,21 @@ public class LightConfigurationMigrationStorage implements Storage<LightConfigur
         if (legacySettingsIndexResult.hasError())
             return null;
 
-        LightConfiguration[] choices = Arrays.stream(legacySettingsResult.value)
-                .filter(setting -> !setting.isForOnyxCompatibility)
-                .map(setting -> new LightConfiguration(setting.name,
-                        new BrightnessAndWarmth(new Brightness(setting.setting.brightness), new Warmth(setting.setting.warmth))))
-                .toArray(size -> new LightConfiguration[size]);
+        LightConfiguration[] choices =
+            Stream.concat(
+                    Arrays.stream(legacySettingsResult.value)
+                    .filter(setting -> !setting.isForOnyxCompatibility)
+                    .map(setting -> new LightConfiguration(setting.name,
+                            new BrightnessAndWarmth(new Brightness(setting.setting.brightness), new Warmth(setting.setting.warmth)))),
+
+                    (Arrays.stream(LightConfiguration.getPresets()).skip(LightConfiguration.getPresets().length - 1))
+                    )
+                    .toArray(size -> new LightConfiguration[size]);
 
         int index = legacySettingsIndexResult.value >= choices.length? 0 : legacySettingsIndexResult.value;
 
         LightConfigurationChoice configuration = new LightConfigurationChoice(choices, index);
-        // todo test return Integer.parseInt(selectedAsString);
+        Logger.getLogger("x").log(Level.SEVERE, "selected index: " + index);
         return configuration;
     }
 
@@ -42,8 +50,8 @@ public class LightConfigurationMigrationStorage implements Storage<LightConfigur
 
     @Override
     public Result<LightConfigurationChoice> loadOrDefault(LightConfigurationChoice defaultValue) {
-        Result<LightConfigurationChoice> rawResult = storage.loadOrDefault(null);
-        if (rawResult.hasError() || rawResult.value != null)
+        Result<LightConfigurationChoice> rawResult = storage.loadOrDefault(new LightConfigurationChoice(new LightConfiguration[0], -1));
+        if (rawResult.hasError() || rawResult.value.selectedIndex != -1)
             return rawResult;
 
         LightConfigurationChoice migratedChoice = migrateSavedSettings();
