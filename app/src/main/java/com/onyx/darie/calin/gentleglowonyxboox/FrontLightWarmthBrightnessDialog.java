@@ -82,6 +82,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setShowWhenLocked(true);
+
         light = ((GentleGlowApplication)getApplication()).getDependencies().getOnyxLight();
         lightConfigurationEditor = ((GentleGlowApplication)getApplication()).getDependencies().getLightConfigurationEditor();
 
