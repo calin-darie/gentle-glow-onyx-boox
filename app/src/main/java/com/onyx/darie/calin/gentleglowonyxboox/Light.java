@@ -141,7 +141,6 @@ public class Light {
         restoreExternallySetLedOutput$.subscribe(_ignore -> {
             Result<WarmAndColdLedOutput> loadResult = externallySetLedOutputStorage.loadOrDefault(new WarmAndColdLedOutput(128, 128));
             setOutput(loadResult.value);
-            lastSetBrightnessAndWarmth = adapter.findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(loadResult.value);
         });
     }
 

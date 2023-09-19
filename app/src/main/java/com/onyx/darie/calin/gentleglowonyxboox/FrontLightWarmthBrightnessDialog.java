@@ -138,10 +138,12 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         bindLightSwitch();
 
         bindLightConfigurations();
+        bindStatus();
 
         bindSliders();
 
         bindResetSpinner();
+
 
         listenForExternalLightChanges();
     }
@@ -194,7 +196,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                     findViewById(R.id.namedSettingsLayout).setVisibility(View.VISIBLE);
                     findViewById(R.id.named_settings_editor).setVisibility(View.VISIBLE);
                     ((View)replaceWithPreset.getParent()).setVisibility(View.VISIBLE);
-                    status.setText("");
                 } else {
                     light.turnOff();
                     findViewById(R.id.namedSettingsLayout).setVisibility(View.INVISIBLE);
@@ -250,7 +251,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         getApplication().registerActivityLifecycleCallbacks(new LifecycleAwareSubscription<>(this,light.getBrightnessAndWarmthState$(), brightnessAndWarmthState -> {
             if (brightnessAndWarmthState.isExternalChange) {
                 lightConfigurationEditor.stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
-                lightConfigurations.clearChoice();
             }
             onBrightnessAndWarmthChanged(brightnessAndWarmthState.brightnessAndWarmth);
         }));
@@ -264,7 +264,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
             public void onStartTrackingTouch(SeekBar seekBar) {
                 lightConfigurationEditor.stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
-                status.setText("");
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
@@ -296,6 +295,15 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         warmthValue.setText(brightnessAndWarmth.warmth.value + " / 100");
     }
 
+    private void bindStatus() {
+        final LifecycleAwareSubscription<Integer> subscription =
+                new LifecycleAwareSubscription<>(this,
+                        lightConfigurationEditor.getStatus$(),
+                        statusStringId -> status.setText(getText(statusStringId))
+                        );
+        getApplication().registerActivityLifecycleCallbacks(subscription);
+    }
+
     private void bindLightConfigurations() {
         bindNameViewToEditor();
 
@@ -310,9 +318,17 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                                 if (!name.isFocused()) {
                                     name.setText(lightConfigurationChoice.getSelected().name);
                                 }
+
+                                if (lightConfigurationChoice.hasChoice()) {
+                                    replaceWithPreset.setVisibility(View.VISIBLE);
+                                    name.setEnabled(true);
+                                } else {
+                                    replaceWithPreset.setVisibility(View.GONE);
+                                    name.setEnabled(false);
+                                }
+
                                 if (!isFirstTime) {
                                     FrontLightWarmthBrightnessDialog.this.updateRadioButtons(lightConfigurationChoice);
-                                    status.setText(FrontLightWarmthBrightnessDialog.this.getText(R.string.saved)); // todo move to own subscription, or rename the method?
                                     return;
                                 }
                                 isFirstTime = false;

@@ -16,6 +16,7 @@ public class LightConfigurationEditor {
     public final PublishSubject<Integer> stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$ = PublishSubject.create();
     public final PublishSubject<String> renameCurrentLightConfigurationRequest$ = PublishSubject.create();
     public final PublishSubject<LightConfiguration> replaceCurrentLightConfigurationRequest$ = PublishSubject.create();
+    private final PublishSubject<Integer> status$ = PublishSubject.create();
     private MutuallyExclusiveChoice<LightConfiguration> lightConfigurationChoice;
 
     public MutuallyExclusiveChoice<LightConfiguration> getLightConfigurationChoice() {
@@ -29,6 +30,10 @@ public class LightConfigurationEditor {
 
     public Observable<MutuallyExclusiveChoice<LightConfiguration>> getLightConfigurationChoices$() {
         return configurationChoice$;
+    }
+
+    public Observable<Integer> getStatus$() {
+        return status$.distinctUntilChanged();
     }
 
     public LightConfigurationEditor(
@@ -45,40 +50,64 @@ public class LightConfigurationEditor {
                         setupReplaceCurrentLightConfiguration()
                 )
                 .startWithItem(restoreState())
+                .distinctUntilChanged()
                 .doOnNext(configuration -> setConfiguration(configuration))
         );
     }
 
     private void setConfiguration(MutuallyExclusiveChoice<LightConfiguration> configuration) {
         this.lightConfigurationChoice = configuration;
+
+        if(!configuration.hasChoice()) {
+            status$.onNext(R.string.external_change_status);
+            return;
+        }
+
+        status$.onNext(R.string.empty);
         storage.save(new LightConfigurationChoice(configuration.choices, configuration.selectedIndex));
+        status$.onNext(R.string.saved);
     }
 
     private MutuallyExclusiveChoice<LightConfiguration> restoreState() {
-        Result<LightConfigurationChoice> result = storage.loadOrDefault(
-                new LightConfigurationChoice(LightConfiguration.getPresets(), 0));
-        // todo handle error
-        BrightnessAndWarmth brightnessAndWarmth = result.value.getSelected().brightnessAndWarmth;
-        light.restoreBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
-        return result.value;
-    }
+        LightConfigurationChoice defaultValue = new LightConfigurationChoice(LightConfiguration.getPresets(), 0);
+        Result<LightConfigurationChoice> result = storage.loadOrDefault(defaultValue);
 
+        LightConfigurationChoice restoredState = result.hasError()? defaultValue :result.value;
+
+        BrightnessAndWarmth brightnessAndWarmth = restoredState
+                .getSelected().brightnessAndWarmth;
+        light.restoreBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
+        return restoredState;
+    }
     private BrightnessAndWarmth latestBrightnessAndWarmth;
+
     private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> setupBrightnessAndWarmthBinding() {
         return Observable.merge(
                 light.getBrightnessAndWarmthState$()
-                        .filter(s -> !s.isExternalChange)
-                        .doOnNext(s -> latestBrightnessAndWarmth = s.brightnessAndWarmth)
-                        .filter(s -> isCurrentLightConfigurationBoundToBrightnessAndWarmth)
-                        .map(s -> s.brightnessAndWarmth),
-                editResumed$
-                        .filter(ignore -> latestBrightnessAndWarmth != null)
-                        .map(ignore -> latestBrightnessAndWarmth)
-        )
-                .filter(brightnessAndWarmth -> !brightnessAndWarmth.equals(getLightConfigurationChoice().getSelected().brightnessAndWarmth))
-                .map(brightnessAndWarmth ->
-                        getLightConfigurationChoice().cloneAndReplaceSelected(
-                                getLightConfigurationChoice().getSelected().cloneWithBrightnessAndWarmth(brightnessAndWarmth)));
+                        .filter(s -> s.isExternalChange)
+                        .map(s -> getLightConfigurationChoice().cloneAndClearChoice()),
+                Observable.merge(
+                        light.getBrightnessAndWarmthState$()
+                                .filter(s -> !s.isExternalChange)
+                                .doOnNext(s -> {
+                                    MutuallyExclusiveChoice<LightConfiguration> choice = getLightConfigurationChoice();
+                                    if (choice.hasChoice() &&
+                                            ! s.brightnessAndWarmth.equals(choice.getSelected().brightnessAndWarmth)) {
+                                        status$.onNext(R.string.empty);
+                                    }
+                                })
+                                .doOnNext(s -> latestBrightnessAndWarmth = s.brightnessAndWarmth)
+                                .filter(s -> isCurrentLightConfigurationBoundToBrightnessAndWarmth)
+                                .map(s -> s.brightnessAndWarmth),
+                        editResumed$
+                                .filter(ignore -> latestBrightnessAndWarmth != null)
+                                .map(ignore -> latestBrightnessAndWarmth)
+                        )
+                        .filter(brightnessAndWarmth -> !brightnessAndWarmth.equals(getLightConfigurationChoice().getSelected().brightnessAndWarmth))
+                        .map(brightnessAndWarmth ->
+                                getLightConfigurationChoice().cloneAndReplaceSelected(
+                                        getLightConfigurationChoice().getSelected().cloneWithBrightnessAndWarmth(brightnessAndWarmth)))
+        );
     }
 
     private @NonNull Observable<MutuallyExclusiveChoice<LightConfiguration>> setupReplaceCurrentLightConfiguration() {
@@ -112,10 +141,10 @@ public class LightConfigurationEditor {
         stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$
                 .subscribe(_ignore -> isCurrentLightConfigurationBoundToBrightnessAndWarmth = false);
     }
-
     private final Light light;
     private final Storage<LightConfigurationChoice> storage;
     private Observable<MutuallyExclusiveChoice<LightConfiguration>> configurationChoice$;
+
     private boolean isCurrentLightConfigurationBoundToBrightnessAndWarmth;
 }
 

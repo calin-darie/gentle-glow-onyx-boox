@@ -35,7 +35,7 @@ public class LightTest_restoreExternalSetting {
         fixture.restoreExternallySetLedOutput();
 
         assertEquals(
-                new BrightnessAndWarmthState(false, new BrightnessAndWarmth(
+                new BrightnessAndWarmthState(true, new BrightnessAndWarmth(
                         new Brightness(100), new Warmth(100))),
                 fixture.getBrightnessAndWarmthState());
     }

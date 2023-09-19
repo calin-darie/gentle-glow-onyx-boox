@@ -30,8 +30,9 @@ public class MutuallyExclusiveChoiceGroup {
 
     public void setChosenIndex(int index) {
         uncheckLightConfigurationRadioButton();
-        chosenIndex = index; // todo check?
-        getCheckedButton().setChecked(true);
+        chosenIndex = index;
+        if (chosenIndex != NoChoice)
+            getCheckedButton().setChecked(true);
     }
 
     private void uncheckLightConfigurationRadioButton() {
