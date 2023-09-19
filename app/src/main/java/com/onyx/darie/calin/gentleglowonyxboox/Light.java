@@ -43,7 +43,7 @@ public class Light {
     }
 
     private Result applyDeltaBrightness(int delta) {
-        final Result<BrightnessAndWarmth> brightnessAndWarmthResult = lastSetBrightnessAndWarmth
+        final Result<BrightnessAndWarmth> brightnessAndWarmthResult = latestState.brightnessAndWarmth
                 .withDeltaBrightness(delta);
         if (brightnessAndWarmthResult.hasError()) {
             return brightnessAndWarmthResult;
@@ -53,7 +53,7 @@ public class Light {
     }
 
     private Result applyDeltaWarmth(int delta) {
-        final Result<BrightnessAndWarmth> brightnessAndWarmthResult = lastSetBrightnessAndWarmth
+        final Result<BrightnessAndWarmth> brightnessAndWarmthResult = latestState.brightnessAndWarmth
                 .withDeltaWarmth(delta);
         if (brightnessAndWarmthResult.hasError()) {
             return brightnessAndWarmthResult;
