@@ -12,8 +12,8 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.functions.Function;
 
-public class OnyxWarmColdLightController implements NativeWarmColdLightController{
-    @Override
+public class OnyxWarmColdLightController implements NativeLightController<WarmAndColdLedOutput>{
+
     public Result turnOn(boolean warm, boolean cold) {
         boolean success = true;
         if (warm) {
@@ -46,7 +46,7 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
     }
 
     @Override
-    public Single<Result> setLedOutput(WarmAndColdLedOutput output) {
+    public Single<Result> setOutput(WarmAndColdLedOutput output) {
         WarmAndColdLedOutput currentLedOutput = getCurrentWarmAndColdLedOutput();
         desiredLedOutput = output;
         if (currentLedOutput.equals(output)) {
@@ -68,7 +68,7 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
     }
 
     @Override
-    public Observable<WarmAndColdLedOutput> getWarmAndColdLedOutput$() {
+    public Observable<WarmAndColdLedOutput> getOutput$() {
         return ledOutput$.startWith(Observable.defer(() ->
                 Observable.just(getCurrentWarmAndColdLedOutput())));
     }
@@ -95,12 +95,6 @@ public class OnyxWarmColdLightController implements NativeWarmColdLightControlle
         ledOutput$ =  ledOutputRaw$
                 .filter(output -> desiredLedOutput == null || desiredLedOutput.equals(output))
                 .share();
-    }
-
-    @Override
-    public Range<Integer> getWarmAndColdLedOutputRange() {
-        Integer[] warmLightValues = FrontLightController.getWarmLightValues(context);
-        return new Range<>(warmLightValues[1], warmLightValues[warmLightValues.length - 1]);
     }
 
     @Override

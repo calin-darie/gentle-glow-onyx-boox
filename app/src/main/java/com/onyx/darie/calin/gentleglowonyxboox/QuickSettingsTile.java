@@ -14,7 +14,7 @@ public class QuickSettingsTile extends TileService {
 
     @Override
     public void onStartListening() {
-        light = ((GentleGlowApplication)getApplication()).getDependencies().getOnyxLight();
+        light = ((GentleGlowApplication)getApplication()).getDependencies().getLight();
         // todo check first time
         isOnSubscription = light.isOn$()
                 .subscribeOn(AndroidSchedulers.mainThread())

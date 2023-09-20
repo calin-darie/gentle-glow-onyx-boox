@@ -84,7 +84,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         setShowWhenLocked(true);
 
-        light = ((GentleGlowApplication)getApplication()).getDependencies().getOnyxLight();
+        light = ((GentleGlowApplication)getApplication()).getDependencies().getLight();
         lightConfigurationEditor = ((GentleGlowApplication)getApplication()).getDependencies().getLightConfigurationEditor();
 
         setContentView(R.layout.activity_front_light_warmth_brightness_dialog);
@@ -220,7 +220,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         alertDialog.setSingleChoiceItems(arrayAdapter, -1, (dialog, position) -> {
             SelectItem item = arrayAdapter.getItem(position);
 
-            lightConfigurationEditor.replaceCurrentLightConfigurationRequest$.onNext(item.item);
+            lightConfigurationEditor.getReplaceCurrentLightConfigurationRequest$().onNext(item.item);
 
             dialog.dismiss();
         });
@@ -244,7 +244,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
             @Override
             public void afterTextChanged(Editable s) {
-                lightConfigurationEditor.renameCurrentLightConfigurationRequest$.onNext(name.getText().toString());
+                lightConfigurationEditor.getRenameCurrentLightConfigurationRequest$().onNext(name.getText().toString());
             }
         });
     }
@@ -252,34 +252,34 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     private void bindSliders() {
         getApplication().registerActivityLifecycleCallbacks(new LifecycleAwareSubscription<>(this,light.getBrightnessAndWarmthState$(), brightnessAndWarmthState -> {
             if (brightnessAndWarmthState.isExternalChange) {
-                lightConfigurationEditor.stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
+                lightConfigurationEditor.getStopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$().onNext(0);
             }
             onBrightnessAndWarmthChanged(brightnessAndWarmthState.brightnessAndWarmth);
         }));
         SeekBar.OnSeekBarChangeListener seekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (!fromUser) return;
-                light.setBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(
+                light.getSetBrightnessAndWarmthRequest$().onNext(new BrightnessAndWarmth(
                         new Brightness(brightness.getProgress()),
                         new Warmth(warmth.getProgress())));
             }
 
             public void onStartTrackingTouch(SeekBar seekBar) {
-                lightConfigurationEditor.stopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
+                lightConfigurationEditor.getStopEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$().onNext(0);
             }
 
             public void onStopTrackingTouch(SeekBar seekBar) {
-                lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
+                lightConfigurationEditor.getStartEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$().onNext(0);
             }
         };
         brightness.setOnSeekBarChangeListener(seekBarChangeListener);
         warmth.setOnSeekBarChangeListener(seekBarChangeListener);
 
-        decreaseBrightnessButton.setOnClickListener(v -> light.applyDeltaBrightnessRequest$.onNext(-1));
-        increaseBrightnessButton.setOnClickListener(v -> light.applyDeltaBrightnessRequest$.onNext(+1));
+        decreaseBrightnessButton.setOnClickListener(v -> light.getApplyDeltaBrightnessRequest$().onNext(-1));
+        increaseBrightnessButton.setOnClickListener(v -> light.getApplyDeltaBrightnessRequest$().onNext(+1));
 
-        decreaseWarmthButton.setOnClickListener(v -> light.applyDeltaWarmthRequest$.onNext(-1));
-        increaseWarmthButton.setOnClickListener(v -> light.applyDeltaWarmthRequest$.onNext(+1));
+        decreaseWarmthButton.setOnClickListener(v -> light.getApplyDeltaWarmthRequest$().onNext(-1));
+        increaseWarmthButton.setOnClickListener(v -> light.getApplyDeltaWarmthRequest$().onNext(+1));
     }
 
     private void onBrightnessAndWarmthChanged(BrightnessAndWarmth brightnessAndWarmth) {
@@ -335,14 +335,14 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                                 }
                                 isFirstTime = false;
                                 FrontLightWarmthBrightnessDialog.this.initRadioButtons();
-                                lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
+                                lightConfigurationEditor.getStartEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$().onNext(0);
 
                                 lightConfigurations.setOnChoiceChanged(() -> {
                                     name.clearFocus();
                                     InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                                     imm.hideSoftInputFromWindow(name.getWindowToken(), 0);
-                                    lightConfigurationEditor.chooseCurrentLightConfigurationRequest$.onNext(lightConfigurations.getChosenIndex());
-                                    lightConfigurationEditor.startEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$.onNext(0);
+                                    lightConfigurationEditor.getChooseCurrentLightConfigurationRequest$().onNext(lightConfigurations.getChosenIndex());
+                                    lightConfigurationEditor.getStartEditingCurrentLightConfigurationByBindingToCurrentBrightnessAndWarmthRequest$().onNext(0);
                                     return null;
                                 });
                                 openProfilesMoreMenu.setOnClickListener(view -> {
@@ -351,7 +351,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                                     popup.setOnMenuItemClickListener(item -> {
                                         switch (item.getItemId()) {
                                             case R.id.restore_onyx_sliders:
-                                                light.restoreExternallySetLedOutput$.onNext(0);
+                                                light.getRestoreExternallySetLedOutput$().onNext(0);
                                                 return true;
                                             default:
                                                 return false;

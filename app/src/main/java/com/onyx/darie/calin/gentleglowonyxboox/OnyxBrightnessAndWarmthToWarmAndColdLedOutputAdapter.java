@@ -1,7 +1,8 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
-public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements BrightnessAndWarmthToWarmAndColdLedOutputAdapter {    @Override
-    public WarmAndColdLedOutput toWarmAndColdLedOutput(BrightnessAndWarmth brightnessAndWarmth) {
+public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements BrightnessAndWarmthToNativeOutputAdapter<WarmAndColdLedOutput> {
+    @Override
+    public WarmAndColdLedOutput toNativeOutput(BrightnessAndWarmth brightnessAndWarmth) {
         final double desiredBrightnessLux = convertBrightnessSettingToLux(brightnessAndWarmth.brightness.value);
 
         final double desiredWarmBrightnessLux = desiredBrightnessLux * brightnessAndWarmth.warmth.value / 100;
@@ -77,7 +78,7 @@ public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements Bri
     }
 
     @Override
-    public BrightnessAndWarmth findBrightnessAndWarmthApproximationForWarmAndColdLedOutput(WarmAndColdLedOutput warmCold) {
+    public BrightnessAndWarmth findBrightnessAndWarmthApproximationForNativeOutput(WarmAndColdLedOutput warmCold) {
         if (brightnessAndWarmthByWarmAndCold == null)
             brightnessAndWarmthByWarmAndCold = getBrightnessAndWarmthByWarmAndCold();
 
@@ -99,7 +100,7 @@ public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements Bri
         for (int brightness = 100; brightness >= 1; brightness--)
             for (int warmth = 0; warmth <= 100; warmth++) {
                 BrightnessAndWarmth brightnessAndWarmth = new BrightnessAndWarmth(new Brightness(brightness), new Warmth(warmth));
-                WarmAndColdLedOutput output = toWarmAndColdLedOutput(brightnessAndWarmth);
+                WarmAndColdLedOutput output = toNativeOutput(brightnessAndWarmth);
                 brightnessAndWarmthByWarmAndCold[output.warm][output.cold] = brightnessAndWarmth;
             }
 

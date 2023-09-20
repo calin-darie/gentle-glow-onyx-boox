@@ -18,7 +18,7 @@ public class LightConfigurationEditorTest {
     public void whenSelectedConfigurationChanges_lightEmitsBrightnessAndWarmth() {
         fixture.configurationEditor.getLightConfigurationChoices$().subscribe();
         int indexToSelect = 1;
-        fixture.configurationEditor.chooseCurrentLightConfigurationRequest$.onNext(indexToSelect);
+        fixture.configurationEditor.getChooseCurrentLightConfigurationRequest$().onNext(indexToSelect);
         fixture.lightTestFixture.captureLedOutputAndComplete();
 
         BrightnessAndWarmthState state = fixture.lightTestFixture.getBrightnessAndWarmthState();
@@ -36,7 +36,7 @@ public class LightConfigurationEditorTest {
 
         fixture.lightTestFixture.simulateOnyxSliderChange(new WarmAndColdLedOutput(255, 255));
 
-        fixture.configurationEditor.chooseCurrentLightConfigurationRequest$.onNext(
+        fixture.configurationEditor.getChooseCurrentLightConfigurationRequest$().onNext(
                 oldConfiguration.selectedIndex);
         fixture.lightTestFixture.captureLedOutputAndComplete();
 

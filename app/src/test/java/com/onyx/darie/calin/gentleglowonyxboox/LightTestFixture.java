@@ -25,9 +25,9 @@ public class LightTestFixture {
         resetLedOutputMocks();
         ArgumentCaptor<WarmAndColdLedOutput> ledOutputCaptor = ArgumentCaptor.forClass(WarmAndColdLedOutput.class);
 
-        light.setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
+        light.getSetBrightnessAndWarmthRequest$().onNext(brightnessAndWarmth);
 
-        verify(nativeLight, atLeast(0)).setLedOutput(ledOutputCaptor.capture());
+        verify(nativeLight, atLeast(0)).setOutput(ledOutputCaptor.capture());
 
         if (ledOutputCaptor.getAllValues().size() == 0) {
             return ledOutput;
@@ -38,8 +38,8 @@ public class LightTestFixture {
 
     public void setBrightnessAndWarmthAndAssertNoChange(BrightnessAndWarmth brightnessAndWarmth) {
         resetLedOutputMocks();
-        light.setBrightnessAndWarmthRequest$.onNext(brightnessAndWarmth);
-        verify(nativeLight, never()).setLedOutput(any());
+        light.getSetBrightnessAndWarmthRequest$().onNext(brightnessAndWarmth);
+        verify(nativeLight, never()).setOutput(any());
     }
 
     public void captureLedOutputAndComplete() {
@@ -56,7 +56,7 @@ public class LightTestFixture {
 
     public WarmAndColdLedOutput captureChangedLedOutput() {
         ArgumentCaptor<WarmAndColdLedOutput> ledOutputCaptor = ArgumentCaptor.forClass(WarmAndColdLedOutput.class);
-        verify(nativeLight).setLedOutput(ledOutputCaptor.capture());
+        verify(nativeLight).setOutput(ledOutputCaptor.capture());
         ledOutput = ledOutputCaptor.getValue();
         return ledOutput;
     }
@@ -70,27 +70,27 @@ public class LightTestFixture {
     }
 
     public void setSavedBrightnessAndWarmth(BrightnessAndWarmth value) {
-        light.restoreBrightnessAndWarmthRequest$.onNext(value);
+        light.getRestoreBrightnessAndWarmthRequest$().onNext(value);
     }
 
     public void restoreExternallySetLedOutput() {
         resetLedOutputMocks();
-        light.restoreExternallySetLedOutput$.onNext(0);
+        light.getRestoreExternallySetLedOutput$().onNext(0);
         captureChangedLedOutput();
         warmAndColdLedOutput$.onNext(ledOutput);
     }
 
     public void resetLedOutputMocks() {
         reset(nativeLight);
-        when(nativeLight.setLedOutput(any())).thenReturn(setLedOutputResult$.firstOrError());
+        when(nativeLight.setOutput(any())).thenReturn(setLedOutputResult$.firstOrError());
     }
 
     public void assertNoChange() {
-        verify(nativeLight, never()).setLedOutput(any());
+        verify(nativeLight, never()).setOutput(any());
     }
 
     @Mock
-    private NativeWarmColdLightController nativeLight;
+    private NativeLightController<WarmAndColdLedOutput> nativeLight;
     private Storage<WarmAndColdLedOutput> externallySetLedOutputStorage = new FakeStorage<WarmAndColdLedOutput>();
 
     private PublishSubject<WarmAndColdLedOutput> warmAndColdLedOutput$ =
@@ -100,18 +100,18 @@ public class LightTestFixture {
     Range<Integer> ledOutputRange = new Range<>(5, 255);
     private BrightnessAndWarmthState brightnessAndWarmthState;
     private WarmAndColdLedOutput ledOutput;
-    public final Light light;
+    public final LightImpl<WarmAndColdLedOutput> light;
 
     public LightTestFixture() {
         MockitoAnnotations.openMocks(this);
 
         resetLedOutputMocks();
-        when(nativeLight.getWarmAndColdLedOutput$())
+        when(nativeLight.getOutput$())
                 .thenReturn(warmAndColdLedOutput$);
         OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter =
                 new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(ledOutputRange);
-        light = new Light(nativeLight, adapter, externallySetLedOutputStorage);
+        light = new LightImpl<WarmAndColdLedOutput>(nativeLight, adapter, externallySetLedOutputStorage);
         light.getBrightnessAndWarmthState$().subscribe(brightnessAndWarmthState -> this.brightnessAndWarmthState = brightnessAndWarmthState);
-        light.restoreBrightnessAndWarmthRequest$.onNext(new BrightnessAndWarmth(new Brightness(51), new Warmth(51)));
+        light.getRestoreBrightnessAndWarmthRequest$().onNext(new BrightnessAndWarmth(new Brightness(51), new Warmth(51)));
     }
 }
