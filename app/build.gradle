@@ -47,7 +47,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 
-    implementation('com.onyx.android.sdk:onyxsdk-device:1.2.25')
+    implementation('com.onyx.android.sdk:onyxsdk-device:1.2.26')
 
     implementation 'com.jakewharton:butterknife:10.2.3'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.3'
