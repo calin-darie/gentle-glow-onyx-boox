@@ -3,7 +3,10 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 import android.content.Context;
 import android.net.Uri;
 
-import com.onyx.android.sdk.api.device.FrontLightController;
+import com.onyx.android.sdk.api.device.brightness.BaseBrightnessProvider;
+import com.onyx.android.sdk.api.device.brightness.BrightnessController;
+import com.onyx.android.sdk.api.device.brightness.BrightnessType;
+import com.onyx.android.sdk.device.BaseDevice;
 
 import java.util.concurrent.TimeUnit;
 
@@ -17,10 +20,10 @@ public class OnyxWarmColdLightController implements NativeLightController<WarmAn
     public Result turnOn(boolean warm, boolean cold) {
         boolean success = true;
         if (warm) {
-            success &= FrontLightController.openWarmLight();
+            success &= warmLight.open();
         }
         if (cold) {
-            success &= FrontLightController.openColdLight();
+            success &= coldLight.open();
         }
         return success? Result.success() : Result.error("could not turn on the light");
     }
@@ -39,9 +42,7 @@ public class OnyxWarmColdLightController implements NativeLightController<WarmAn
 
     @Override
     public Result turnOff() {
-        boolean success =
-                FrontLightController.closeWarmLight()
-                && FrontLightController.closeColdLight();
+        boolean success = warmLight.close() && coldLight.close();
         return success ? Result.success(): Result.error("could not turn off the light");
     }
 
@@ -53,8 +54,7 @@ public class OnyxWarmColdLightController implements NativeLightController<WarmAn
             return Single.just(Result.success());
         }
 
-        boolean success = FrontLightController.setWarmLightDeviceValue(context, output.warm) &&
-                          FrontLightController.setColdLightDeviceValue(context, output.cold);
+        boolean success = warmLight.setValue(output.warm) && coldLight.setValue(output.cold);
         if (!success) {
             return Single.just(Result.error("driver said no"));
         }
@@ -99,7 +99,7 @@ public class OnyxWarmColdLightController implements NativeLightController<WarmAn
 
     @Override
     public boolean isDeviceSupported() {
-        return FrontLightController.hasCTMBrightness(context);
+        return BrightnessController.getBrightnessType(context) == BrightnessType.WARM_AND_COLD;
     }
 
     @Override
@@ -115,6 +115,9 @@ public class OnyxWarmColdLightController implements NativeLightController<WarmAn
         this.context = context;
         initIsOnObservable();
         initLedOutputObservable();
+
+        warmLight = BrightnessController.getBrightnessProvider(context, BaseDevice.LIGHT_TYPE_CTM_WARM);
+        coldLight = BrightnessController.getBrightnessProvider(context, BaseDevice.LIGHT_TYPE_CTM_COLD);
     }
 
     private void initIsOnObservable() {
@@ -136,14 +139,14 @@ public class OnyxWarmColdLightController implements NativeLightController<WarmAn
     }
 
     private boolean isOn() {
-        return FrontLightController.isColdLightOn(context) ||
-               FrontLightController.isWarmLightOn(context);
+        return warmLight.isLightOn() ||
+               coldLight.isLightOn();
     }
 
     private WarmAndColdLedOutput getCurrentWarmAndColdLedOutput () {
         return new WarmAndColdLedOutput(
-                FrontLightController.isWarmLightOn(context)? FrontLightController.getWarmLightConfigValue(context): 0,
-                FrontLightController.isColdLightOn(context)? FrontLightController.getColdLightConfigValue(context): 0
+                warmLight.isLightOn()? warmLight.getValue(): 0,
+                coldLight.isLightOn()? coldLight.getValue(): 0
         );
     }
 
@@ -152,4 +155,7 @@ public class OnyxWarmColdLightController implements NativeLightController<WarmAn
     private Observable<WarmAndColdLedOutput> ledOutput$;
     private Observable<WarmAndColdLedOutput> ledOutputRaw$;
     private WarmAndColdLedOutput desiredLedOutput;
+
+    private final BaseBrightnessProvider warmLight;
+    private final BaseBrightnessProvider coldLight;
 }

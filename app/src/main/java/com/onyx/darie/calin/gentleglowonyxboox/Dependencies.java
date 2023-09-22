@@ -2,7 +2,9 @@ package com.onyx.darie.calin.gentleglowonyxboox;
 
 import android.content.Context;
 
-import com.onyx.android.sdk.api.device.FrontLightController;
+import com.onyx.android.sdk.api.device.brightness.BaseBrightnessProvider;
+import com.onyx.android.sdk.api.device.brightness.BrightnessController;
+import com.onyx.android.sdk.device.BaseDevice;
 
 class Dependencies {
     private Context context;
@@ -40,7 +42,10 @@ class Dependencies {
     }
 
     private Range<Integer> getOnyxWarmAndColdOutputRange() {
-        Integer[] warmLightValues = FrontLightController.getWarmLightValues(context);
-        return new Range<>(warmLightValues[1], warmLightValues[warmLightValues.length - 1]);
+        BaseBrightnessProvider warmLight = BrightnessController.getBrightnessProvider(context, BaseDevice.LIGHT_TYPE_CTM_WARM);
+        return new Range<>(
+                warmLight.getValueByIndex(0),
+                warmLight.getValueByIndex(warmLight.getMaxIndex())
+        );
     }
 }
