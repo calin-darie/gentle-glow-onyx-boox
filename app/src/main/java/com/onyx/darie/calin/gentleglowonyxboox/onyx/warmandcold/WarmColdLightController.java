@@ -18,7 +18,7 @@ import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.functions.Function;
 
-public class OnyxWarmColdLightController implements NativeLightController<WarmAndColdLedOutput> {
+public class WarmColdLightController implements NativeLightController<WarmAndColdLedOutput> {
 
     public Result turnOn(boolean warm, boolean cold) {
         boolean success = true;
@@ -114,7 +114,7 @@ public class OnyxWarmColdLightController implements NativeLightController<WarmAn
         }
     }
 
-    public OnyxWarmColdLightController(Context context) {
+    public WarmColdLightController(Context context) {
         this.context = context;
         initIsOnObservable();
         initLedOutputObservable();
