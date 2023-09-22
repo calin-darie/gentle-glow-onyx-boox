@@ -1,5 +1,11 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
+import com.onyx.darie.calin.gentleglowonyxboox.light.Brightness;
+import com.onyx.darie.calin.gentleglowonyxboox.light.BrightnessAndWarmth;
+import com.onyx.darie.calin.gentleglowonyxboox.light.BrightnessAndWarmthState;
+import com.onyx.darie.calin.gentleglowonyxboox.light.Warmth;
+import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.WarmAndColdLedOutput;
+
 import org.junit.Before;
 import org.junit.Test;
 

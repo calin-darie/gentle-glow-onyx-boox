@@ -1,5 +1,10 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
+import com.onyx.darie.calin.gentleglowonyxboox.light.BrightnessAndWarmthState;
+import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfiguration;
+import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.WarmAndColdLedOutput;
+import com.onyx.darie.calin.gentleglowonyxboox.util.MutuallyExclusiveChoice;
+
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -37,7 +42,7 @@ public class LightConfigurationEditorTest {
         fixture.lightTestFixture.simulateOnyxSliderChange(new WarmAndColdLedOutput(255, 255));
 
         fixture.configurationEditor.getChooseCurrentLightConfigurationRequest$().onNext(
-                oldConfiguration.selectedIndex);
+                oldConfiguration.getSelectedIndex());
         fixture.lightTestFixture.captureLedOutputAndComplete();
 
         BrightnessAndWarmthState state = fixture.lightTestFixture.getBrightnessAndWarmthState();

@@ -1,5 +1,8 @@
 package com.onyx.darie.calin.gentleglowonyxboox;
 
+import com.onyx.darie.calin.gentleglowonyxboox.storage.Storage;
+import com.onyx.darie.calin.gentleglowonyxboox.util.Result;
+
 public class FakeStorage<TData> implements Storage<TData> {
     private TData data;
     public Result save(TData data) {

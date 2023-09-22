@@ -4,6 +4,9 @@ import android.graphics.drawable.Icon;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
 
+import com.onyx.darie.calin.gentleglowonyxboox.light.Light;
+import com.onyx.darie.calin.gentleglowonyxboox.setup.GentleGlowApplication;
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Consumer;
