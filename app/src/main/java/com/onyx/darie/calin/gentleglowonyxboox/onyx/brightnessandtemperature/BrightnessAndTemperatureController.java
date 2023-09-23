@@ -53,7 +53,7 @@ public class BrightnessAndTemperatureController implements NativeLightController
         }
         return outputRaw$
                 .takeWhile(futureOutput -> !futureOutput.equals(output))
-                .timeout(10, TimeUnit.SECONDS)
+                .timeout(3, TimeUnit.SECONDS)
                 .doOnComplete(() -> desiredOutput = null)
                 .map(any -> Result.error("light not changed"))
                 .concatWith(Single.just(Result.success()))
