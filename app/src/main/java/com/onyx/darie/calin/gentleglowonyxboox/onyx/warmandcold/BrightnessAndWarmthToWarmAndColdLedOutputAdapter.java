@@ -6,7 +6,7 @@ import com.onyx.darie.calin.gentleglowonyxboox.light.Brightness;
 import com.onyx.darie.calin.gentleglowonyxboox.light.BrightnessAndWarmth;
 import com.onyx.darie.calin.gentleglowonyxboox.light.Warmth;
 
-public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements BrightnessAndWarmthToNativeOutputAdapter<WarmAndColdLedOutput> {
+public class BrightnessAndWarmthToWarmAndColdLedOutputAdapter implements BrightnessAndWarmthToNativeOutputAdapter<WarmAndColdLedOutput> {
     @Override
     public WarmAndColdLedOutput toNativeOutput(BrightnessAndWarmth brightnessAndWarmth) {
         final double desiredBrightnessLux = convertBrightnessSettingToLux(brightnessAndWarmth.brightness.value);
@@ -113,7 +113,7 @@ public class OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter implements Bri
         return brightnessAndWarmthByWarmAndCold;
     }
 
-    public OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(Range<Integer> ledOutputRange) {
+    public BrightnessAndWarmthToWarmAndColdLedOutputAdapter(Range<Integer> ledOutputRange) {
         this.ledOutputRange = ledOutputRange;
     }
 

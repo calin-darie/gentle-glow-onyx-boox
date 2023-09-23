@@ -6,7 +6,7 @@ import com.onyx.darie.calin.gentleglowonyxboox.light.BrightnessAndWarmthState;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightImpl;
 import com.onyx.darie.calin.gentleglowonyxboox.light.NativeLightController;
 import com.onyx.darie.calin.gentleglowonyxboox.light.Warmth;
-import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter;
+import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.BrightnessAndWarmthToWarmAndColdLedOutputAdapter;
 import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.WarmAndColdLedOutput;
 import com.onyx.darie.calin.gentleglowonyxboox.storage.Storage;
 import com.onyx.darie.calin.gentleglowonyxboox.util.Range;
@@ -120,8 +120,8 @@ public class LightTestFixture {
         resetLedOutputMocks();
         when(nativeLight.getOutput$())
                 .thenReturn(warmAndColdLedOutput$);
-        OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter =
-                new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(ledOutputRange);
+        BrightnessAndWarmthToWarmAndColdLedOutputAdapter adapter =
+                new BrightnessAndWarmthToWarmAndColdLedOutputAdapter(ledOutputRange);
         light = new LightImpl<WarmAndColdLedOutput>(nativeLight, adapter, externallySetLedOutputStorage);
         light.getBrightnessAndWarmthState$().subscribe(brightnessAndWarmthState -> this.brightnessAndWarmthState = brightnessAndWarmthState);
         light.getRestoreBrightnessAndWarmthRequest$().onNext(new BrightnessAndWarmth(new Brightness(51), new Warmth(51)));
