@@ -73,16 +73,12 @@ public class BrightnessAndTemperatureController implements NativeLightController
 
     @Override
     public boolean isDeviceSupported() {
-        return BrightnessController.getBrightnessType(context) == BrightnessType.WARM_AND_COLD;
+        return BrightnessController.getBrightnessType(context) == BrightnessType.CTM;
     }
 
     @Override
     public void toggleOnOff() {
-        if (isOn())
-            turnOff();
-        else {
-            turnOn();
-        }
+        brightness.toggle();
     }
 
     public BrightnessAndTemperatureController(Context context) {
