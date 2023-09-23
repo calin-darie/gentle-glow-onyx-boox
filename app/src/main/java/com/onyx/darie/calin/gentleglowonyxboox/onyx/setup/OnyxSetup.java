@@ -32,10 +32,10 @@ public class OnyxSetup{
     }
 
     public static Range<Integer> getOutputRange(Context context, int deviceType) {
-        BaseBrightnessProvider warmLight = BrightnessController.getBrightnessProvider(context, deviceType);
+        BaseBrightnessProvider output = BrightnessController.getBrightnessProvider(context, deviceType);
         return new Range<>(
-                warmLight.getValueByIndex(0),
-                warmLight.getValueByIndex(warmLight.getMaxIndex())
+                output.getValueByIndex(1),
+                output.getValueByIndex(output.getMaxIndex())
         );
     }
 
