@@ -14,6 +14,7 @@
     <string name="could_not_save">Could not save: %1$s</string>
     <string name="name">Name:</string>
     <string name="replace_with_preset">Replace with preset…</string>
+    <string name="replace_with_preset_icon">↩</string>
     <string name="LightsOff">Turn on the light to start configuring.</string>
     <string name="external_change_status">Choose a configuration from above.</string>
     <string name="frontlight_switch_label">Frontlight</string>

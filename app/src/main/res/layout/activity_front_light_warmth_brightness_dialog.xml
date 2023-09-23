@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingHorizontal="48dp"
+    android:paddingHorizontal="@dimen/horizontal_padding"
     android:paddingVertical="8dp"
     tools:context=".FrontLightWarmthBrightnessDialog">
 
@@ -254,7 +254,8 @@
                 android:id="@+id/replace_with_preset_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/replace_with_preset" />
+                android:text="@string/replace_with_preset_icon"
+                android:tooltipText="@string/replace_with_preset" />
         </LinearLayout>
 
     </LinearLayout>
