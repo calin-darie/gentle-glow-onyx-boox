@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -33,7 +32,6 @@ public abstract class ContentObserverSubscriber<T> implements ObservableOnSubscr
                 ContentObserverSubscriber<T> contentObserverSubscriber = new ContentObserverSubscriber<T>(resolver, observedUris) {
                     @Override
                     protected T fetchItem(Uri itemUri) {
-                        Log.d("ContentObserver", ">> content changed for URI " + itemUri);
                         try {
                             return fetchStatusFun.apply(itemUri);
                         } catch (Throwable throwable) {

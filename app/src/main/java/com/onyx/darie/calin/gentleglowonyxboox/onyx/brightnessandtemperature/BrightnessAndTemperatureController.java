@@ -97,7 +97,8 @@ public class BrightnessAndTemperatureController implements NativeLightController
                                 .create(
                                         context.getContentResolver(),
                                         new Uri[]{
-                                                Uri.parse("content://settings/system"),
+                                                Uri.parse("content://settings/system/screen_ctm_brightness"),
+                                                Uri.parse("content://settings/system/screen_ctm_temperature"),
                                         },
                                         uri -> getCurrentOutput()
                                 )
@@ -113,7 +114,8 @@ public class BrightnessAndTemperatureController implements NativeLightController
                 .create(
                         context.getContentResolver(),
                         new Uri[]{
-                                Uri.parse("content://settings/system"),
+                                Uri.parse("content://settings/system/ctm_brightness_state_key"),
+                                Uri.parse("content://settings/system/ctm_temperature_state_key"),
                         },
                         uri -> isOn()
                 )
