@@ -2,20 +2,18 @@ package com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.setup;
 
 import android.content.Context;
 
-import com.onyx.android.sdk.api.device.brightness.BaseBrightnessProvider;
-import com.onyx.android.sdk.api.device.brightness.BrightnessController;
 import com.onyx.android.sdk.device.BaseDevice;
 import com.onyx.darie.calin.gentleglowonyxboox.light.Light;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationEditor;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationEditorImpl;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationMigrationStorage;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightImpl;
+import com.onyx.darie.calin.gentleglowonyxboox.onyx.setup.OnyxSetup;
 import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter;
-import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.WarmColdLightController;
 import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.WarmAndColdLedOutput;
+import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.WarmColdLightController;
 import com.onyx.darie.calin.gentleglowonyxboox.setup.Dependencies;
 import com.onyx.darie.calin.gentleglowonyxboox.storage.FileStorage;
-import com.onyx.darie.calin.gentleglowonyxboox.util.Range;
 
 public class OnyxWarmAndColdDependencies implements Dependencies {
     private Context context;
@@ -35,7 +33,7 @@ public class OnyxWarmAndColdDependencies implements Dependencies {
             WarmColdLightController nativeWarmColdLightController = new WarmColdLightController(context);
             onyxLight = new LightImpl<WarmAndColdLedOutput>(
                     nativeWarmColdLightController,
-                    new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(getOnyxWarmAndColdOutputRange()),
+                    new OnyxBrightnessAndWarmthToWarmAndColdLedOutputAdapter(OnyxSetup.getOutputRange(context, BaseDevice.LIGHT_TYPE_CTM_WARM)),
                     new FileStorage<WarmAndColdLedOutput>(context.getFilesDir(), "onyxSlider.json")
             );
         }
@@ -52,13 +50,5 @@ public class OnyxWarmAndColdDependencies implements Dependencies {
             );
         }
         return onyxLightConfigurationEditor;
-    }
-
-    private Range<Integer> getOnyxWarmAndColdOutputRange() {
-        BaseBrightnessProvider warmLight = BrightnessController.getBrightnessProvider(context, BaseDevice.LIGHT_TYPE_CTM_WARM);
-        return new Range<>(
-                warmLight.getValueByIndex(0),
-                warmLight.getValueByIndex(warmLight.getMaxIndex())
-        );
     }
 }
