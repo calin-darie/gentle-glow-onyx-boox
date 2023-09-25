@@ -13,15 +13,12 @@ public class LightConfigurationEditorTest {
 
     @Test
     public void whenSubscribingToConfigurationChanges_restoresBrightnessAndWarmth() {
-        fixture.configurationEditor.getLightConfigurationChoices$().subscribe();
-
         BrightnessAndWarmthState state = fixture.lightTestFixture.getBrightnessAndWarmthState();
         assertEquals(LightConfiguration.getPresets()[0].brightnessAndWarmth, state.brightnessAndWarmth);
     }
 
     @Test
     public void whenSelectedConfigurationChanges_lightEmitsBrightnessAndWarmth() {
-        fixture.configurationEditor.getLightConfigurationChoices$().subscribe();
         int indexToSelect = 1;
         fixture.configurationEditor.getChooseCurrentLightConfigurationRequest$().onNext(indexToSelect);
         fixture.lightTestFixture.captureLedOutputAndComplete();
@@ -35,7 +32,6 @@ public class LightConfigurationEditorTest {
 
     @Test
     public void whenResumingAfterExternalChange_lightEmitsBrightnessAndWarmth() {
-        fixture.configurationEditor.getLightConfigurationChoices$().subscribe();
         MutuallyExclusiveChoice<LightConfiguration> oldConfiguration =
                 fixture.configurationEditor.getLightConfigurationChoice();
 

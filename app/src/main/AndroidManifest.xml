@@ -65,6 +65,9 @@
             </intent-filter>
         </service>
 
+        <receiver android:name=".schedule.LightSchedulerImpl" android:enabled="true">
+        </receiver>
+
     </application>
 
 </manifest>

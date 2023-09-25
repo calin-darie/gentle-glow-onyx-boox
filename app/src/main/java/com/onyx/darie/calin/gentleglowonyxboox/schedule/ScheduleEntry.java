@@ -4,11 +4,9 @@ import java.time.LocalTime;
 
 public class ScheduleEntry {
     public final LocalTime timeOfDay;
-    public final boolean isLightOn;
-    public final int lightConfigurationIndex;
-    public ScheduleEntry(LocalTime timeOfDay, boolean isLightOn, int lightConfigurationIndex) {
+    public final ScheduledLightState scheduledLightState;
+    public ScheduleEntry(LocalTime timeOfDay, ScheduledLightState scheduledLightState) {
         this.timeOfDay = timeOfDay;
-        this.isLightOn = isLightOn;
-        this.lightConfigurationIndex = lightConfigurationIndex;
+        this.scheduledLightState = scheduledLightState;
     }
 }

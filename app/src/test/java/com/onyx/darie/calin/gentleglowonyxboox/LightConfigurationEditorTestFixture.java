@@ -10,4 +10,8 @@ public class LightConfigurationEditorTestFixture {
             new FakeStorage<>()
             );
 
+    public LightConfigurationEditorTestFixture() {
+        configurationEditor.getLightConfigurationChoices$().subscribe();
+    }
 }
+

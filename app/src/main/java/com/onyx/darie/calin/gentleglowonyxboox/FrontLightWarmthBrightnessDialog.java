@@ -24,6 +24,8 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.android.flexbox.FlexboxLayout;
+import com.onyx.darie.calin.gentleglowonyxboox.binding.LifecycleAwareSubscription;
+import com.onyx.darie.calin.gentleglowonyxboox.binding.MutuallyExclusiveChoiceGroup;
 import com.onyx.darie.calin.gentleglowonyxboox.light.Brightness;
 import com.onyx.darie.calin.gentleglowonyxboox.light.BrightnessAndWarmth;
 import com.onyx.darie.calin.gentleglowonyxboox.light.Light;
@@ -31,11 +33,13 @@ import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfiguration;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationEditor;
 import com.onyx.darie.calin.gentleglowonyxboox.light.Warmth;
 import com.onyx.darie.calin.gentleglowonyxboox.onyx.Frontlight;
+import com.onyx.darie.calin.gentleglowonyxboox.schedule.LightScheduler;
+import com.onyx.darie.calin.gentleglowonyxboox.schedule.ScheduleEntry;
+import com.onyx.darie.calin.gentleglowonyxboox.schedule.ScheduledLightState;
 import com.onyx.darie.calin.gentleglowonyxboox.setup.GentleGlowApplication;
-import com.onyx.darie.calin.gentleglowonyxboox.binding.LifecycleAwareSubscription;
-import com.onyx.darie.calin.gentleglowonyxboox.binding.MutuallyExclusiveChoiceGroup;
 import com.onyx.darie.calin.gentleglowonyxboox.util.MutuallyExclusiveChoice;
 
+import java.time.LocalTime;
 import java.util.stream.Collectors;
 
 import butterknife.BindView;
