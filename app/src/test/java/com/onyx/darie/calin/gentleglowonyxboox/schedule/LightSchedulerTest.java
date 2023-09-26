@@ -49,6 +49,20 @@ public class LightSchedulerTest {
     }
 
     @Test
+    public void canSchedulesLightOff() {
+        fixture.lightConfigurationEditorTestFixture.lightTestFixture.light.turnOn();
+
+        fixture.lightScheduler.add(new ScheduleEntry(
+                LocalTime.parse("20:00"),
+                ScheduledLightState.off()
+                ));
+
+        fixture.simulateIntentReceived();
+
+        fixture.lightConfigurationEditorTestFixture.lightTestFixture.verifyTurnedOff();
+    }
+
+    @Test
     public void canRemoveScheduledLightConfigurationChange() {
         ScheduleEntry scheduleEntry = new ScheduleEntry(LocalTime.parse("15:00"),
                 ScheduledLightState.onWithConfiguration("Day", 2));

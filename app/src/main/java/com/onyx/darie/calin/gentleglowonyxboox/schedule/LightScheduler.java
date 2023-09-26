@@ -5,9 +5,9 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.google.gson.Gson;
+import com.onyx.darie.calin.gentleglowonyxboox.light.Light;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationEditor;
 import com.onyx.darie.calin.gentleglowonyxboox.setup.GentleGlowApplication;
 import com.onyx.darie.calin.gentleglowonyxboox.storage.Storage;
@@ -83,12 +83,16 @@ public class LightScheduler{
 
         ScheduleEntry scheduleEntry = json.fromJson(scheduledEntryAsJson, ScheduleEntry.class);
 
-        Disposable subscription = configurationEditor.getLightConfigurationChoices$().subscribe();
-        try {
-            configurationEditor.getChooseCurrentLightConfigurationRequest$()
-                    .onNext(scheduleEntry.scheduledLightState.LightConfigurationIndexFallback); // todo try name first
-        } finally {
-            subscription.dispose();
+        if (scheduleEntry.scheduledLightState.isOn) {
+            Disposable subscription = configurationEditor.getLightConfigurationChoices$().subscribe();
+            try {
+                configurationEditor.getChooseCurrentLightConfigurationRequest$()
+                        .onNext(scheduleEntry.scheduledLightState.LightConfigurationIndexFallback); // todo try name first
+            } finally {
+                subscription.dispose();
+            }
+        } else {
+            light.turnOff();
         }
     }
 
@@ -113,18 +117,21 @@ public class LightScheduler{
     public LightScheduler(
             Context context,
             Storage<Schedule> storage,
-            LightConfigurationEditor configurationEditor
+            LightConfigurationEditor configurationEditor,
+            Light light
     ) {
         this.context = context;
         this.storage = storage;
         this.configurationEditor = configurationEditor;
         alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        this.light = light;
     }
     private final Gson json = new Gson();
     private final Context context;
     private final Storage<Schedule> storage;
     private final LightConfigurationEditor configurationEditor;
     private final AlarmManager alarmManager;
+    private final Light light;
 
     public static class AlarmReceiver extends BroadcastReceiver {
         @Override

@@ -23,7 +23,8 @@ public class ScheduleDependencies {
         lightScheduler = new LightScheduler(
                 context,
                 new FileStorage<LightScheduler.Schedule>(context.getFilesDir(), "schedule"),
-                dependencies.getLightConfigurationEditor());
+                dependencies.getLightConfigurationEditor(),
+                dependencies.getLight());
 
         return lightScheduler;
     }

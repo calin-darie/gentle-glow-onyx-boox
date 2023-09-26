@@ -33,7 +33,8 @@ public class ScheduleTestFixture {
         lightScheduler = new LightScheduler(
                 contextMock,
                 new FakeStorage<LightScheduler.Schedule>(),
-                lightConfigurationEditorTestFixture.configurationEditor
+                lightConfigurationEditorTestFixture.configurationEditor,
+                lightConfigurationEditorTestFixture.lightTestFixture.light
         ) {
             @Override
             protected PendingIntent getPendingIntent(Function<Intent, Void> intentConfig) {

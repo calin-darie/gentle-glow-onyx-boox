@@ -73,6 +73,10 @@ public class LightTestFixture {
         return ledOutput;
     }
 
+    public void verifyTurnedOff() {
+        verify(nativeLight).turnOff();
+    }
+
     public void simulateOnyxSliderChange(WarmAndColdLedOutput ledOutput) {
         warmAndColdLedOutput$.onNext(ledOutput);
     }
