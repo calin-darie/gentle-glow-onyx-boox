@@ -65,7 +65,7 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".schedule.LightSchedulerImpl" android:enabled="true">
+        <receiver android:name=".schedule.LightScheduler$AlarmReceiver" android:enabled="true">
         </receiver>
 
     </application>

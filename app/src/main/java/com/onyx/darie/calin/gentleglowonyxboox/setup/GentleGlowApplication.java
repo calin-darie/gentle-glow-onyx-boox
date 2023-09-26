@@ -24,6 +24,6 @@ public class GentleGlowApplication extends Application {
         Frontlight.injectApplicationContext(context);
         dependencies = OnyxSetup.getDependencies(context);
 
-        scheduleDependencies = new ScheduleDependencies();
+        scheduleDependencies = new ScheduleDependencies(context, dependencies);
     }
 }

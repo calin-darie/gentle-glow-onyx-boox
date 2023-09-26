@@ -1,14 +1,19 @@
 package com.onyx.darie.calin.gentleglowonyxboox.schedule;
 
+import android.app.PendingIntent;
+
+import com.google.gson.Gson;
 import com.onyx.darie.calin.gentleglowonyxboox.ScheduleTestFixture;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.time.LocalTime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Mockito.verify;
 
 public class LightSchedulerTest {
     // disallow schedules within 30 minutes of each other
@@ -28,12 +33,12 @@ public class LightSchedulerTest {
 
     // test restore all saved
     @Test
-    public void schedulesProfileChange() {
+    public void schedulesLightConfigurationChange() {
         String scheduledConfiguration = "Dawn";
         fixture.lightConfigurationEditorTestFixture.configurationEditor.getChooseCurrentLightConfigurationRequest$().onNext(2);
         assertNotEquals(scheduledConfiguration, fixture.lightConfigurationEditorTestFixture.configurationEditor.getLightConfigurationChoice().getSelected().name);
 
-        fixture.add(new ScheduleEntry(
+        fixture.lightScheduler.add(new ScheduleEntry(
                 LocalTime.parse("20:00"),
                 ScheduledLightState.onWithConfiguration(scheduledConfiguration ,1)
                 ));
@@ -41,6 +46,22 @@ public class LightSchedulerTest {
         fixture.simulateIntentReceived();
 
         assertEquals(scheduledConfiguration, fixture.lightConfigurationEditorTestFixture.configurationEditor.getLightConfigurationChoice().getSelected().name);
+    }
+
+    @Test
+    public void canRemoveScheduledLightConfigurationChange() {
+        ScheduleEntry scheduleEntry = new ScheduleEntry(LocalTime.parse("15:00"),
+                ScheduledLightState.onWithConfiguration("Day", 2));
+        fixture.lightScheduler.add(scheduleEntry);
+        fixture.resetIntentMock();
+        fixture.lightScheduler.remove(LocalTime.parse("15:00"));
+
+        assertEquals(
+                new Gson().toJson(scheduleEntry),
+                fixture.intentMock.getStringExtra(LightScheduler.ScheduleEntryIntentKey)
+        );
+
+        verify(fixture.alarmManagerMock).cancel(ArgumentCaptor.forClass(PendingIntent.class).capture());
     }
 
     @Before
