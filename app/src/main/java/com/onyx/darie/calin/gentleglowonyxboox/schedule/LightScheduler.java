@@ -35,9 +35,13 @@ public class LightScheduler{
     }
 
     private void addToStorage(ScheduleEntry scheduleEntry) {
-        Schedule schedule = storage.loadOrDefault(new Schedule(new ArrayList<ScheduleEntry>())).value;
+        Schedule schedule = getSchedule();
         schedule.entries.add(scheduleEntry);
         storage.save(schedule);
+    }
+
+    private Schedule getSchedule() {
+        return storage.loadOrDefault(new Schedule(new ArrayList<ScheduleEntry>())).value;
     }
 
     private void removeFromStorage(LocalTime time) {
@@ -139,6 +143,22 @@ public class LightScheduler{
             LightScheduler scheduler = ((GentleGlowApplication) context.getApplicationContext()).getScheduleDependencies().getLightScheduler();
 
             scheduler.handleAlarm(intent);
+        }
+    }
+
+    public static class RestoreReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            LightScheduler scheduler = ((GentleGlowApplication) context.getApplicationContext()).getScheduleDependencies().getLightScheduler();
+
+            scheduler.restoreAllAlarms();
+        }
+    }
+
+    private void restoreAllAlarms() {
+        Schedule schedule = getSchedule();
+        for (ScheduleEntry entry : schedule.entries) {
+            addAlarm(entry);
         }
     }
 

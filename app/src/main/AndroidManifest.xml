@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions"/>
@@ -65,9 +66,22 @@
             </intent-filter>
         </service>
 
-        <receiver android:name=".schedule.LightScheduler$AlarmReceiver" android:enabled="true">
+        <receiver android:name=".schedule.LightScheduler$AlarmReceiver"
+            android:exported="true">
         </receiver>
 
+        <recaeiver android:name=".schedule.LightScheduler$RestoreReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_UNSUSPENDED"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </recaeiver>
     </application>
 
 </manifest>
