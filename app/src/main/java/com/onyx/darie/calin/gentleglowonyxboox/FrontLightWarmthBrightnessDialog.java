@@ -34,12 +34,10 @@ import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationEditor;
 import com.onyx.darie.calin.gentleglowonyxboox.light.Warmth;
 import com.onyx.darie.calin.gentleglowonyxboox.onyx.Frontlight;
 import com.onyx.darie.calin.gentleglowonyxboox.schedule.LightScheduler;
-import com.onyx.darie.calin.gentleglowonyxboox.schedule.ScheduleEntry;
-import com.onyx.darie.calin.gentleglowonyxboox.schedule.ScheduledLightState;
+import com.onyx.darie.calin.gentleglowonyxboox.schedule.ScheduleActivity;
 import com.onyx.darie.calin.gentleglowonyxboox.setup.GentleGlowApplication;
 import com.onyx.darie.calin.gentleglowonyxboox.util.MutuallyExclusiveChoice;
 
-import java.time.LocalTime;
 import java.util.stream.Collectors;
 
 import butterknife.BindView;
@@ -92,6 +90,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     private Light light;
 
     private LightConfigurationEditor lightConfigurationEditor;
+    private LightScheduler lightScheduler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +100,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         light = ((GentleGlowApplication)getApplication()).getDependencies().getLight();
         lightConfigurationEditor = ((GentleGlowApplication)getApplication()).getDependencies().getLightConfigurationEditor();
+        lightScheduler = ((GentleGlowApplication)getApplication()).getScheduleDependencies().getLightScheduler();
+
+        lightScheduler.restoreAllAlarms();
 
         setContentView(R.layout.activity_front_light_warmth_brightness_dialog);
 
@@ -163,6 +165,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
 
         listenForExternalLightChanges();
+
+        bindScheduleSwitch();
     }
 
     private final static int GET_PERMISSIONS_REQUEST = 1;
@@ -223,6 +227,16 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             }
         });
 
+    }
+
+    private void bindScheduleSwitch() {
+        final Button scheduleButton = findViewById(R.id.schedule_button);
+        scheduleButton.setOnClickListener(b -> {
+            Intent myIntent = new Intent(
+                    FrontLightWarmthBrightnessDialog.this,
+                    ScheduleActivity.class);
+            FrontLightWarmthBrightnessDialog.this.startActivity(myIntent);
+        });
     }
 
     private void bindResetSpinner() {

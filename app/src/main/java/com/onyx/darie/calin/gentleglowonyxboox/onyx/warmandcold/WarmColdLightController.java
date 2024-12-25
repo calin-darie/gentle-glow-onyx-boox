@@ -77,6 +77,11 @@ public class WarmColdLightController implements NativeLightController<WarmAndCol
     }
 
     @Override
+    public WarmAndColdLedOutput getOutput() {
+        return getCurrentWarmAndColdLedOutput();
+    }
+
+    @Override
     public Observable<Boolean> isOn$() {
         return isOn$.startWith(Single.just(isOn()));
     }
@@ -141,7 +146,7 @@ public class WarmColdLightController implements NativeLightController<WarmAndCol
                 .share();
     }
 
-    private boolean isOn() {
+    public boolean isOn() {
         return warmLight.isLightOn() ||
                coldLight.isLightOn();
     }

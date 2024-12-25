@@ -54,6 +54,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.onyx.darie.calin.gentleglowonyxboox.schedule.ScheduleActivity"
+            android:label="@string/schedule_activity_title"
+            android:theme="@style/Theme_Dialog"/>
+
         <service
             android:name="com.onyx.darie.calin.gentleglowonyxboox.QuickSettingsTile"
             android:icon="@drawable/ic_light_on"
@@ -70,7 +75,7 @@
             android:exported="true">
         </receiver>
 
-        <recaeiver android:name=".schedule.LightScheduler$RestoreReceiver"
+        <receiver android:name=".schedule.LightScheduler$RestoreReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -81,7 +86,7 @@
                 <action android:name="android.intent.action.MY_PACKAGE_UNSUSPENDED"/>
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-        </recaeiver>
+        </receiver>
     </application>
 
 </manifest>

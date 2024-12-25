@@ -26,4 +26,11 @@ public interface LightConfigurationEditor {
     Observable<Integer> getStatus$();
 
 
+    boolean stepTowardsConfiguration(int lightConfigurationIndexFallback, int stepsLeft);
+
+    boolean fadeOut(int stepsLeft);
+
+    void startStepping();
+
+    void stopStepping();
 }

@@ -2,10 +2,10 @@ package com.onyx.darie.calin.gentleglowonyxboox.light;
 
 import androidx.core.util.ObjectsCompat;
 
-import com.onyx.darie.calin.gentleglowonyxboox.util.MutuallyExclusiveChoice;
 import com.onyx.darie.calin.gentleglowonyxboox.R;
-import com.onyx.darie.calin.gentleglowonyxboox.util.Result;
 import com.onyx.darie.calin.gentleglowonyxboox.storage.Storage;
+import com.onyx.darie.calin.gentleglowonyxboox.util.MutuallyExclusiveChoice;
+import com.onyx.darie.calin.gentleglowonyxboox.util.Result;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -55,6 +55,33 @@ public class LightConfigurationEditorImpl<TNativeOutput> implements LightConfigu
 
     public Observable<Integer> getStatus$() {
         return status$.distinctUntilChanged();
+    }
+
+    @Override
+    public boolean stepTowardsConfiguration(int lightConfigurationIndex, int stepsLeft) {
+        light.turnOn();
+        LightConfiguration targetConfiguration = lightConfigurationChoice.getChoices()[lightConfigurationIndex];
+        BrightnessAndWarmth targetBrightnessAndWarmth = targetConfiguration.brightnessAndWarmth;
+        return light.stepTowardsBrightnessAndWarmth(targetBrightnessAndWarmth, stepsLeft);
+    }
+
+    @Override
+    public boolean fadeOut(int stepsLeft) {
+        if (!light.isOn())
+            return true;
+
+        return light.fadeOut(stepsLeft);
+    }
+
+    @Override
+    public void startStepping() {
+        status$.onNext(R.string.schedule_transition);
+        light.startStepping();
+    }
+
+    @Override
+    public void stopStepping() {
+        this.status$.onNext(R.string.schedule_transition_cancelled);
     }
 
     public LightConfigurationEditorImpl(

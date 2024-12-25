@@ -9,4 +9,13 @@ public class ScheduleEntry {
         this.timeOfDay = timeOfDay;
         this.scheduledLightState = scheduledLightState;
     }
+
+
+    @Override
+    public String toString() {
+        return "ScheduleEntry{" +
+                "timeOfDay=" + timeOfDay +
+                ", scheduledLightState=" + scheduledLightState +
+                '}';
+    }
 }

@@ -18,7 +18,6 @@ import java.util.stream.IntStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-// todo https://github.com/junit-team/junit4/wiki/Continuous-testing
 @RunWith(Theories.class)
 public class LightTest_setBrightnessAndWarmth_ledOutput {
     @DataPoints("canLinkWarmAndColdInNonEqualProportion_warmths")

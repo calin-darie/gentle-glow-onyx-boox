@@ -29,6 +29,15 @@
         <item name="android:textSize">20sp</item>
     </style>
 
+
+    <style name="time_picker_dialog_clock" parent="android:Theme.Holo.Light.Dialog">
+        <item name="android:timePickerStyle">@style/time_picker_clock</item>
+    </style>
+
+    <style name="time_picker_clock" parent="@android:style/Widget.Material.Light.TimePicker">
+        <item name="android:timePickerMode">clock</item>
+    </style>
+
     <style name="switch_with_large_thumb" parent="android:Theme.Material.Light">
         <item name="android:textOn">@string/switch_on</item>
         <item name="android:textOff">@string/switch_off</item>

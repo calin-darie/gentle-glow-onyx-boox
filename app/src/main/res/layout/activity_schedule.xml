@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minHeight="450sp"
+    android:orientation="vertical"
+    android:id="@+id/activity_schedule"
+    android:layout_margin="16sp">
+
+
+    <Switch
+        android:id="@+id/schedule_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:theme="@style/switch_with_large_thumb"
+        android:track="@drawable/switch_track"
+        android:thumb="@drawable/switch_thumb"
+        android:text="@string/schedule_switch_label"
+        />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/schedule_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/add_schedule_entry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="14dp"
+        android:text="+" />
+
+</LinearLayout>

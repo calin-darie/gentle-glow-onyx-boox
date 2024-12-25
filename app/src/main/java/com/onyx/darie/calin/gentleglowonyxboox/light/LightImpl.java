@@ -2,8 +2,8 @@ package com.onyx.darie.calin.gentleglowonyxboox.light;
 
 import android.content.Intent;
 
-import com.onyx.darie.calin.gentleglowonyxboox.util.Result;
 import com.onyx.darie.calin.gentleglowonyxboox.storage.Storage;
+import com.onyx.darie.calin.gentleglowonyxboox.util.Result;
 
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
@@ -34,9 +34,9 @@ public class LightImpl<TNativeOutput> implements Light{
 
     public Observable<Boolean> isOn$() { return nativeLightController.isOn$(); }
 
-    public void turnOn() { nativeLightController.turnOn(); } // todo result?
+    public void turnOn() { nativeLightController.turnOn(); }
 
-    public void turnOff() { nativeLightController.turnOff(); } // todo result?
+    public void turnOff() { nativeLightController.turnOff(); }
 
     private Single<Result> setOutput(TNativeOutput nativeOutput) {
         Single<Result> result = nativeLightController.setOutput(nativeOutput);
@@ -114,7 +114,7 @@ public class LightImpl<TNativeOutput> implements Light{
                             adapter.toNativeOutput(lastSetBrightnessAndWarmth)
                             .equals(nativeOutput);
                     if (isExternal) {
-                        output = nativeOutput; // todo test!
+                        output = nativeOutput;
                         saveExternallySetLedOutput(nativeOutput);
                     }
                     return new BrightnessAndWarmthState(isExternal, isExternal?
@@ -159,7 +159,7 @@ public class LightImpl<TNativeOutput> implements Light{
 
     private void subscribeRestoreExternalSetting() {
         restoreExternallySetLedOutput$.subscribe(_ignore -> {
-            Result<TNativeOutput> loadResult = externallySetLedOutputStorage.loadOrDefault(output); // todo save ono first use
+            Result<TNativeOutput> loadResult = externallySetLedOutputStorage.loadOrDefault(output);
             setOutput(loadResult.value);
         });
     }
@@ -190,5 +190,58 @@ public class LightImpl<TNativeOutput> implements Light{
         nativeLightController.toggleOnOff();
     }
 
-    // Intent.ACTION_SCREEN_ON
+    public boolean fadeOut(int stepsLeft) {
+        if (!nativeLightController.isOn())
+            return true;
+
+        Warmth currentWarmth = adapter.findBrightnessAndWarmthApproximationForNativeOutput(nativeLightController.getOutput())
+                .warmth;
+        return stepTowardsBrightnessAndWarmth(new BrightnessAndWarmth(
+                new Brightness(1),
+                currentWarmth
+        ), stepsLeft);
+    }
+
+    public boolean isOn() {
+        return nativeLightController.isOn();
+    }
+
+    private BrightnessAndWarmth transitionBrightnessAndWarmth = null;
+    public boolean stepTowardsBrightnessAndWarmth(BrightnessAndWarmth targetBrightnessAndWarmth, int stepsLeft) {
+        if (transitionBrightnessAndWarmth == null)
+            startStepping();
+        else if (!nativeLightController.getOutput().equals(adapter.toNativeOutput(transitionBrightnessAndWarmth)))
+            return false;
+
+        int currentBrightness = transitionBrightnessAndWarmth.brightness.value;
+        int currentWarmth = transitionBrightnessAndWarmth.warmth.value;
+        int stepsLeftPlusCurrentStep = stepsLeft + 1;
+        int brightnessDiffToTarget = targetBrightnessAndWarmth.brightness.value - currentBrightness;
+        float brightnessStep = (float)brightnessDiffToTarget / stepsLeftPlusCurrentStep;
+        int warmthDiffToTarget = targetBrightnessAndWarmth.warmth.value - currentWarmth;
+        float warmthStep = (float)warmthDiffToTarget / stepsLeftPlusCurrentStep;
+        Result<BrightnessAndWarmth> brightnessAndWarmthResult = transitionBrightnessAndWarmth
+                .withDeltaBrightness(toIntegerRecoverFirstTwoDecimals(stepsLeftPlusCurrentStep, brightnessStep));
+        if (brightnessAndWarmthResult.hasError()) return true;
+        brightnessAndWarmthResult = brightnessAndWarmthResult.value
+                .withDeltaWarmth(toIntegerRecoverFirstTwoDecimals(stepsLeftPlusCurrentStep, warmthStep));
+        if (brightnessAndWarmthResult.hasError()) return true;
+        BrightnessAndWarmth brightnessAndWarmth = brightnessAndWarmthResult.value;
+        transitionBrightnessAndWarmth = brightnessAndWarmth;
+        TNativeOutput output = adapter.toNativeOutput(brightnessAndWarmth);
+        setOutput(output);
+        latestState = new BrightnessAndWarmthState(true, brightnessAndWarmth);
+        return true;
+    }
+
+    private static int toIntegerRecoverFirstTwoDecimals(int stepCount, float value) {
+        return (int) value +
+                (stepCount % 10 == 0 ? (int) ((value - (int) value) * 10) : 0) +
+                (stepCount % 100 == 0 ? (int) ((10 * value - (int) (10 * value)) * 10) : 0);
+    }
+
+    public void startStepping() {
+        transitionBrightnessAndWarmth = latestState != null ? latestState.brightnessAndWarmth :
+                adapter.findBrightnessAndWarmthApproximationForNativeOutput(nativeLightController.getOutput());
+    }
 }

@@ -10,7 +10,8 @@ import com.onyx.darie.calin.gentleglowonyxboox.schedule.LightScheduler;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.function.Function;
+import java.time.LocalTime;
+import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.reset;
@@ -37,15 +38,15 @@ public class ScheduleTestFixture {
                 lightConfigurationEditorTestFixture.lightTestFixture.light
         ) {
             @Override
-            protected PendingIntent getPendingIntent(Function<Intent, Void> intentConfig) {
-                intentConfig.apply(intentMock);
+            protected PendingIntent getPendingIntent(Consumer<Intent> intentConfig, int id) {
+                intentConfig.accept(intentMock);
                 return pendingIntentMock;
             }
         };
     }
 
     public void simulateIntentReceived() {
-        lightScheduler.handleAlarm(intentMock);
+        lightScheduler.handleAlarm(LocalTime.now());
     }
     @Mock
     public AlarmManager alarmManagerMock;

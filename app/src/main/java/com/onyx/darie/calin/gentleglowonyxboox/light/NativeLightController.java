@@ -10,9 +10,11 @@ public interface NativeLightController<TOutput> {
     Result turnOff();
     Result turnOn();
     void toggleOnOff();
-    Observable<Boolean> isOn$();
-
+    boolean isOn();
+    TOutput getOutput();
     Single<Result> setOutput(TOutput output);
+
+    Observable<Boolean> isOn$();
     Observable<TOutput> getOutput$();
 
     boolean isDeviceSupported();

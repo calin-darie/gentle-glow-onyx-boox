@@ -18,14 +18,6 @@ import io.reactivex.rxjava3.core.Single;
 
 public class BrightnessAndTemperatureController implements NativeLightController<BrightnessAndTemperatureOutput> {
 
-    public Result turnOn(boolean warm, boolean cold) {
-        boolean success = true;
-        if (warm || cold) {
-            return turnOn();
-        }
-        return Result.success();
-    }
-
     @Override
     public Result turnOn() {
         boolean success = brightness.open();
@@ -122,8 +114,13 @@ public class BrightnessAndTemperatureController implements NativeLightController
                 .share();
     }
 
-    private boolean isOn() {
+    public boolean isOn() {
         return brightness.isLightOn();
+    }
+
+    @Override
+    public BrightnessAndTemperatureOutput getOutput() {
+        return getCurrentOutput();
     }
 
     private BrightnessAndTemperatureOutput getCurrentOutput() {

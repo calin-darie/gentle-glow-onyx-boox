@@ -18,6 +18,16 @@ public class ScheduledLightState {
     }
 
     public static ScheduledLightState onWithConfiguration(String configurationNameMain, int configurationIndexFallback) {
-        return new ScheduledLightState(false, configurationNameMain, configurationIndexFallback);
+        return new ScheduledLightState(true, configurationNameMain, configurationIndexFallback);
+    }
+
+    @Override
+    public String
+    toString() {
+        return "ScheduledLightState{" +
+                "isOn=" + isOn +
+                ", lightConfigurationNameMain='" + lightConfigurationNameMain + '\'' +
+                ", LightConfigurationIndexFallback=" + LightConfigurationIndexFallback +
+                '}';
     }
 }

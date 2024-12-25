@@ -17,6 +17,15 @@
         android:gravity="end"
         android:orientation="horizontal"
         >
+        <Button
+            android:id="@+id/schedule_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/schedule_switch_label"
+            android:layout_gravity="start"
+            android:gravity="start"
+            android:layout_marginEnd="16sp"
+            />
         <Switch
             android:id="@+id/light_switch"
             android:layout_width="wrap_content"
