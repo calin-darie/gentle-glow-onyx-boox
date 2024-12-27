@@ -148,8 +148,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void bindControls() {
-        light.turnOn();
-
         enableControls();
         final Switch light = findViewById(R.id.light_switch);
         light.setEnabled(true);
@@ -229,13 +227,15 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     }
 
+    private final static int EDIT_SCHEDULE_REQUEST = 2;
     private void bindScheduleSwitch() {
         final Button scheduleButton = findViewById(R.id.schedule_button);
         scheduleButton.setOnClickListener(b -> {
+            light.turnOn();
             Intent myIntent = new Intent(
                     FrontLightWarmthBrightnessDialog.this,
                     ScheduleActivity.class);
-            FrontLightWarmthBrightnessDialog.this.startActivity(myIntent);
+            FrontLightWarmthBrightnessDialog.this.startActivityForResult(myIntent, EDIT_SCHEDULE_REQUEST);
         });
     }
 
