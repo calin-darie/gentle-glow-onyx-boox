@@ -341,7 +341,7 @@ public class LightScheduler {
         this.light = light;
     }
 
-    private final int worstCaseAndroidAlarmDelayMinutes = 1;
+    private final int worstCaseAndroidAlarmDelayMinutes = 10;
 
     private final Gson json = new Gson();
     private final Context context;
