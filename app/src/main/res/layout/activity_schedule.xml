@@ -12,6 +12,7 @@
         android:id="@+id/schedule_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:theme="@style/switch_with_large_thumb"
         android:track="@drawable/switch_track"
         android:thumb="@drawable/switch_thumb"
@@ -22,6 +23,7 @@
         android:id="@+id/schedule_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="32dp"
         android:layout_weight="1" />
 
     <Button

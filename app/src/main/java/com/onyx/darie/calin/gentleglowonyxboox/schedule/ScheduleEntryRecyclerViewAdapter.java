@@ -92,7 +92,12 @@ public class ScheduleEntryRecyclerViewAdapter
             dataset.remove(position);
             lightScheduler.remove(entry.timeOfDay);
             holder.itemView.post(() -> notifyDataSetChanged());
-            Toast.makeText(context, "Item removed: " + entry.toString(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context,
+                    String.format(
+                        this.context.getString(R.string.item_removed),
+                        entry.timeOfDay
+                    ),
+                    Toast.LENGTH_SHORT).show();
         });
     }
 

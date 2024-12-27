@@ -29,4 +29,5 @@
     <string name="schedule_light_configuration">Schedule a light configuration</string>
     <string name="schedule_transition">Transitioning according to schedule</string>
     <string name="schedule_transition_cancelled">Schedule transition cancelled</string>
+    <string name="item_removed">Item removed: %s</string>
 </resources>
