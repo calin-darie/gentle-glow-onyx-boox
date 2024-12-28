@@ -58,6 +58,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     Button replaceWithPreset;
     Button goToPermissions;
     ImageButton openProfilesMoreMenu;
+    Switch lightSwitch;
 
     MutuallyExclusiveChoiceGroup lightConfigurations = new MutuallyExclusiveChoiceGroup();
 
@@ -76,26 +77,25 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         lightConfigurationEditor = ((GentleGlowApplication)getApplication()).getDependencies().getLightConfigurationEditor();
         lightScheduler = ((GentleGlowApplication)getApplication()).getScheduleDependencies().getLightScheduler();
 
-        lightScheduler.restoreAllAlarms();
-
         setContentView(R.layout.activity_front_light_warmth_brightness_dialog);
 
         initializeControls();
 
         if (!light.isDeviceSupported()) {
             disableControls();
-            final Switch light = findViewById(R.id.light_switch);
-            light.setEnabled(false);
+            lightSwitch.setEnabled(false);
             status.setText(getText(R.string.device_not_supported));
             return;
         }
 
         if (Frontlight.hasPermissions()) {
             bindControls();
+            lightScheduler.restoreAllAlarms();
+            light.turnOn();
         } else {
             disableControls();
-            final Switch light = findViewById(R.id.light_switch);
-            light.setEnabled(false);
+
+            lightSwitch.setEnabled(false);
             status.setText(R.string.GentleGlowNeedsPermission);
             goToPermissions.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -121,6 +121,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         replaceWithPreset = findViewById(R.id.replace_with_preset_button);
         openProfilesMoreMenu = findViewById(R.id.open_profiles_more_menu_button);
         goToPermissions = findViewById(R.id.permissions_button);
+        lightSwitch = findViewById(R.id.light_switch);
     }
 
     private void disableControls() {
@@ -139,10 +140,6 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     private void bindControls() {
         enableControls();
-        final Switch light = findViewById(R.id.light_switch);
-        light.setEnabled(true);
-
-        bindLightSwitch();
 
         bindLightConfigurations();
         bindStatus();
@@ -151,8 +148,9 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         bindResetSpinner();
 
-
         listenForExternalLightChanges();
+
+        bindLightSwitch();
 
         bindScheduleSwitch();
     }
@@ -190,34 +188,35 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void checkForLightSwitchChange(Boolean lightSwitchState) {
-        final Switch light = findViewById(R.id.light_switch);
-        if (light.isChecked() != lightSwitchState)
-            light.setChecked(lightSwitchState);
+        if (lightSwitch.isChecked() != lightSwitchState) {
+            lightSwitch.setChecked(lightSwitchState);
+        }
+        if (lightSwitchState) {
+            findViewById(R.id.namedSettingsLayout).setVisibility(View.VISIBLE);
+            findViewById(R.id.named_settings_editor).setVisibility(View.VISIBLE);
+            ((View)replaceWithPreset.getParent()).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.namedSettingsLayout).setVisibility(View.INVISIBLE);
+            findViewById(R.id.named_settings_editor).setVisibility(View.INVISIBLE);
+            ((View)replaceWithPreset.getParent()).setVisibility(View.GONE);
+            status.setText(R.string.LightsOff);
+        }
     }
 
     private void bindLightSwitch() {
-        final Switch lightSwitch = findViewById(R.id.light_switch);
         lightSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 if (isChecked) {
                     light.turnOn();
-                    findViewById(R.id.namedSettingsLayout).setVisibility(View.VISIBLE);
-                    findViewById(R.id.named_settings_editor).setVisibility(View.VISIBLE);
-                    ((View)replaceWithPreset.getParent()).setVisibility(View.VISIBLE);
                 } else {
                     light.turnOff();
-                    findViewById(R.id.namedSettingsLayout).setVisibility(View.INVISIBLE);
-                    findViewById(R.id.named_settings_editor).setVisibility(View.INVISIBLE);
-                    ((View)replaceWithPreset.getParent()).setVisibility(View.GONE);
-                    status.setText(R.string.LightsOff);
                 }
             }
         });
 
     }
 
-    private final static int EDIT_SCHEDULE_REQUEST = 2;
     private void bindScheduleSwitch() {
         final Button scheduleButton = findViewById(R.id.schedule_button);
         scheduleButton.setOnClickListener(b -> {
@@ -225,7 +224,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             Intent myIntent = new Intent(
                     FrontLightWarmthBrightnessDialog.this,
                     ScheduleActivity.class);
-            FrontLightWarmthBrightnessDialog.this.startActivityForResult(myIntent, EDIT_SCHEDULE_REQUEST);
+            FrontLightWarmthBrightnessDialog.this.startActivity(myIntent);
         });
     }
 
