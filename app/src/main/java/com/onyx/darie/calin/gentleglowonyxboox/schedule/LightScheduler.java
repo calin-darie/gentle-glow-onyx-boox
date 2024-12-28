@@ -257,7 +257,7 @@ public class LightScheduler {
 
                             LightConfiguration[] choices = configurationEditor.getLightConfigurationChoice().getChoices();
                             int index = IntStream.range(0, choices.length)
-                                    .filter(i -> choices[i].name == scheduleEntry.scheduledLightState.lightConfigurationNameMain)
+                                    .filter(i -> scheduleEntry.scheduledLightState.lightConfigurationNameMain.equals(choices[i].name))
                                     .findFirst().orElse(scheduleEntry.scheduledLightState.LightConfigurationIndexFallback);
 
                             configurationEditor.getChooseCurrentLightConfigurationRequest$()
