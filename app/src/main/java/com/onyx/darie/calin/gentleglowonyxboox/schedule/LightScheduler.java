@@ -161,12 +161,11 @@ public class LightScheduler {
     }
 
     private void addAlarm(ScheduleEntry scheduleEntry, ZonedDateTime referenceTime) {
+        addMainAlarm(scheduleEntry, referenceTime);
         addRedundantAlarm(scheduleEntry, referenceTime);
-        addRedundantAlarm(new ScheduleEntry(scheduleEntry.timeOfDay.plusMinutes(worstCaseAndroidAlarmDelayMinutes),
-                scheduleEntry.scheduledLightState), referenceTime);
     }
 
-    private void addRedundantAlarm(ScheduleEntry scheduleEntry, ZonedDateTime referenceTime) {
+    private void addMainAlarm(ScheduleEntry scheduleEntry, ZonedDateTime referenceTime) {
         PendingIntent pendingIntent = getPendingIntent(scheduleEntry);
 
         ZonedDateTime nextOccurrenceOfTime = getNextOccurrenceOfTime(
@@ -177,6 +176,17 @@ public class LightScheduler {
                 AlarmManager.RTC,
                 nextOccurrenceOfTime.toEpochSecond() * 1000,
                 worstCaseAndroidAlarmDelayMinutes * 60 * 1000,
+                pendingIntent);
+    }
+    private void addRedundantAlarm(ScheduleEntry scheduleEntry, ZonedDateTime referenceTime) {
+        PendingIntent pendingIntent = getPendingIntent(scheduleEntry);
+
+        ZonedDateTime nextOccurrenceOfTime = getNextOccurrenceOfTime(
+                    scheduleEntry.timeOfDay,
+                referenceTime);
+        alarmManager.set(
+                AlarmManager.RTC,
+                nextOccurrenceOfTime.toEpochSecond() * 1000,
                 pendingIntent);
     }
 
