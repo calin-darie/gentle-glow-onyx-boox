@@ -57,42 +57,6 @@ public class LightConfigurationEditorImpl<TNativeOutput> implements LightConfigu
         return status$.distinctUntilChanged();
     }
 
-    @Override
-    public boolean stepTowardsConfiguration(int lightConfigurationIndex, int stepsLeft) {
-        status$.onNext(R.string.schedule_transition);
-        light.turnOn();
-        LightConfiguration targetConfiguration = lightConfigurationChoice.getChoices()[lightConfigurationIndex];
-        BrightnessAndWarmth targetBrightnessAndWarmth = targetConfiguration.brightnessAndWarmth;
-        return light.stepTowardsBrightnessAndWarmth(targetBrightnessAndWarmth, stepsLeft);
-    }
-
-    @Override
-    public boolean fadeOut(int stepsLeft) {
-        if (!light.isOn())
-            return true;
-
-        status$.onNext(R.string.schedule_transition);
-
-        return light.fadeOut(stepsLeft);
-    }
-
-    @Override
-    public void transitionStarted() {
-        status$.onNext(R.string.schedule_transition);
-        light.clearSteppingState();
-    }
-
-    @Override
-    public void transitionCancelled() {
-        this.status$.onNext(R.string.schedule_transition_cancelled);
-        light.clearSteppingState();
-    }
-    @Override
-    public void transitionCompleted() {
-        light.clearSteppingState();
-        this.status$.onNext(R.string.schedule_transition_completed);
-    }
-
     public LightConfigurationEditorImpl(
             LightImpl<TNativeOutput> light,
             Storage<LightConfigurationChoice> storage) {

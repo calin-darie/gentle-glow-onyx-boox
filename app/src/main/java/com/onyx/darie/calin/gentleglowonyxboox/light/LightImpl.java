@@ -190,58 +190,7 @@ public class LightImpl<TNativeOutput> implements Light{
         nativeLightController.toggleOnOff();
     }
 
-    public boolean fadeOut(int stepsLeft) {
-        if (!nativeLightController.isOn())
-            return true;
-
-        Warmth currentWarmth = adapter.findBrightnessAndWarmthApproximationForNativeOutput(nativeLightController.getOutput())
-                .warmth;
-        return stepTowardsBrightnessAndWarmth(new BrightnessAndWarmth(
-                new Brightness(1),
-                currentWarmth
-        ), stepsLeft);
-    }
-
     public boolean isOn() {
         return nativeLightController.isOn();
-    }
-
-    private BrightnessAndWarmth transitionBrightnessAndWarmth = null;
-    public boolean stepTowardsBrightnessAndWarmth(BrightnessAndWarmth targetBrightnessAndWarmth, int stepsLeft) {
-        if (transitionBrightnessAndWarmth == null)
-            clearSteppingState();
-        else if (!nativeLightController.getOutput().equals(adapter.toNativeOutput(transitionBrightnessAndWarmth)))
-            return false;
-
-        int currentBrightness = transitionBrightnessAndWarmth.brightness.value;
-        int currentWarmth = transitionBrightnessAndWarmth.warmth.value;
-        int stepsLeftPlusCurrentStep = stepsLeft + 1;
-        int brightnessDiffToTarget = targetBrightnessAndWarmth.brightness.value - currentBrightness;
-        float brightnessStep = (float)brightnessDiffToTarget / stepsLeftPlusCurrentStep;
-        int warmthDiffToTarget = targetBrightnessAndWarmth.warmth.value - currentWarmth;
-        float warmthStep = (float)warmthDiffToTarget / stepsLeftPlusCurrentStep;
-        Result<BrightnessAndWarmth> brightnessAndWarmthResult = transitionBrightnessAndWarmth
-                .withDeltaBrightness(toIntegerRecoverFirstTwoDecimals(stepsLeftPlusCurrentStep, brightnessStep));
-        if (brightnessAndWarmthResult.hasError()) return true;
-        brightnessAndWarmthResult = brightnessAndWarmthResult.value
-                .withDeltaWarmth(toIntegerRecoverFirstTwoDecimals(stepsLeftPlusCurrentStep, warmthStep));
-        if (brightnessAndWarmthResult.hasError()) return true;
-        BrightnessAndWarmth brightnessAndWarmth = brightnessAndWarmthResult.value;
-        transitionBrightnessAndWarmth = brightnessAndWarmth;
-        TNativeOutput output = adapter.toNativeOutput(brightnessAndWarmth);
-        setOutput(output);
-        latestState = new BrightnessAndWarmthState(true, brightnessAndWarmth);
-        return true;
-    }
-
-    private static int toIntegerRecoverFirstTwoDecimals(int stepCount, float value) {
-        return (int) value +
-                (stepCount % 10 == 0 ? (int) ((value - (int) value) * 10) : 0) +
-                (stepCount % 100 == 0 ? (int) ((10 * value - (int) (10 * value)) * 10) : 0);
-    }
-
-    public void clearSteppingState() {
-        transitionBrightnessAndWarmth = latestState != null ? latestState.brightnessAndWarmth :
-                adapter.findBrightnessAndWarmthApproximationForNativeOutput(nativeLightController.getOutput());
     }
 }

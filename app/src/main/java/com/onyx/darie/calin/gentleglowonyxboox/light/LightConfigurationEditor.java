@@ -25,14 +25,4 @@ public interface LightConfigurationEditor {
     Observable<MutuallyExclusiveChoice<LightConfiguration>> getLightConfigurationChoices$();
     Observable<Integer> getStatus$();
 
-
-    boolean stepTowardsConfiguration(int lightConfigurationIndexFallback, int stepsLeft);
-
-    boolean fadeOut(int stepsLeft);
-
-    void transitionStarted();
-
-    void transitionCancelled();
-
-    void transitionCompleted();
 }

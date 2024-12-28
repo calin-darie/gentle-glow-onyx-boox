@@ -218,65 +218,11 @@ public class LightScheduler {
         if (secondsUntilSwitch > (worstCaseAndroidAlarmDelayMinutes + 1) * 60)
             return;
 
-        final long intervalDurationSeconds = 3;
         Handler handler = new Handler(Looper.getMainLooper());
         Runnable restore = () -> {
             restoreScheduledLight(getSchedule());
-            configurationEditor.transitionCompleted();
         };
         handler.postDelayed(restore, (secondsUntilSwitch + 1) * 1000);
-        configurationEditor.transitionStarted();
-        RepeatOverDurationAtIntervalMilliseconds(
-                secondsUntilSwitch * 1000,
-                intervalDurationSeconds * 1000,
-                new Runnable() {
-                    boolean isCancelled = false;
-                    @Override
-                    public void run() {
-                        if (isCancelled)
-                            return;
-
-                        Schedule currentSchedule = LightScheduler.this.getSchedule();
-                        if (!currentSchedule.isOn) return;
-                        if (currentSchedule.entries.isEmpty()) return;
-
-                        Optional<ScheduleEntry> firstEntryTodayAfterNow = currentSchedule.entries.stream().filter(e -> e.timeOfDay.isAfter(LocalTime.now()))
-                                .min(scheduleEntryComparatorByTime);
-
-                        ScheduleEntry nextEntry = firstEntryTodayAfterNow.isPresent() ?
-                                firstEntryTodayAfterNow.get() :
-                                currentSchedule.entries.get(0);
-
-                        int stepsLeft = (int) (LocalTime.now().until(nextEntry.timeOfDay, ChronoUnit.SECONDS) /
-                                intervalDurationSeconds);
-
-                        if (stepsLeft <= 0)
-                            return;
-
-                        if (nextEntry.scheduledLightState.isOn) {
-                            isCancelled = !configurationEditor.stepTowardsConfiguration(
-                                    nextEntry.scheduledLightState.LightConfigurationIndexFallback,
-                                    stepsLeft);
-                        } else {
-                            isCancelled = !configurationEditor.fadeOut(stepsLeft);
-                        }
-                        if (isCancelled) {
-                            handler.removeCallbacks(restore);
-                            configurationEditor.transitionCancelled();
-                        }
-                    }
-                });
-    }
-
-    private void RepeatOverDurationAtIntervalMilliseconds(long durationMilliseconds, long intervalMilliseconds, Runnable runnable) {
-        Handler handler = new Handler(Looper.getMainLooper());
-        long totalSteps = durationMilliseconds / intervalMilliseconds;
-        for (int i = 0; i <= totalSteps; i++) {
-            final long step = i;
-            handler.postDelayed(() -> {
-                runnable.run();
-            }, step * intervalMilliseconds);
-        }
     }
 
     private void apply(ScheduleEntry scheduleEntry) {
