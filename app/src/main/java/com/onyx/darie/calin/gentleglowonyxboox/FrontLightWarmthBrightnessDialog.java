@@ -40,49 +40,23 @@ import com.onyx.darie.calin.gentleglowonyxboox.util.MutuallyExclusiveChoice;
 
 import java.util.stream.Collectors;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
 import io.reactivex.rxjava3.functions.Consumer;
 
 public class FrontLightWarmthBrightnessDialog extends Activity {
 
-    @BindView(R.id.status_textview)
     TextView status;
 
-    @BindView(R.id.brightness_slider)
     SeekBar brightness;
-
-    @BindView(R.id.warmth_slider)
     SeekBar warmth;
-
-    @BindView(R.id.warmth_value_label)
     TextView warmthValue;
-
-    @BindView(R.id.brightness_value_label)
     TextView brightnessValue;
-
-    @BindView(R.id.decrease_brightness_by_1)
     Button decreaseBrightnessButton;
-
-    @BindView(R.id.increase_brightness_by_1)
     Button increaseBrightnessButton;
-
-    @BindView(R.id.decrease_warmth_by_1)
     Button decreaseWarmthButton;
-
-    @BindView(R.id.increase_warmth_by_1)
     Button increaseWarmthButton;
-
-    @BindView(R.id.name_edit)
     EditText name;
-
-    @BindView(R.id.replace_with_preset_button)
     Button replaceWithPreset;
-
-    @BindView(R.id.permissions_button)
     Button goToPermissions;
-
-    @BindView(R.id.open_profiles_more_menu_button)
     ImageButton openProfilesMoreMenu;
 
     MutuallyExclusiveChoiceGroup lightConfigurations = new MutuallyExclusiveChoiceGroup();
@@ -106,7 +80,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
         setContentView(R.layout.activity_front_light_warmth_brightness_dialog);
 
-        ButterKnife.bind(this);
+        initializeControls();
 
         if (!light.isDeviceSupported()) {
             disableControls();
@@ -131,6 +105,22 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
             });
             goToPermissions.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void initializeControls() {
+        status = findViewById(R.id.status_textview);
+        brightness = findViewById(R.id.brightness_slider);
+        warmth = findViewById(R.id.warmth_slider);
+        brightnessValue = findViewById(R.id.brightness_value_label);
+        warmthValue = findViewById(R.id.warmth_value_label);
+        decreaseBrightnessButton = findViewById(R.id.decrease_brightness_by_1);
+        increaseBrightnessButton = findViewById(R.id.increase_brightness_by_1);
+        decreaseWarmthButton = findViewById(R.id.decrease_warmth_by_1);
+        increaseWarmthButton = findViewById(R.id.increase_warmth_by_1);
+        name = findViewById(R.id.name_edit);
+        replaceWithPreset = findViewById(R.id.replace_with_preset_button);
+        openProfilesMoreMenu = findViewById(R.id.open_profiles_more_menu_button);
+        goToPermissions = findViewById(R.id.permissions_button);
     }
 
     private void disableControls() {
@@ -378,12 +368,12 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
                                     PopupMenu popup = new PopupMenu(context, view);
                                     popup.setGravity(Gravity.END);
                                     popup.setOnMenuItemClickListener(item -> {
-                                        switch (item.getItemId()) {
-                                            case R.id.restore_onyx_sliders:
-                                                light.getRestoreExternallySetLedOutput$().onNext(0);
-                                                return true;
-                                            default:
-                                                return false;
+                                        if (item.getItemId() == R.id.restore_onyx_sliders) {
+                                            light.getRestoreExternallySetLedOutput$().onNext(0);
+                                            return true;
+                                        }
+                                        else {
+                                            return false;
                                         }
                                     });
                                     MenuInflater inflater = popup.getMenuInflater();
