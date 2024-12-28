@@ -30,4 +30,5 @@
     <string name="schedule_transition">Transitioning according to schedule</string>
     <string name="schedule_transition_cancelled">Schedule transition cancelled</string>
     <string name="item_removed">Item removed: %s</string>
+    <string name="schedule_transition_completed">Scheduled transition completed.</string>
 </resources>

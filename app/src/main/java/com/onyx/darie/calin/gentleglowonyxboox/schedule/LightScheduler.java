@@ -222,10 +222,10 @@ public class LightScheduler {
         Handler handler = new Handler(Looper.getMainLooper());
         Runnable restore = () -> {
             restoreScheduledLight(getSchedule());
-            configurationEditor.stopStepping();
+            configurationEditor.transitionCompleted();
         };
         handler.postDelayed(restore, (secondsUntilSwitch + 1) * 1000);
-        configurationEditor.startStepping();
+        configurationEditor.transitionStarted();
         RepeatOverDurationAtIntervalMilliseconds(
                 secondsUntilSwitch * 1000,
                 intervalDurationSeconds * 1000,
@@ -262,7 +262,7 @@ public class LightScheduler {
                         }
                         if (isCancelled) {
                             handler.removeCallbacks(restore);
-                            configurationEditor.stopStepping();
+                            configurationEditor.transitionCancelled();
                         }
                     }
                 });

@@ -30,7 +30,9 @@ public interface LightConfigurationEditor {
 
     boolean fadeOut(int stepsLeft);
 
-    void startStepping();
+    void transitionStarted();
 
-    void stopStepping();
+    void transitionCancelled();
+
+    void transitionCompleted();
 }
