@@ -209,7 +209,7 @@ public class LightImpl<TNativeOutput> implements Light{
     private BrightnessAndWarmth transitionBrightnessAndWarmth = null;
     public boolean stepTowardsBrightnessAndWarmth(BrightnessAndWarmth targetBrightnessAndWarmth, int stepsLeft) {
         if (transitionBrightnessAndWarmth == null)
-            startStepping();
+            clearSteppingState();
         else if (!nativeLightController.getOutput().equals(adapter.toNativeOutput(transitionBrightnessAndWarmth)))
             return false;
 
@@ -240,7 +240,7 @@ public class LightImpl<TNativeOutput> implements Light{
                 (stepCount % 100 == 0 ? (int) ((10 * value - (int) (10 * value)) * 10) : 0);
     }
 
-    public void startStepping() {
+    public void clearSteppingState() {
         transitionBrightnessAndWarmth = latestState != null ? latestState.brightnessAndWarmth :
                 adapter.findBrightnessAndWarmthApproximationForNativeOutput(nativeLightController.getOutput());
     }

@@ -76,12 +76,13 @@ public class LightConfigurationEditorImpl<TNativeOutput> implements LightConfigu
     @Override
     public void startStepping() {
         status$.onNext(R.string.schedule_transition);
-        light.startStepping();
+        light.clearSteppingState();
     }
 
     @Override
     public void stopStepping() {
         this.status$.onNext(R.string.schedule_transition_cancelled);
+        light.clearSteppingState();
     }
 
     public LightConfigurationEditorImpl(

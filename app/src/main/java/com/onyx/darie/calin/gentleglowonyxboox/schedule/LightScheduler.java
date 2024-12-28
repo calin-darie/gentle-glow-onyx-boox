@@ -129,7 +129,6 @@ public class LightScheduler {
         Schedule schedule = getSchedule();
         Optional<ScheduleEntry> entryOptional = schedule.entries.stream().filter(scheduleEntry -> scheduleEntry.timeOfDay.equals(time)).findFirst();
         if (entryOptional.isPresent()) {
-            removeAlarm(entryOptional.get());
             removeFromStorage(schedule, entryOptional.get());
         }
     }
@@ -223,6 +222,7 @@ public class LightScheduler {
         Handler handler = new Handler(Looper.getMainLooper());
         Runnable restore = () -> {
             restoreScheduledLight(getSchedule());
+            configurationEditor.stopStepping();
         };
         handler.postDelayed(restore, (secondsUntilSwitch + 1) * 1000);
         configurationEditor.startStepping();
