@@ -5,8 +5,10 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 
 import com.google.gson.Gson;
 import com.onyx.darie.calin.gentleglowonyxboox.light.Light;
@@ -28,6 +30,8 @@ import java.util.stream.IntStream;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
+
+import static android.content.Context.POWER_SERVICE;
 
 public class LightScheduler {
     public static final String ScheduleEntryIntentKey = "scheduleEntry";
@@ -310,12 +314,22 @@ public class LightScheduler {
     public static class AlarmReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            LightScheduler scheduler = ((GentleGlowApplication) context.getApplicationContext()).getScheduleDependencies().getLightScheduler();
-            String alarmEntryAsJson = intent.getStringExtra(ScheduleEntryIntentKey);
-            Gson json = new Gson();
-            ScheduleEntry alarmEntry = json.fromJson(alarmEntryAsJson, ScheduleEntry.class);
+            PowerManager pm = (PowerManager) context.getSystemService(POWER_SERVICE);
 
-            scheduler.handleAlarm(alarmEntry.timeOfDay);
+            if (pm.isInteractive()) {
+                String alarmEntryAsJson = intent.getStringExtra(ScheduleEntryIntentKey);
+                Gson json = new Gson();
+                ScheduleEntry alarmEntry = json.fromJson(alarmEntryAsJson, ScheduleEntry.class);
+
+                LightScheduler scheduler = ((GentleGlowApplication) context.getApplicationContext()).getScheduleDependencies().getLightScheduler();
+                scheduler.handleAlarm(alarmEntry.timeOfDay);
+            } else {
+
+                IntentFilter filter = new IntentFilter();
+                filter.addAction(Intent.ACTION_SCREEN_ON);
+
+                context.getApplicationContext().registerReceiver(new RestoreReceiver(), filter);
+            }
         }
     }
 
