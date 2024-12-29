@@ -21,4 +21,6 @@ public interface Light {
     boolean isDeviceSupported();
 
     void toggleOnOff();
+
+    boolean isOn();
 }

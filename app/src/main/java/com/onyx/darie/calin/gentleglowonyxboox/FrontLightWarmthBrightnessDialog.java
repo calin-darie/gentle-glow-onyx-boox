@@ -89,9 +89,8 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
         }
 
         if (Frontlight.hasPermissions()) {
-            bindControls();
-            lightScheduler.restoreAllAlarms();
             light.turnOn();
+            bindControls();
         } else {
             disableControls();
 
@@ -204,6 +203,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void bindLightSwitch() {
+        checkForLightSwitchChange(light.isOn());
         lightSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {

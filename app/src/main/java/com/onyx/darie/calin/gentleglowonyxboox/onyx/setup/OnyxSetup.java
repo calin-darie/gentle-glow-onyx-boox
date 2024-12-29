@@ -97,6 +97,11 @@ public class OnyxSetup{
                     public void toggleOnOff() {
 
                     }
+
+                    @Override
+                    public boolean isOn() {
+                        return true;
+                    }
                 };
             }
             @Override
