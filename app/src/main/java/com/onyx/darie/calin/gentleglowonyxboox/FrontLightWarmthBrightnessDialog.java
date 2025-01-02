@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
@@ -96,12 +95,7 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
             lightSwitch.setEnabled(false);
             status.setText(R.string.GentleGlowNeedsPermission);
-            goToPermissions.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    showPermissionDialog();
-                }
-            });
+            goToPermissions.setOnClickListener(view -> showPermissionDialog());
             goToPermissions.setVisibility(View.VISIBLE);
         }
     }
@@ -173,16 +167,10 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
     }
 
     private void listenForExternalLightChanges() {
-        Consumer<Boolean> checkForLightSwitchChange = new Consumer<Boolean>() {
-            @Override
-            public void accept(Boolean lightSwitchState) {
-                checkForLightSwitchChange(lightSwitchState);
-            }
-        };
         final LifecycleAwareSubscription<Boolean> switchSubscription =
                 new LifecycleAwareSubscription<>(this,
                         this.light.isOn$(),
-                        checkForLightSwitchChange);
+                        this::checkForLightSwitchChange);
         getApplication().registerActivityLifecycleCallbacks(switchSubscription);
     }
 
@@ -204,14 +192,11 @@ public class FrontLightWarmthBrightnessDialog extends Activity {
 
     private void bindLightSwitch() {
         checkForLightSwitchChange(light.isOn());
-        lightSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                if (isChecked) {
-                    light.turnOn();
-                } else {
-                    light.turnOff();
-                }
+        lightSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            if (isChecked) {
+                light.turnOn();
+            } else {
+                light.turnOff();
             }
         });
 

@@ -2,6 +2,7 @@ package com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 
 import com.onyx.android.sdk.api.device.brightness.BaseBrightnessProvider;
 import com.onyx.android.sdk.api.device.brightness.BrightnessController;
@@ -57,8 +58,10 @@ public class WarmColdLightController implements NativeLightController<WarmAndCol
             return Single.just(Result.success());
         }
 
+        Log.e("x", "setting output " + output);
         boolean success = warmLight.setValue(output.warm) && coldLight.setValue(output.cold);
         if (!success) {
+            Log.e("x", "!! driver said no");
             return Single.just(Result.error("driver said no"));
         }
         return ledOutputRaw$
@@ -136,12 +139,7 @@ public class WarmColdLightController implements NativeLightController<WarmAndCol
                                 Uri.parse("content://settings/system/cold_brightness_state_key"),
                                 Uri.parse("content://settings/system/warm_brightness_state_key"),
                         },
-                        new Function<Uri, Boolean>() {
-                            @Override
-                            public Boolean apply(@NonNull Uri uri) {
-                                return isOn();
-                            }
-                        }
+                        uri -> isOn()
                 )
                 .share();
     }
