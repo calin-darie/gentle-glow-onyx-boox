@@ -80,7 +80,7 @@ public class LightScheduler {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context,
                 0,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         alarmManager.setWindow(
                 AlarmManager.RTC,
                 getNextOccurrenceOfTime(LocalTime.parse("04:00"), ZonedDateTime.now())
@@ -284,7 +284,7 @@ public class LightScheduler {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context,
                 id,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         return pendingIntent;
     }
 
