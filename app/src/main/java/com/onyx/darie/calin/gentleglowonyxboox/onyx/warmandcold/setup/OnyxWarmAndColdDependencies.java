@@ -4,9 +4,9 @@ import android.content.Context;
 
 import com.onyx.android.sdk.device.BaseDevice;
 import com.onyx.darie.calin.gentleglowonyxboox.light.Light;
+import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationChoice;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationEditor;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationEditorImpl;
-import com.onyx.darie.calin.gentleglowonyxboox.light.LightConfigurationMigrationStorage;
 import com.onyx.darie.calin.gentleglowonyxboox.light.LightImpl;
 import com.onyx.darie.calin.gentleglowonyxboox.onyx.setup.OnyxSetup;
 import com.onyx.darie.calin.gentleglowonyxboox.onyx.warmandcold.BrightnessAndWarmthToWarmAndColdLedOutputAdapter;
@@ -45,8 +45,7 @@ public class OnyxWarmAndColdDependencies implements Dependencies {
         if (onyxLightConfigurationEditor == null) {
             onyxLightConfigurationEditor = new LightConfigurationEditorImpl<WarmAndColdLedOutput>(
                     getOnyxWarmAndColdLight(),
-                    new LightConfigurationMigrationStorage(context.getFilesDir())
-                    //new FileStorage<LightConfigurationChoice>(context.getFilesDir(), "`lightConfigurations`.json")
+                    new FileStorage<LightConfigurationChoice>(context.getFilesDir(), "`lightConfigurations`.json")
             );
         }
         return onyxLightConfigurationEditor;
