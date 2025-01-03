@@ -3,13 +3,11 @@
 [<img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' height="80px"/>](https://play.google.com/store/apps/details?id=com.onyx.darie.calin.gentleglowonyxboox)
 [<img alt='Get it on IzzyOnDroid' src='https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png' height="80px"/>](https://apt.izzysoft.de/fdroid/index/apk/com.onyx.darie.calin.gentleglowonyxboox)
 
-Adds a dialog and a quick settings tile 💡 to control the frontlight on Onyx BOOX E-readers running Android 9+. 
+Control your Onyx BOOX frontlight 💡 with presets, custom configs and scheduling ⏰.
 
-The dialog gives you three editable light configurations. For each configuration, you can set warmth and brightness independently, instead of having to manually combine warm brightness with cold brightness.
+Look for the included quick settings tile.
 
-This is like the evolution of faucets: first you have separate faucets for hot and cold water, then the interaction metaphor became navigating a 2D space where horizontal movement controls temperature and vertical movement controls flow, then you went to thermostatic faucets where you explicitly set temperature on one side and flow on the other. 
-This is the thermostatic faucet for your frontlight!
-
+Pro tip: setup a floating navigation ball button to launch the Gentle Glow, so always have it at your fingertips, including on the lock screen. You now have a light switch inside the dialog, so you never have pull down quick settings for this if you don't want to.
 
 ## Ways you can help
 
@@ -38,27 +36,32 @@ Alternatively, set Gentle Glow as a floating navigation ball button to always ha
 
 ⚠️With this app, you have finer control over the frontlight than with the native sliders. Most of the time, the native controls will show the lights are toggled on, but the cold / warm sliders will stay at zero, because the setting is not one of their fixed increments.
 
-The new approach for the controls may take a bit of time to grow on you, but think larger than Onyx: 
-* Think of Android night mode, iOS Night Shift, Windows Night light or the old f.lux. In all these systems, display brightness remains a separate setting from night light warmth. 
-* Think color pickers where you choose hue separately from brightness and RGB disks are just a feature for developers.
-* Think thermostatic faucets!
-
-In the warmth & brightness dialog, you get to choose between three configurations. 
-Initially, you get three presets:
+In the main dialog, you get to choose between four configurations. 
+Initially, you get these presets:
 * Night, to be used in a dark bedroom.
 * Dawn, to be used at first daylight, before sunrise
 * Day, to be used at day time indoors or in the shade
+* Sunset 
 
-You can easily adjust the brightness or warmth on any of the three configurations. Just play with the sliders or with the fine tune buttons to the left and right of the sliders, and your changes are auto-saved.
+You can easily adjust the brightness or warmth on any of the four configurations. Just play with the sliders or with the fine tune buttons to the left and right of the sliders, and your changes are auto-saved.
 
-Should you use the frontlight under any completely different circumstance, say on the subway, you can easily rename any of these three configurations to Subway and fine tune the warmth and brightness to your daily commute needs.
+Should you use the frontlight under any completely different circumstance, say on the subway, you can easily rename any of these configurations to Subway and fine tune the warmth and brightness to your daily commute needs.
+
 At any time, you can go back to any of the presets.
 
 <img alt="Brightness / Warmth configurations are editable: you can adjust warmth and/or brightness and rename the current configuration. You get a ✔ Saved message each time your changes are auto-saved. A dialog pops up when you choose to replace the current configuration with a preset." src="screenshots/warmth-brightness-editable-options.png" width = "320px"/>
 
-The Onyx Slider configuration is there just so changing the frontlight settings via the system sliders doesn't silently change your current configuration. 
+⚠️With Gentle Glow, you have finer control over the frontlight than with the native sliders. Native controls may show unexpected settings while Gentle Glow is in charge. Don't panic. You can always revert to the last known good system setting from the three vertical dots (kebab) menu in Gentle Glow.
 
-The Onyx Slider configuration is also a good way to get your system sliders back to a known good state, see the warning above.
+The Onyx Slider / Other configuration is a good way to get your system sliders back to a known good state, see the warning above.
+
+### Scheduling
+
+Once you're happy with the light configurations, you can have them rotate on a schedule ⏰.
+
+For example, you can schedule the light to turn to your Sunset config at 17:30, then to your Night config at 21:00, then off in the morning at 9:00.
+
+While the schedule is on, you may still change the frontlightlight manually, and the configuration will last until the next scheduled change.
 
 ## License
 
