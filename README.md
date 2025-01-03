@@ -7,7 +7,7 @@ Control your Onyx BOOX frontlight 💡 with presets, custom configs and scheduli
 
 Look for the included quick settings tile.
 
-Pro tip: setup a floating navigation ball button to launch the Gentle Glow, so always have it at your fingertips, including on the lock screen. You now have a light switch inside the dialog, so you never have pull down quick settings for this if you don't want to.
+Pro tip: setup a floating navigation ball button to launch the Gentle Glow, to always have it at your fingertips, including on the lock screen. 
 
 ## Ways you can help
 
@@ -30,11 +30,9 @@ Go to the quick settings and tap the Gentle Glow tile to toggle between light on
 
 You can also long press the tile to get a dialog where you can choose the desired warmth and brightness.
 
-<img alt="Brightness / Warmth silders in a dialog that shows over the current open app, so you can tune for desired readability" src="screenshots/warmth-brightness-dialog.png" width = "320px"/>
+<img alt="Brightness / Warmth sliders in a dialog that shows over the current open app, so you can tune for desired readability" src="screenshots/warmth-brightness-dialog.png" width = "320px"/>
 
-Alternatively, set Gentle Glow as a floating navigation ball button to always have it at your fingertips. You now have a light switch inside the dialog, so you never have pull down quick settings for this if you don't want to.
-
-⚠️With this app, you have finer control over the frontlight than with the native sliders. Most of the time, the native controls will show the lights are toggled on, but the cold / warm sliders will stay at zero, because the setting is not one of their fixed increments.
+Alternatively, set Gentle Glow as a floating navigation ball button to always have it at your fingertips. Since v4.x have a light switch inside the dialog, so you never have pull down quick settings for this if you don't want to.
 
 In the main dialog, you get to choose between four configurations. 
 Initially, you get these presets:
@@ -61,7 +59,7 @@ Once you're happy with the light configurations, you can have them rotate on a s
 
 For example, you can schedule the light to turn to your Sunset config at 17:30, then to your Night config at 21:00, then off in the morning at 9:00.
 
-While the schedule is on, you may still change the frontlightlight manually, and the configuration will last until the next scheduled change.
+While the schedule is on, you may still change the frontlight manually, and the configuration will last until the next scheduled change.
 
 ## License
 
@@ -71,5 +69,5 @@ The MIT license applies to all the files in this repository, except the light bu
 
 https://openmoji.org/ as of 2021-04-08
 
-## Disclamer
+## Disclaimer
 ⚠️ I am in no way affiliated with Onyx.
