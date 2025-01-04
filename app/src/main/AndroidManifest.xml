@@ -87,6 +87,13 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+        <receiver android:name=".ChangeLightReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.onyx.darie.calin.gentleglowonyxboox.CHANGE_LIGHT"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
