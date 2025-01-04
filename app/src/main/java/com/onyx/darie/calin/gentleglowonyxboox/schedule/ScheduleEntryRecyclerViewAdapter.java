@@ -53,7 +53,9 @@ public class ScheduleEntryRecyclerViewAdapter
         ScheduleEntry entry = dataset.get(position);
         holder.timeText.setText(entry.timeOfDay.toString());
         holder.lightOnSwitch.setChecked(entry.scheduledLightState.isOn);
-        holder.lightConfigurationNameText.setText(entry.scheduledLightState.lightConfigurationNameMain);
+        holder.lightConfigurationNameText.setText(
+                entry.scheduledLightState.isOn? entry.scheduledLightState.lightConfigurationNameMain:
+                context.getString(R.string.schedule_entry_light_off));
 
         holder.lightOnSwitch.setOnClickListener(button -> {
             if (holder.lightOnSwitch.isChecked()) {
