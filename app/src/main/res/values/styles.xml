@@ -36,6 +36,14 @@
 
     <style name="time_picker_clock" parent="@android:style/Widget.Material.Light.TimePicker">
         <item name="android:timePickerMode">clock</item>
+        <item name="android:headerBackground">@android:color/white</item>
+        <item name="android:headerTimeTextAppearance">@style/time_picker_header_text_appearance</item> <!-- TimePicker Time *TextAppearance* -->
+        <item name="android:numbersBackgroundColor">#fff1f1f1</item>
+        <item name="android:numbersTextColor">@android:color/black</item>
+        <item name="android:numbersSelectorColor">#ffd4d4d4</item>
+    </style>
+    <style name="time_picker_header_text_appearance" parent="@android:style/TextAppearance.Material">
+        <item name="android:textColor">@android:color/black</item>
     </style>
 
     <style name="switch_with_large_thumb" parent="android:Theme.Material.Light">
