@@ -24,6 +24,7 @@ If you like this app, you can help with any combination of the following:
 ## How it works
 
 Go to the quick settings and tap the Gentle Glow tile to toggle between light on and light off.
+
 <img alt="The Gentle Glow quick settings tile will show you when the frontlight is off." src="screenshots/quick-settings-light-off.png" width = "320px"/>
 
 <img alt="The Gentle Glow quick settings tile will show you when the frontlight is on." src="screenshots/quick-settings-light-on.png" width = "320px"/>
@@ -60,6 +61,53 @@ Once you're happy with the light configurations, you can have them rotate on a s
 For example, you can schedule the light to turn to your Sunset config at 17:30, then to your Night config at 21:00, then off in the morning at 9:00.
 
 While the schedule is on, you may still change the frontlight manually, and the configuration will last until the next scheduled change.
+
+### Intent
+
+You can now also control Gentle Glow from other apps, e.g. Tasker.
+
+Here are some examples in an  `adb shell`: \
+Turn the light off:
+```
+am broadcast -a com.onyx.darie.calin.gentleglowonyxboox.CHANGE_LIGHT -n com.onyx.darie.calin.gentleglowonyxboox/.ChangeLightReceiver --ei BRIGHTNESS 0
+```
+Set both brightness and warmth with a single intent:
+```
+am broadcast -a com.onyx.darie.calin.gentleglowonyxboox.CHANGE_LIGHT -n com.onyx.darie.calin.gentleglowonyxboox/.ChangeLightReceiver --ei BRIGHTNESS 35 --ei WARMTH 80
+```
+Change only brightness:
+```
+am broadcast -a com.onyx.darie.calin.gentleglowonyxboox.CHANGE_LIGHT -n com.onyx.darie.calin.gentleglowonyxboox/.ChangeLightReceiver --ei BRIGHTNESS 15
+```
+Change only warmth:
+```
+am broadcast -a com.onyx.darie.calin.gentleglowonyxboox.CHANGE_LIGHT -n com.onyx.darie.calin.gentleglowonyxboox/.ChangeLightReceiver --ei WARMTH: 50
+```
+You could also import this sample Tasker task: 
+```
+<TaskerData sr="" dvi="1" tv="6.3.13">
+	<Task sr="task4">
+		<cdate>1736020354819</cdate>
+		<edate>1736036576324</edate>
+		<id>4</id>
+		<nme>Change Light via Gentle Glow</nme>
+		<pri>100</pri>
+		<Action sr="act0" ve="7">
+			<code>877</code>
+			<Str sr="arg0" ve="3">com.onyx.darie.calin.gentleglowonyxboox.CHANGE_LIGHT</Str>
+			<Int sr="arg1" val="0"/>
+			<Str sr="arg2" ve="3"/>
+			<Str sr="arg3" ve="3"/>
+			<Str sr="arg4" ve="3">BRIGHTNESS:26</Str>
+			<Str sr="arg5" ve="3">WARMTH:90</Str>
+			<Str sr="arg6" ve="3"/>
+			<Str sr="arg7" ve="3">com.onyx.darie.calin.gentleglowonyxboox</Str>
+			<Str sr="arg8" ve="3"/>
+			<Int sr="arg9" val="0"/>
+		</Action>
+	</Task>
+</TaskerData>
+```
 
 ## License
 
